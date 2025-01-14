@@ -1,0 +1,1 @@
+const r=new Headers;r.append("Content-Type","application/json");const a=({url:e,method:s,body:t})=>new Request(e,{method:s,body:JSON.stringify(t),headers:r});var c=async({url:e,method:s="GET",body:t,headers:p})=>{const o=a({url:e,method:s,body:t});try{return await(await fetch(o)).json()}catch(n){console.error(n.message)}};export{c as default,r as headers,a as request};

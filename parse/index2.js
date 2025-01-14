@@ -1,0 +1,1 @@
+import o from"./email.js";import m from"./vars.server.js";import"nodemailer";import"dotenv/config";const{service:s,username:i,password:t,from:r}=m.email,e={service:s,email:i,password:t};var n={module:o,options:e};const p=async({payload:a})=>o(e).sendMail({from:r,sender:r,...a});export{p as Email,n as default};

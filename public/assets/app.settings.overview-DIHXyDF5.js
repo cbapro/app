@@ -1,0 +1,1 @@
+import{j as e}from"./jsx-runtime-D2HyDbKh.js";import{L as t}from"./logo-ByS3sw0U.js";function i(){return e.jsx("div",{className:"h-full flex justify-center items-center",children:e.jsx("div",{children:e.jsx(t,{subtitle:!0,vartical:!0,className:"opacity-25"})})})}export{i as default};
