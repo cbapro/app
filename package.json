@@ -32,7 +32,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cookie": "^0.6.0",
-    "date-fns": "^4.1.0",
+    "date-fns": "^3.0.0",
     "dotenv": "^16.4.7",
     "isbot": "^4.4.0",
     "joi": "^17.13.3",
@@ -46,7 +46,7 @@
     "parse-server": "^7.3.0",
     "react": "^18.3.1",
     "react-aiwriter": "^1.0.0",
-    "react-day-picker": "9.5.0",
+    "react-day-picker": "8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.2",
     "react-markdown": "^9.0.1",
@@ -66,15 +66,16 @@
     "@types/parse": "^3.0.9",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
-    "autoprefixer": "^10.4.19",
+    "autoprefixer": "^10.4.20",
     "esbuild": "^0.24.2",
     "https-proxy-agent": "^7.0.6",
-    "postcss": "^8.4.39",
+    "postcss": "^8.5.1",
     "rollup": "^4.29.1",
-    "tailwindcss": "^3.4.4",
+    "tailwindcss": "^3.4.17",
     "vite": "^5.3.3"
   },
   "engines": {
     "node": ">=20 <21"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
