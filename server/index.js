@@ -1,7 +1,7 @@
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { PassThrough } from 'node:stream';
-import { createReadableStreamFromReadable, createCookieSessionStorage, redirect as redirect$1 } from '@remix-run/node';
-import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useActionData, useSubmit, useNavigation, Form as Form$1, Link, useSearchParams, useNavigate, useLocation } from '@remix-run/react';
+import { createReadableStreamFromReadable, createCookieSessionStorage, redirect as redirect$2 } from '@remix-run/node';
+import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useActionData, useSubmit, useNavigation, Form as Form$1, redirect as redirect$1, Link, useSearchParams, useNavigate, useLocation } from '@remix-run/react';
 import * as isbotModule from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import * as React from 'react';
@@ -10,31 +10,35 @@ import * as ToastPrimitives from '@radix-ui/react-toast';
 import { cva } from 'class-variance-authority';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Cross2Icon, CaretSortIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, ChevronRightIcon, ViewVerticalIcon, DotFilledIcon } from '@radix-ui/react-icons';
+import { Cross2Icon, CaretSortIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, ViewVerticalIcon, DotFilledIcon } from '@radix-ui/react-icons';
+import * as ProgressPrimitive from '@radix-ui/react-progress';
+import { Slot } from '@radix-ui/react-slot';
 import Parse from 'parse/node.js';
 import 'dotenv/config';
 import { joiResolver } from '@hookform/resolvers/joi';
 import { useFormContext, FormProvider, Controller, useForm } from 'react-hook-form';
 import Joi from 'joi';
-import { Slot } from '@radix-ui/react-slot';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { LoaderCircle, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Play, MousePointerClick, Download, X, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
+import { LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Play, MousePointerClick, Download, X, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
+import { format } from 'date-fns';
+import { DayPicker } from 'react-day-picker';
+import * as PopoverPrimitive from '@radix-ui/react-popover';
+import * as SeparatorPrimitive from '@radix-ui/react-separator';
+import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Authenticator } from 'remix-auth';
 import { FormStrategy } from 'remix-auth-form';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import * as SeparatorPrimitive from '@radix-ui/react-separator';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import OpenAI from 'openai';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import * as ProgressPrimitive from '@radix-ui/react-progress';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import * as HoverCardPrimitive from '@radix-ui/react-hover-card';
+import Markdown from 'react-markdown';
 import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
-import Markdown from 'react-markdown';
 
 const ABORT_DELAY = 5e3;
 function handleRequest(request, responseStatusCode, responseHeaders, remixContext, loadContext) {
@@ -149,7 +153,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-88vzDZAn.css";
+const stylesheet = "/assets/tailwind-CczRYIOm.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -446,14 +450,228 @@ function Logo({
   );
 }
 
-function Overview() {
-  return /* @__PURE__ */ jsx("div", { className: "h-full flex justify-center items-center", children: /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(Logo, { subtitle: true, vartical: true, className: "opacity-25" }) }) });
+const Progress = React.forwardRef(({ className, value, ...props }, ref) => /* @__PURE__ */ jsx(
+  ProgressPrimitive.Root,
+  {
+    ref,
+    className: cn(
+      "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
+      className
+    ),
+    ...props,
+    children: /* @__PURE__ */ jsx(
+      ProgressPrimitive.Indicator,
+      {
+        className: "h-full w-full flex-1 bg-primary transition-all",
+        style: { transform: `translateX(-${100 - (value || 0)}%)` }
+      }
+    )
+  }
+));
+Progress.displayName = ProgressPrimitive.Root.displayName;
+
+function UsageProgress({ usage, limit = 1e6 }) {
+  const [value, setValue] = useState(0);
+  const rate = limit / 100;
+  useEffect(() => {
+    setValue(usage.total >= limit ? 100 : usage.total / rate);
+  }, [usage]);
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-4", children: [
+    /* @__PURE__ */ jsxs("div", { className: "grid gap-1", children: [
+      /* @__PURE__ */ jsxs("strong", { className: "text-sm text-zinc-400", children: [
+        value.toString().split(".")[0],
+        "%"
+      ] }),
+      /* @__PURE__ */ jsx(Progress, { value })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "flex gap-4 justify-between text-sm", children: [
+      /* @__PURE__ */ jsxs("span", { children: [
+        "Usage tokens: ",
+        /* @__PURE__ */ jsx("strong", { children: usage?.total })
+      ] }),
+      /* @__PURE__ */ jsxs("span", { children: [
+        "Limit tokens: ",
+        /* @__PURE__ */ jsx("strong", { children: limit })
+      ] })
+    ] })
+  ] });
 }
 
-const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: Overview
-}, Symbol.toStringTag, { value: 'Module' }));
+const alertVariants = cva(
+  "relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
+  {
+    variants: {
+      variant: {
+        default: "bg-background text-foreground",
+        destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive"
+      }
+    },
+    defaultVariants: {
+      variant: "default"
+    }
+  }
+);
+const Alert = React.forwardRef(({ className, variant, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    role: "alert",
+    className: cn(alertVariants({ variant }), className),
+    ...props
+  }
+));
+Alert.displayName = "Alert";
+const AlertTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "h5",
+  {
+    ref,
+    className: cn("mb-1 font-medium leading-none tracking-tight", className),
+    ...props
+  }
+));
+AlertTitle.displayName = "AlertTitle";
+const AlertDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    className: cn("text-sm [&_p]:leading-relaxed", className),
+    ...props
+  }
+));
+AlertDescription.displayName = "AlertDescription";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline"
+      },
+      size: {
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-10 rounded-md px-8",
+        icon: "h-9 w-9"
+      }
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default"
+    }
+  }
+);
+const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "button";
+  return /* @__PURE__ */ jsx(
+    Comp,
+    {
+      className: cn(buttonVariants({ variant, size, className })),
+      ref,
+      ...props
+    }
+  );
+});
+Button.displayName = "Button";
+
+function AlertModule({
+  className,
+  icon,
+  title,
+  description,
+  button,
+  variant
+}) {
+  return /* @__PURE__ */ jsxs(Alert, { className: cn(className, variants$1[variant]), children: [
+    icon,
+    title && /* @__PURE__ */ jsx(AlertTitle, { children: title }),
+    description && /* @__PURE__ */ jsx(AlertDescription, { children: description }),
+    button && /* @__PURE__ */ jsx("div", { className: "flex justify-end pt-2", children: /* @__PURE__ */ jsx(
+      Button,
+      {
+        variant: "destructive",
+        size: "small",
+        className: "p-1 px-2 text-xs",
+        onClick: button.onClick,
+        children: button.title
+      }
+    ) })
+  ] });
+}
+const variants$1 = {
+  default: "",
+  success: "text-green-500 border-green-500 [&_button]:bg-green-500",
+  destructive: "text-red-500 border-red-500 [&_button]:bg-red-500"
+};
+
+const Card = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    className: cn("rounded-xl border bg-card text-card-foreground shadow", className),
+    ...props
+  }
+));
+Card.displayName = "Card";
+const CardHeader = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    className: cn("flex flex-col space-y-1.5 p-6", className),
+    ...props
+  }
+));
+CardHeader.displayName = "CardHeader";
+const CardTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    className: cn("font-semibold leading-none tracking-tight", className),
+    ...props
+  }
+));
+CardTitle.displayName = "CardTitle";
+const CardDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    className: cn("text-sm text-muted-foreground", className),
+    ...props
+  }
+));
+CardDescription.displayName = "CardDescription";
+const CardContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("div", { ref, className: cn("p-6 pt-0", className), ...props }));
+CardContent.displayName = "CardContent";
+const CardFooter = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    ref,
+    className: cn("flex items-center p-6 pt-0", className),
+    ...props
+  }
+));
+CardFooter.displayName = "CardFooter";
+
+function CardModule({
+  className,
+  title,
+  description,
+  children,
+  footer
+}) {
+  return /* @__PURE__ */ jsxs(Card, { className, children: [
+    /* @__PURE__ */ jsxs(CardHeader, { children: [
+      title && /* @__PURE__ */ jsx(CardTitle, { children: title }),
+      description && /* @__PURE__ */ jsx(CardDescription, { children: description })
+    ] }),
+    /* @__PURE__ */ jsx(CardContent, { children }),
+    footer && /* @__PURE__ */ jsx(CardFooter, { children: footer })
+  ] });
+}
 
 // import * as User from "./models/user.server";
 // import * as Auth from "./lib/parse/auth.server";
@@ -568,6 +786,7 @@ const vars = {
     masterKey: process.env.PARSE_MASTER_KEY,
     databaseURI: process.env.DB_URI,
     jsKey: process.env.PARSE_JS_KEY,
+    restAPIKey: process.env.PARSE_REST_API_KEY,
     serverURL: process.env.PARSE_SERVER_URL,
     publicServerURL: process.env.PARSE_PUBLIC_SERVER_URL,
     cloud: process.env.PARSE_CLOUD,
@@ -595,7 +814,7 @@ const vars = {
   },
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
-    assistantIdPro: process.env.OPENAI_ASSISTANT_ID,
+    scoreAssistantId: process.env.OPENAI_ASSISTANT_ID_SCORE,
     assistantIdDev: process.env.OPENAI_ASSISTANT_ID_DEV,
     assistantId:
       process.env.NODE_ENV === "production"
@@ -607,71 +826,73 @@ const vars = {
   },
 };
 
-const { appId, jsKey, serverURL } = vars.parse;
+const { appId, jsKey, serverURL, masterKey } = vars.parse;
 
-Parse.initialize(appId, jsKey);
+Parse.initialize(appId, jsKey, masterKey);
 Parse.serverURL = serverURL;
 
 const Class$4 = "Profile";
 
-async function read$1(user) {
+async function read$3(user) {
   try {
     const query = new Parse.Query(Class$4);
     query.equalTo("user", user.objectId);
-    const data = await query.find({ sessionToken: user.sessionToken });
+    const data = await query.find({ useMasterKey: true });
     return data[0];
   } catch (error) {
     console.log("profile.read", error.message);
   }
 }
 
-async function update$2(data, sessionToken) {
+async function update$2(args) {
   try {
     const Profile = Parse.Object.extend(Class$4);
     const profile = new Profile();
-    return await profile.save(data, { sessionToken });
+    return await profile.save(args, { useMasterKey: true });
   } catch (error) {
     console.log("profile.update", error.message);
   }
 }
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline"
-      },
-      size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
-        icon: "h-9 w-9"
-      }
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default"
-    }
+async function loader$b({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  let profile = session.get("profile");
+  if (!profile) {
+    const user = session.get("user");
+    profile = await read$3(user);
   }
-);
-const Button = React.forwardRef(({ className, variant, size, asChild = false, ...props }, ref) => {
-  const Comp = asChild ? Slot : "button";
-  return /* @__PURE__ */ jsx(
-    Comp,
-    {
-      className: cn(buttonVariants({ variant, size, className })),
-      ref,
-      ...props
-    }
-  );
-});
-Button.displayName = "Button";
+  const limit = 1e6;
+  const usage = profile?.usage || 0;
+  return { limit, usage };
+}
+function Overview() {
+  const data = useLoaderData();
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-4", children: [
+    /* @__PURE__ */ jsxs(CardModule, { className: "shadow-none", title: "Tokens used", children: [
+      /* @__PURE__ */ jsx(UsageProgress, { limit: data?.limit, usage: data?.usage }),
+      data?.usage.total >= data?.limit && /* @__PURE__ */ jsx(
+        AlertModule,
+        {
+          variant: "destructive",
+          className: "mt-8",
+          title: "Attention!",
+          description: "your tokens used has been Over. Please contact with CTA Administrator",
+          button: {
+            title: "Contact",
+            onClick: () => console.log("Contact with CTA")
+          }
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "hidden h-full flex- justify-center items-center", children: /* @__PURE__ */ jsx(Logo, { subtitle: true, vartical: true, className: "opacity-25" }) })
+  ] });
+}
+
+const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: Overview,
+  loader: loader$b
+}, Symbol.toStringTag, { value: 'Module' }));
 
 const labelVariants = cva(
   "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -941,12 +1162,147 @@ const ScrollBar = React.forwardRef(({ className, orientation = "vertical", ...pr
 ));
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
 
-async function loader$9({ request }) {
+function Calendar({
+  className,
+  classNames,
+  showOutsideDays = true,
+  ...props
+}) {
+  return /* @__PURE__ */ jsx(
+    DayPicker,
+    {
+      showOutsideDays,
+      className: cn("p-3", className),
+      classNames: {
+        months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+        month: "space-y-4",
+        caption: "flex justify-center pt-1 relative items-center",
+        caption_label: "text-sm font-medium",
+        nav: "space-x-1 flex items-center",
+        nav_button: cn(
+          buttonVariants({ variant: "outline" }),
+          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+        ),
+        nav_button_previous: "absolute left-1",
+        nav_button_next: "absolute right-1",
+        table: "w-full border-collapse space-y-1",
+        head_row: "flex",
+        head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
+        row: "flex w-full mt-2",
+        cell: cn(
+          "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md",
+          props.mode === "range" ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md" : "[&:has([aria-selected])]:rounded-md"
+        ),
+        day: cn(
+          buttonVariants({ variant: "ghost" }),
+          "h-8 w-8 p-0 font-normal aria-selected:opacity-100"
+        ),
+        day_range_start: "day-range-start",
+        day_range_end: "day-range-end",
+        day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+        day_today: "bg-accent text-accent-foreground",
+        day_outside: "day-outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
+        day_disabled: "text-muted-foreground opacity-50",
+        day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+        day_hidden: "invisible",
+        ...classNames
+      },
+      components: {
+        IconLeft: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronLeftIcon, { className: cn("h-4 w-4", className2), ...props2 }),
+        IconRight: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronRightIcon, { className: cn("h-4 w-4", className2), ...props2 })
+      },
+      ...props
+    }
+  );
+}
+Calendar.displayName = "Calendar";
+
+const Popover = PopoverPrimitive.Root;
+const PopoverTrigger = PopoverPrimitive.Trigger;
+const PopoverContent = React.forwardRef(({ className, align = "center", sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsx(PopoverPrimitive.Portal, { children: /* @__PURE__ */ jsx(
+  PopoverPrimitive.Content,
+  {
+    ref,
+    align,
+    sideOffset,
+    className: cn(
+      "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    ),
+    ...props
+  }
+) }));
+PopoverContent.displayName = PopoverPrimitive.Content.displayName;
+
+function CalendarField({ name, label, description, control }) {
+  return /* @__PURE__ */ jsx(
+    FormField,
+    {
+      control,
+      name,
+      render: ({ field }) => /* @__PURE__ */ jsxs(FormItem, { className: "flex flex-col", children: [
+        /* @__PURE__ */ jsx(FormLabel, { children: label }),
+        /* @__PURE__ */ jsxs(Popover, { children: [
+          /* @__PURE__ */ jsx(PopoverTrigger, { asChild: true, children: /* @__PURE__ */ jsx(FormControl, { children: /* @__PURE__ */ jsxs(
+            Button,
+            {
+              variant: "outline",
+              className: cn(
+                "w-[240px] pl-3 text-left font-normal",
+                !field.value && "text-muted-foreground"
+              ),
+              children: [
+                field.value ? format(field.value, "PPP") : /* @__PURE__ */ jsx("span", { children: "Pick a date" }),
+                /* @__PURE__ */ jsx(CalendarIcon, { className: "ml-auto h-4 w-4 opacity-50" })
+              ]
+            }
+          ) }) }),
+          /* @__PURE__ */ jsx(
+            PopoverContent,
+            {
+              className: "w-auto p-0 pointer-events-auto",
+              align: "start",
+              children: /* @__PURE__ */ jsx(
+                Calendar,
+                {
+                  mode: "single",
+                  selected: field.value,
+                  onSelect: field.onChange,
+                  initialFocus: true
+                }
+              )
+            }
+          )
+        ] }),
+        description && /* @__PURE__ */ jsx(FormDescription, { children: description }),
+        /* @__PURE__ */ jsx(FormMessage, {})
+      ] })
+    }
+  );
+}
+
+const Separator = React.forwardRef(({ className, orientation = "horizontal", decorative = true, ...props }, ref) => /* @__PURE__ */ jsx(
+  SeparatorPrimitive.Root,
+  {
+    ref,
+    decorative,
+    orientation,
+    className: cn(
+      "shrink-0 bg-border",
+      orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
+      className
+    ),
+    ...props
+  }
+));
+Separator.displayName = SeparatorPrimitive.Root.displayName;
+
+async function loader$a({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let profile = session.get("profile");
   if (profile) return { profile };
   const user = session.get("user");
-  profile = await read$1(user);
+  profile = await read$3(user);
   if (profile) {
     console.log("settings.profile", profile.id);
     session.set("profile", profile);
@@ -961,12 +1317,13 @@ async function loader$9({ request }) {
   }
   return null;
 }
-async function action$6({ request }) {
+async function action$7({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
-  const user = session.get("user");
+  session.get("user");
   const formData = await request.formData();
   const profile = JSON.parse(formData.get("profile"));
-  const data = await update$2(profile, user.sessionToken);
+  if (profile?.usage) delete profile.usage;
+  const data = await update$2(profile);
   if (data) {
     session.set("profile", data);
     return Response.json(data, {
@@ -999,7 +1356,8 @@ const formSchema = Joi.object({
           "any.required": `"email" is a required field`
         })
       })
-    )
+    ),
+    CBASubmissionDueDate: Joi.date()
   })
 });
 function ProfilePage() {
@@ -1186,7 +1544,16 @@ function ProfilePage() {
                 )
               ] }, index)
             )
-          ] })
+          ] }),
+          /* @__PURE__ */ jsx(Separator, {}),
+          /* @__PURE__ */ jsx(
+            CalendarField,
+            {
+              name: "fields.CBASubmissionDueDate",
+              label: "CBA Submission Due Date",
+              control: form.control
+            }
+          )
         ] }) }),
         /* @__PURE__ */ jsxs("div", { className: "flex justify-between", children: [
           /* @__PURE__ */ jsx("span", {}),
@@ -1229,9 +1596,9 @@ const associations = [
 
 const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$6,
+  action: action$7,
   default: ProfilePage,
-  loader: loader$9
+  loader: loader$a
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Callback() {
@@ -1241,6 +1608,257 @@ function Callback() {
 const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Callback
+}, Symbol.toStringTag, { value: 'Module' }));
+
+function InputField({ setValue, error, ...props }) {
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5", children: [
+    props?.label && /* @__PURE__ */ jsx(Label, { children: props?.label }),
+    /* @__PURE__ */ jsx(
+      Input,
+      {
+        ...props,
+        ...setValue && {
+          onValueChange: setValue
+        }
+      }
+    ),
+    error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: error })
+  ] });
+}
+
+const Checkbox = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  CheckboxPrimitive.Root,
+  {
+    ref,
+    className: cn(
+      "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+      className
+    ),
+    ...props,
+    children: /* @__PURE__ */ jsx(
+      CheckboxPrimitive.Indicator,
+      {
+        className: cn("flex items-center justify-center text-current"),
+        children: /* @__PURE__ */ jsx(CheckIcon, { className: "h-4 w-4" })
+      }
+    )
+  }
+));
+Checkbox.displayName = CheckboxPrimitive.Root.displayName;
+
+function CheckboxField({ setValue, error, ...props }) {
+  return /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-start space-x-2", children: [
+      /* @__PURE__ */ jsx(
+        Checkbox,
+        {
+          ...props,
+          ...setValue && {
+            onValueChange: setValue
+          }
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "label",
+        {
+          htmlFor: props?.id,
+          className: "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+          children: props?.label
+        }
+      )
+    ] }),
+    error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: error })
+  ] });
+}
+
+const getPointer = (className, objectId) => ({
+  __type: "Pointer",
+  className,
+  objectId,
+});
+
+// export * as outcomes from "./outcome.server";
+
+const models = {
+  user: "_User",
+  competency: "Competency",
+  thread: "Thread",
+  outcome: "Outcome",
+};
+
+const Class$3 = "Setting";
+
+async function CREATE$1(args) {
+  try {
+    const Setting = Parse.Object.extend(Class$3);
+    const setting = new Setting();
+    return await setting.save(args, { useMasterKey: true });
+  } catch (error) {
+    console.log("setting.create", error.message);
+  }
+}
+
+async function READ(user) {
+  try {
+    const query = new Parse.Query(Class$3);
+    query.equalTo("user", user.objectId);
+    return await query.first({ useMasterKey: true });
+  } catch (error) {
+    console.log("setting.read", error.message);
+  }
+}
+
+async function UPDATE(args) {
+  try {
+    const Setting = Parse.Object.extend(Class$3);
+    const setting = new Setting();
+    return await setting.save(args, { useMasterKey: true });
+  } catch (error) {
+    console.log("setting.update", error.message);
+  }
+}
+
+async function UPSERT(user, data) {
+  const setting = await READ(user);
+  const args = {
+    user: getPointer(models.user, user.objectId),
+    consent: data.consent,
+  };
+  if (setting) return await UPDATE(args);
+  return await CREATE$1(args);
+}
+
+const schema = Joi.object({
+  fullName: Joi.string().required(),
+  termsConditions: Joi.string().required(),
+  privacyPolicy: Joi.string().required(),
+  appRules: Joi.string().required()
+});
+async function loader$9({ request }) {
+  const session = await getSession(request.headers.get("cookie"));
+  const user = session.get("user");
+  let setting = session.get("setting");
+  if (!user) return redirect$1("/auth/login");
+  console.log("auth.consent.loader", user.objectId);
+  if (!setting) setting = (await READ(user)).toJSON();
+  if (user && setting?.consent)
+    return redirect$1("/app", {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    });
+  return null;
+}
+async function action$6({ request }) {
+  const session = await getSession(request.headers.get("cookie"));
+  const user = session.get("user");
+  console.log("auth.consent.action", user.objectId);
+  const formData = await request.formData();
+  const fullName = formData.get("fullName");
+  const termsConditions = formData.get("termsConditions");
+  const privacyPolicy = formData.get("privacyPolicy");
+  const appRules = formData.get("appRules");
+  const consent = { fullName, termsConditions, privacyPolicy, appRules };
+  try {
+    await schema.validateAsync(consent, { abortEarly: false });
+    const setting = await UPSERT(user, { consent });
+    session.set("setting", setting);
+    return redirect$1("/app", {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    });
+  } catch (error) {
+    return {
+      error: error.details
+    };
+  }
+}
+function Consent() {
+  const actionData = useActionData();
+  const { state } = useNavigation();
+  return /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "grid gap-6", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        name: "fullName",
+        label: "Full name",
+        rquired: "true",
+        error: actionData?.error?.find((i) => i.context.key === "fullName")?.message
+      }
+    ),
+    /* @__PURE__ */ jsx("center", { children: /* @__PURE__ */ jsx("small", { children: (/* @__PURE__ */ new Date()).toUTCString() }) }),
+    /* @__PURE__ */ jsxs("div", { className: "flex gap-2 justify-end", children: [
+      /* @__PURE__ */ jsx(
+        CheckboxField,
+        {
+          name: "termsConditions",
+          label: "I acknowledge and agree to the terms and conditions",
+          rquired: "true",
+          error: actionData?.error?.find((i) => i.context.key === "termsConditions")?.message
+        }
+      ),
+      /* @__PURE__ */ jsxs(
+        "a",
+        {
+          href: "/terms-conditions.pdf",
+          target: "_blank",
+          className: "flex items-center gap-1 text-primary text-xs rounded-full px-2 h-7 leading-6 border border-primary",
+          children: [
+            /* @__PURE__ */ jsx(ExternalLink, { size: 16 }),
+            "View"
+          ]
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "flex gap-2 justify-end", children: [
+      /* @__PURE__ */ jsx(
+        CheckboxField,
+        {
+          name: "privacyPolicy",
+          label: "I acknowledge and agree to the Privacy Policy",
+          rquired: "true",
+          error: actionData?.error?.find((i) => i.context.key === "privacyPolicy")?.message
+        }
+      ),
+      /* @__PURE__ */ jsxs(
+        "a",
+        {
+          href: "/privacy-policy.pdf",
+          target: "_blank",
+          className: "flex items-center gap-1 text-primary text-xs rounded-full px-2 h-7 leading-6 border border-primary",
+          children: [
+            /* @__PURE__ */ jsx(ExternalLink, { size: 16 }),
+            "View"
+          ]
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx(
+      CheckboxField,
+      {
+        name: "appRules",
+        label: "I consent to the ethical use of the dashboard, affirm that all work experience examples provided are factual, and agree that CertNova may disclose my AI chat history to engineering associations upon request.",
+        rquired: "true",
+        error: actionData?.error?.find((i) => i.context.key === "appRules")?.message
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "I Agree",
+        className: "mt-8",
+        loader: state === "submitting" || state === "loading"
+      }
+    )
+  ] });
+}
+
+const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$6,
+  default: Consent,
+  loader: loader$9
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function isMobileServer(request) {
@@ -1323,10 +1941,10 @@ authenticator.use(
 
 async function loader$8({ request }) {
   console.log("auth:login:loader");
-  if (isMobileServer(request)) return redirect$1("/mobile");
+  if (isMobileServer(request)) return redirect$2("/mobile");
   let session = await getSession(request.headers.get("cookie"));
   let user = session.get("user");
-  if (user) throw redirect$1("/app");
+  if (user) throw redirect$2("/app");
   return null;
 }
 async function action$5({ request }) {
@@ -1343,7 +1961,7 @@ async function action$5({ request }) {
   }
   if (user?.error) return { error: user.error };
   session.set("user", user);
-  throw redirect$1("/app", {
+  throw redirect$2("/auth/consent", {
     headers: { "Set-Cookie": await commitSession(session) }
   });
 }
@@ -1400,84 +2018,12 @@ function Login() {
   ] }) });
 }
 
-const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$5,
   default: Login,
   loader: loader$8
 }, Symbol.toStringTag, { value: 'Module' }));
-
-function InputField({
-  label,
-  type = "text",
-  name,
-  placeholder,
-  value,
-  // onChange,
-  ...props
-}) {
-  const ref = useRef(null);
-  useEffect(() => {
-    if (value) return ref.current.value = value;
-    ref.current.focus();
-  }, [value]);
-  return /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5", children: [
-    label && /* @__PURE__ */ jsx(Label, { children: label }),
-    /* @__PURE__ */ jsx(
-      Input,
-      {
-        type,
-        name,
-        placeholder,
-        ref,
-        ...props
-      }
-    )
-  ] });
-}
-
-const alertVariants = cva(
-  "relative w-full rounded-lg border px-4 py-3 text-sm [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
-  {
-    variants: {
-      variant: {
-        default: "bg-background text-foreground",
-        destructive: "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive"
-      }
-    },
-    defaultVariants: {
-      variant: "default"
-    }
-  }
-);
-const Alert = React.forwardRef(({ className, variant, ...props }, ref) => /* @__PURE__ */ jsx(
-  "div",
-  {
-    ref,
-    role: "alert",
-    className: cn(alertVariants({ variant }), className),
-    ...props
-  }
-));
-Alert.displayName = "Alert";
-const AlertTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  "h5",
-  {
-    ref,
-    className: cn("mb-1 font-medium leading-none tracking-tight", className),
-    ...props
-  }
-));
-AlertTitle.displayName = "AlertTitle";
-const AlertDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  "div",
-  {
-    ref,
-    className: cn("text-sm [&_p]:leading-relaxed", className),
-    ...props
-  }
-));
-AlertDescription.displayName = "AlertDescription";
 
 function AlertField({ message, variant }) {
   if (!message) return null;
@@ -1499,7 +2045,7 @@ async function loader$7({ request }) {
   const link = url.searchParams.get("link");
   const token = url.searchParams.get("token");
   const username = url.searchParams.get("username");
-  if (link) return redirect$1(`/auth/reset?token=${token}&username=${username}`);
+  if (link) return redirect$2(`/auth/reset?token=${token}&username=${username}`);
   return null;
 }
 async function action$4({ request }) {
@@ -1590,86 +2136,23 @@ function Reset() {
   ] });
 }
 
-const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$4,
   default: Reset,
   loader: loader$7
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const { jsonServer } = vars;
+const Class$2 = "Outcome";
 
-const api = {
-  create: async (type, body) => {
-    const url = `${jsonServer.url}/${type}`;
-    const response = await fetch(url, {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
-    return await response.json();
-  },
-
-  read: async (type, id, q) => {
-    const url = `${jsonServer.url}/${type}${id ? "/" + id : ""}${
-      q ? "?" + q : ""
-    }`;
-    const response = await fetch(url);
-    return handleStatus(response) ?? (await response.json());
-  },
-
-  update: async (type, id, body) => {
-    const url = `${jsonServer.url}/${type}/${id}`;
-    const response = await fetch(url, {
-      method: "PATCH",
-      body: JSON.stringify(body),
-    });
-    return handleStatus(response) ?? (await response.json());
-  },
-
-  delete: async (type, id) => {
-    const url = `${jsonServer.url}/${type}/${id}`;
-    const response = await fetch(url, {
-      method: "DELETE",
-    });
-    return handleStatus(response) ?? (await response.json());
-  },
-
-  embed: async (type, id = null, embed) => {
-    const url = `${jsonServer.url}/${type}${
-      id ? "/" + id : ""
-    }?_embed=${embed}`;
-    const response = await fetch(url);
-    return await response.json();
-  },
-
-  extend: async (type, id = null, extend) => {
-    const url = `${jsonServer.url}/${type}${
-      id ? "/" + id : ""
-    }?_extend=${extend}`;
-    const response = await fetch(url);
-    return response.json();
-  },
-};
-
-const handleStatus = (response) => {
-  switch (response.status) {
-    case 404:
-      return {
-        error: "record not found!",
-      };
-  }
-};
-
-const Class$3 = "Outcome";
-
-async function getMany$1(user, thread) {
+async function read$2(user, thread) {
   try {
-    const query = new Parse.Query(Class$3);
+    const query = new Parse.Query(Class$2);
     user && query.equalTo("user", user.objectId);
     thread && query.equalTo("thread", thread.objectId || thread.id);
     return await query.find({ sessionToken: user.sessionToken });
   } catch (error) {
-    console.log("outcome.getMany", error.message);
+    console.log("outcome.read", error.message);
   }
 }
 
@@ -1699,40 +2182,17 @@ const flags$1 = {
   approved: "approved",
 };
 
-const getPointer = (className, objectId) => ({
-  __type: "Pointer",
-  className,
-  objectId,
-});
-
-// export * as outcomes from "./outcome.server";
-
-const models = {
-  user: "_User",
-  competency: "Competency",
-  thread: "Thread",
-  outcome: "Outcome",
-};
-
 async function loader$6({ request }) {
-  return redirect$1("/app");
+  return redirect$2("/app");
 }
 async function action$3({ request, params }) {
   console.log("outcomes.action", params.action);
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
-  if (!user) return redirect$1("/auth/login");
+  if (!user) return redirect$2("/auth/login");
   let result;
   const thread = session.get("thread");
   const action2 = params.action;
-  if (action2 === "init") {
-    const threads = await api.read("threads", null, `threadId=${thread.id}`);
-    await api.read(
-      "outcomes",
-      null,
-      `userId=${user.id}&threadId=${threads[0].id}`
-    );
-  }
   if (action2 === "create") {
     const { competency } = await request.json();
     result = await create$2(
@@ -1746,7 +2206,7 @@ async function action$3({ request, params }) {
     );
   }
   if (action2 === "get") {
-    result = await getMany$1(user, thread);
+    result = await read$2(user, thread);
   }
   if (action2 === "update") {
     const body = await request.json();
@@ -1771,7 +2231,7 @@ const outcomeSchema = {
   flag: "idle"
 };
 
-const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$3,
   loader: loader$6,
@@ -1930,22 +2390,6 @@ function useIsMobile() {
   }, []);
   return !!isMobile;
 }
-
-const Separator = React.forwardRef(({ className, orientation = "horizontal", decorative = true, ...props }, ref) => /* @__PURE__ */ jsx(
-  SeparatorPrimitive.Root,
-  {
-    ref,
-    decorative,
-    orientation,
-    className: cn(
-      "shrink-0 bg-border",
-      orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
-      className
-    ),
-    ...props
-  }
-));
-Separator.displayName = SeparatorPrimitive.Root.displayName;
 
 const Sheet = DialogPrimitive.Root;
 const SheetTrigger = DialogPrimitive.Trigger;
@@ -2667,7 +3111,7 @@ function Settings() {
                   Link,
                   {
                     to: item.to,
-                    className: "data-[active=true]:text-primary",
+                    className: "data-[active=true]:!text-primary",
                     onClick: () => onNav(item),
                     children: [
                       /* @__PURE__ */ jsx(item.icon, {}),
@@ -2692,7 +3136,7 @@ function Settings() {
   ] });
 }
 
-const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Settings
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -2704,7 +3148,7 @@ const navigation = [
   { name: "Company", href: "#" }
 ];
 async function loader$5({ request }) {
-  return redirect$1("/app");
+  return redirect$2("/app");
 }
 function Index() {
   useState(false);
@@ -2826,7 +3270,7 @@ function Index() {
   ] });
 }
 
-const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Index,
   loader: loader$5
@@ -2834,14 +3278,14 @@ const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
 
 const loader$4 = async ({ request }) => {
   const session = await getSession(request.headers.get("Cookie"));
-  return redirect$1("/auth/login", {
+  return redirect$2("/auth/login", {
     headers: {
       "Set-Cookie": await destroySession(session)
     }
   });
 };
 
-const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader: loader$4
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -2855,7 +3299,7 @@ function Mobile() {
   ] });
 }
 
-const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Mobile
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -2879,7 +3323,7 @@ function Auth() {
   ] });
 }
 
-const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Auth
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -2889,8 +3333,6 @@ const openai = new OpenAI({
     httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
   }),
 });
-
-// const assistantId = vars.openai.assistantId;
 
 // upload file to assistant's vector store
 async function CREATE({ thread, file }) {
@@ -2909,11 +3351,8 @@ async function CREATE({ thread, file }) {
   );
 
   // console.log(thread.id, vectorStoreId, file_.id, vectorStoreFile);
-
   return file_;
 }
-
-/* Helper functions */
 
 const getOrCreateVectorStore = async (thread) => {
   if (thread?.tool_resources?.file_search?.vector_store_ids?.length > 0) {
@@ -2936,59 +3375,62 @@ const getOrCreateVectorStore = async (thread) => {
   return vectorStore.id;
 };
 
-const Class$2 = "Thread";
+const ClassName = "Thread";
 
-async function getMany(user) {
+async function read$1(user, purpose = purposes.chat) {
   try {
-    const query = new Parse.Query(Class$2);
+    const query = new Parse.Query(ClassName);
+    purpose && query.equalTo("purpose", purpose);
     user && query.equalTo("user", user.objectId);
     query.descending("createdAt");
-    return await query.find({ sessionToken: user.sessionToken });
+    return await query.find({ useMasterKey: true });
   } catch (error) {
-    console.log("thread.getMany", error);
+    console.log("thread.read", error.message);
   }
 }
 
-async function create$1(arg, sessionToken) {
+async function create$1(args) {
   try {
-    const Thread = Parse.Object.extend("Thread");
+    const Thread = Parse.Object.extend(ClassName);
     const thread = new Thread();
-    return await thread.save(arg, { sessionToken });
+    return await thread.save(args, { useMasterKey: true });
   } catch (error) {
     console.log("thread.create", error.message);
   }
 }
 
-async function update(arg, sessionToken) {
+async function update(args) {
   try {
-    const Thread = Parse.Object.extend(Class$2);
+    const Thread = Parse.Object.extend(ClassName);
     const thread = new Thread();
-    return await thread.save(arg, { sessionToken });
+    return await thread.save(args, { useMasterKey: true });
   } catch (error) {
     console.log("thread.update", error.message);
   }
 }
 
+const purposes = {
+  chat: "chat",
+  score: "score",
+};
+
 async function loader$3() {
   console.log("files.loader");
-  return redirect$1("/app");
+  return redirect$2("/app");
 }
 async function action$2({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const thread = session.get("thread");
-  if (!user) return redirect$1("/auth/login");
+  if (!user) return redirect$2("/auth/login");
   const formData = await request.formData();
   const file = formData.get("file");
   const file_ = await CREATE({ thread: thread?.thread, file });
   const thread_ = await openai.beta.threads.retrieve(thread.threadId);
-  await update(
-    {
-      objectId: thread.objectId,
-      thread: thread_
-    },
-    user.sessionToken
-  );
+  await update({
+    objectId: thread.objectId,
+    thread: thread_
+  });
   session.set("thread", { ...thread, ...{ thread: thread_ } });
   session.set("file", file_);
   return Response.json(file_, {
@@ -2998,99 +3440,249 @@ async function action$2({ request }) {
   });
 }
 
-const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$2,
   loader: loader$3
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function wait (delay = 1000) {
-  console.log(`wait for ${delay / 1000}s`);
-  await new Promise((resolve) => setTimeout(resolve, delay));
+const Class$1 = "Message";
+
+async function read(user, thread, limit) {
+  try {
+    const query = new Parse.Query(Class$1);
+    user && query.equalTo("user", user.objectId);
+    thread && query.equalTo("thread", thread.objectId || thread.id);
+    limit && query.limit(limit);
+    query.descending("createdAt");
+    return await query.find({ sessionToken: user.sessionToken });
+  } catch (error) {
+    console.log("message.read", error.message);
+  }
 }
 
-async function sync({ competencyItem, outcome }) {
-  await wait(3000);
-  return {
-    result: Math.floor(Math.random() * 5) + 1,
-    reason: "Reason of this choice!",
-  };
+async function create(arg, sessionToken) {
+  try {
+    const Message = Parse.Object.extend("Message");
+    const message = new Message();
+    return await message.save(arg, { sessionToken });
+  } catch (error) {
+    console.log("outcome.create", error.message);
+  }
 }
 
-async function loader$2() {
-  return redirect$1("/app");
+const roles = {
+  system: "system",
+  assistant: "assistant",
+  user: "user",
+};
+
+async function updateUsage(user, thread, usage) {
+  await update({
+    objectId: thread.objectId,
+    usage: {
+      input: (thread.usage?.input ?? 0) + usage.input,
+      output: (thread.usage?.output ?? 0) + usage.output,
+      total: (thread.usage?.total ?? 0) + usage.total,
+    },
+  });
+
+  const profile = await read$3(user);
+  const profileUsage = profile.get("usage");
+
+  await update$2({
+    objectId: profile.id,
+    usage: {
+      input: (profileUsage?.input ?? 0) + usage.input,
+      output: (profileUsage?.output ?? 0) + usage.output,
+      total: (profileUsage?.total ?? 0) + usage.total,
+    },
+  });
 }
 
-async function action$1({ request }) {
+async function sync(request) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
-
-  if (!user) return redirect$1("/auth/login");
-
-  console.log("score.loader.user", user.objectId);
-
+  const scoreThread = session.get("scoreThread");
   const { competencyItem, outcome } = await request.json();
-  const score = await sync({ competencyItem, outcome });
 
-  if (score) {
-    await update$1(
-      {
-        objectId: outcome.objectId,
-        score,
-      },
-      user.sessionToken
-    );
+  if (!outcome) return null;
 
-    return Response.json(score);
+  const ScoreThread = scoreThread ?? (await getScoreThread(user));
+
+  console.log("score.sync.scoreThread", scoreThread, ScoreThread);
+  if (!ScoreThread) return null;
+  if (!scoreThread) session.set("scoreThread", ScoreThread);
+
+  const score = await getScore({
+    user,
+    competencyItem,
+    outcome,
+    scoreThread: ScoreThread,
+  });
+  if (!score) return null;
+
+  return Response.json(
+    score,
+    !scoreThread
+      ? {
+          headers: {
+            "Set-Cookie": await commitSession(session),
+          },
+        }
+      : {}
+  );
+}
+
+async function getScore({ user, competencyItem, outcome, scoreThread }) {
+  let score,
+    usage = null;
+  const content = `[Competency ${competencyItem.competencyGroup.order}] - [${competencyItem.title}] - [${outcome.situation}] - [${outcome.action}] - [${outcome.outcome}]`;
+
+  await openai.beta.threads.messages.create(scoreThread.threadId, {
+    role: roles.user,
+    content,
+  });
+
+  const run = await openai.beta.threads.runs.create(scoreThread.threadId, {
+    assistant_id: vars.openai.scoreAssistantId,
+    stream: true,
+  });
+
+  for await (const r of run) {
+    console.log("score.getScore.run", r.event);
+    if (r.event === "thread.message.completed")
+      score = {
+        result:
+          Number(
+            r.data.content[0].text.value
+              .split("\nRealistic Rationale: ")[0]
+              .split(" = ")[1]
+          ) || 0,
+        reason: r.data.content[0].text.value.split(
+          "\nRealistic Rationale: "
+        )[1],
+      };
+
+    if (r.event === "thread.run.completed") {
+      const {
+        prompt_tokens: input,
+        completion_tokens: output,
+        total_tokens: total,
+      } = r.data.usage;
+
+      usage = { input, output, total };
+    }
+  }
+
+  await update$1(
+    {
+      objectId: outcome.objectId,
+      score,
+    },
+    user.sessionToken
+  );
+
+  await updateUsage(user, scoreThread, usage);
+
+  return score;
+}
+
+async function getScoreThread(user) {
+  const purpose = purposes.score;
+  const threads = await read$1(user, purpose);
+
+  console.log("score.getScoreThread.threads", threads.length);
+  if (threads?.length)
+    return {
+      objectId: threads[0].id,
+      threadId: threads[0].get("threadId"),
+      usage: threads[0].get("usage"),
+    };
+
+  const thread = await openai.beta.threads.create({
+    metadata: {
+      user: user.objectId,
+      purpose,
+    },
+  });
+  console.log("score.getScoreThread.thread.create", thread.id);
+
+  if (thread?.id) {
+    const thread_ = await create$1({
+      user: getPointer(models.user, user.objectId),
+      name: "Score thread",
+      threadId: thread.id,
+      thread,
+      purpose,
+    });
+
+    return {
+      objectId: thread_.id,
+      threadId: thread.id,
+      usage: thread_.get("usage"),
+    };
   }
 
   return null;
 }
 
-const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+async function loader$2() {
+  return redirect$2("/app");
+}
+
+async function action$1({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  if (!user) return redirect$2("/auth/login");
+
+  console.log("score.action.user", user.objectId);
+  return await sync(request);
+}
+
+const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$1,
   loader: loader$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Test() {
-  return /* @__PURE__ */ jsx("div", { children: "Test" });
+  return "TEST";
 }
 
-const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Test
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const Progress = React.forwardRef(({ className, value, ...props }, ref) => /* @__PURE__ */ jsx(
-  ProgressPrimitive.Root,
-  {
-    ref,
-    className: cn(
-      "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
-      className
-    ),
-    ...props,
-    children: /* @__PURE__ */ jsx(
-      ProgressPrimitive.Indicator,
-      {
-        className: "h-full w-full flex-1 bg-primary transition-all",
-        style: { transform: `translateX(-${100 - (value || 0)}%)` }
-      }
-    )
-  }
-));
-Progress.displayName = ProgressPrimitive.Root.displayName;
-
-function ChatProgress({ input = 0 }) {
+function ChatProgress({ className, input = 0, outcomes }) {
   const [value, setValue] = useState(input);
+  const [status, setStatus] = useState(statuses.notStarted);
+  const competenciesLength = 34;
   useEffect(() => {
-    setValue(input);
-  }, [input]);
+    if (outcomes.length) {
+      const length = outcomes.filter(
+        (outcome) => outcome.flag === "approved" && outcome?.score
+      ).length;
+      const value2 = Math.round(100 / competenciesLength * length);
+      setValue(value2);
+    }
+  }, [outcomes]);
+  useEffect(() => {
+    if (value === 0) return setStatus(statuses.notStarted);
+    if (value < 100) return setStatus(statuses.inProgress);
+    return setStatus(statuses.done);
+  }, [value]);
   return /* @__PURE__ */ jsxs("div", { className: "grid gap-4", children: [
     /* @__PURE__ */ jsxs("div", { className: "grid gap-1", children: [
       /* @__PURE__ */ jsx("span", { className: "text-sm text-zinc-400", children: "Total progress" }),
-      /* @__PURE__ */ jsx(Progress, { value })
+      /* @__PURE__ */ jsx(
+        Progress,
+        {
+          value,
+          className: cn(className, status.progressClassname)
+        }
+      )
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "flex gap-4", children: [
       /* @__PURE__ */ jsx(ProgressStatus, { status: statuses.notStarted }),
@@ -3106,14 +3698,17 @@ const ProgressStatus = ({ status = statuses.notStarted }) => /* @__PURE__ */ jsx
 const statuses = {
   notStarted: {
     className: "text-zinc-500 [&>span:first-child]:bg-zinc-500",
+    progressClassname: "bg-zinc-500/20 [&>div]:bg-zinc-500",
     label: "Not Started"
   },
   inProgress: {
     className: "text-blue-500 [&>span:first-child]:bg-blue-500",
+    progressClassname: "bg-primary/20 [&>div]:bg-primary",
     label: "In Progress"
   },
   done: {
     className: "text-green-500 [&>span:first-child]:bg-green-500",
+    progressClassname: "bg-green-500/20 [&>div]:bg-green-500",
     label: "Done"
   }
 };
@@ -3388,7 +3983,6 @@ function OutcomeBox({
     if (!updated && counter > limit) return;
     if (!updated) {
       setLoading(true);
-      console.log("wait", type, value);
       const res = await fetch("/outcomes/update", {
         method: "POST",
         body: JSON.stringify({
@@ -3416,7 +4010,7 @@ function OutcomeBox({
           "span",
           {
             className: cn(
-              "text-xs",
+              "text-[10px]",
               counter > limit ? "text-red-500" : "text-green-500",
               counter === 0 && "text-zinc-500"
             ),
@@ -3424,8 +4018,8 @@ function OutcomeBox({
           }
         )
       ] }),
-      loading && /* @__PURE__ */ jsx("span", { className: "text-xs text-zinc-500", children: "wait.." }),
       /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
+        loading && /* @__PURE__ */ jsx(LoaderCircle, { size: 12, className: "animate-spin" }),
         /* @__PURE__ */ jsx(
           Button,
           {
@@ -3455,7 +4049,7 @@ function OutcomeBox({
       Textarea,
       {
         className: cn(
-          "min-h-80 bg-none focus-visible:ring-0 border-primary/50 focus-visible:border-primary text-primary",
+          "min-h-40 bg-none focus-visible:ring-0 border-zinc/50 focus-visible:border-primary text-primary",
           `h-[${contentRef?.current?.clientHeight}px]`
         ),
         defaultValue: value,
@@ -3500,9 +4094,24 @@ function Score({ competencyItem, outcome, getOutcomes }) {
     SetLoader(false);
   }
   return /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
-    /* @__PURE__ */ jsxs(HoverCard, { children: [
+    /* @__PURE__ */ jsxs(HoverCard, { openDelay: 200, closeDelay: 100, children: [
       /* @__PURE__ */ jsx(HoverCardTrigger, { asChild: true, children: /* @__PURE__ */ jsx(Button, { variant: "ghost", size: "small", children: /* @__PURE__ */ jsx(Info, {}) }) }),
-      /* @__PURE__ */ jsx(HoverCardContent, { className: "max-w-fit", children: /* @__PURE__ */ jsx("div", { className: "text-xs", children: !score?.reason ? "When following fields have filled, you can Click the Button to get the Right Score for this Competency" : score.reason }) })
+      /* @__PURE__ */ jsx(
+        HoverCardContent,
+        {
+          className: cn(
+            "max-w-fit bg-yellow-50",
+            score?.reason?.length > 300 && "w-[640px]"
+          ),
+          children: /* @__PURE__ */ jsx("div", { className: "text-xs", children: !score?.reason ? "When following fields have filled, you can Click the Button to get the Right Score for this Competency" : /* @__PURE__ */ jsx(
+            Markdown,
+            {
+              children: score.reason?.replace(/\\n/gi, "\n"),
+              className: "text-zinc-600 [&_p]:mb-4 last:[&_p]:m-0 [&_li]:mb-4 [&_hr]:mb-4"
+            }
+          ) })
+        }
+      )
     ] }),
     /* @__PURE__ */ jsx(
       SubmitField,
@@ -3780,6 +4389,14 @@ function UserMenu() {
     /* @__PURE__ */ jsxs(DropdownMenuContent, { children: [
       /* @__PURE__ */ jsx(DropdownMenuLabel, { children: "My Account" }),
       /* @__PURE__ */ jsx(Separator, {}),
+      /* @__PURE__ */ jsx(DropdownMenuItem, { onClick: () => setOpen(false), children: /* @__PURE__ */ jsx(
+        Link,
+        {
+          to: "/app/settings/overview",
+          className: "w-full hover:text-red-500",
+          children: "Overview"
+        }
+      ) }),
       /* @__PURE__ */ jsx(DropdownMenuItem, { onClick: () => setOpen(false), children: /* @__PURE__ */ jsx(
         Link,
         {
@@ -4217,37 +4834,6 @@ function Assessment({ file, getAssessment }) {
   ] });
 }
 
-const Class$1 = "Message";
-
-async function read(user, thread, limit) {
-  try {
-    const query = new Parse.Query(Class$1);
-    user && query.equalTo("user", user.objectId);
-    thread && query.equalTo("thread", thread.objectId || thread.id);
-    limit && query.limit(limit);
-    query.descending("createdAt");
-    return await query.find({ sessionToken: user.sessionToken });
-  } catch (error) {
-    console.log("message.read", error.message);
-  }
-}
-
-async function create(arg, sessionToken) {
-  try {
-    const Message = Parse.Object.extend("Message");
-    const message = new Message();
-    return await message.save(arg, { sessionToken });
-  } catch (error) {
-    console.log("outcome.create", error.message);
-  }
-}
-
-const roles = {
-  system: "system",
-  assistant: "assistant",
-  user: "user",
-};
-
 async function init(session) {
   const user = session.get("user");
   let thread = session.get("thread");
@@ -4258,7 +4844,7 @@ async function init(session) {
     return { thread, file };
   }
 
-  const threads = await getMany(user);
+  const threads = await read$1(user);
   console.log("chat.init", "all threads", threads.length);
 
   if (threads.length === 0) {
@@ -4269,15 +4855,13 @@ async function init(session) {
       return { error: _thread.error.error };
     }
 
-    const res = await create$1(
-      {
-        name: "Thread 1",
-        threadId: _thread.id,
-        user: getPointer(models.user, user.objectId),
-        thread: _thread,
-      },
-      user.sessionToken
-    );
+    const res = await create$1({
+      name: "Thread 1",
+      threadId: _thread.id,
+      user: getPointer(models.user, user.objectId),
+      thread: _thread,
+      purpose: purposes.chat,
+    });
     thread = res.toJSON();
 
     console.log("chat.init", "add new thread", _thread?.id, thread?.objectId);
@@ -4525,6 +5109,11 @@ function Step({
   onSkip,
   onNext
 }) {
+  const [finish, setFinish] = useState(false);
+  useEffect(() => {
+    if (step && steps.findIndex((s) => step === s.step) + 1 === steps.length)
+      setFinish(true);
+  }, [step]);
   return /* @__PURE__ */ jsxs(
     "div",
     {
@@ -4557,8 +5146,8 @@ function Step({
                 variant: "default",
                 size: "small",
                 className: "p-1 px-2",
-                onClick: onNext,
-                children: "Next step"
+                onClick: finish ? onSkip : onNext,
+                children: finish ? "Finish" : "Next step"
               }
             )
           ] })
@@ -4580,7 +5169,7 @@ const shouldRevalidate = ({
 async function loader$1({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
-  if (!user) return redirect$1("/auth/login");
+  if (!user) return redirect$2("/auth/login");
   console.log("app.loader.user", user.objectId);
   const { thread, file } = await init(session);
   if (!thread) console.log("app.loader.init", "thread not found!");
@@ -4589,7 +5178,7 @@ async function loader$1({ request }) {
   console.log("app.loader.messages", messages.length);
   const competencies = await getAll();
   console.log("app.loader.competencies", competencies.length);
-  const outcomes = await getMany$1(user, thread);
+  const outcomes = await read$2(user, thread);
   console.log("app.loader.outcomes", outcomes.length);
   const data = {
     thread,
@@ -4671,7 +5260,7 @@ function App() {
     /* @__PURE__ */ jsx("div", { className: "w-72 bg-white p-4 rounded-xl", children: /* @__PURE__ */ jsxs("div", { className: "h-full flex flex-col gap-4", children: [
       /* @__PURE__ */ jsxs("div", { className: "grid gap-4 divide-y [&>:last-child]:pt-4", children: [
         /* @__PURE__ */ jsx(Logo, { subtitle: true }),
-        /* @__PURE__ */ jsx("div", { "data-guide-step": "4", children: /* @__PURE__ */ jsx(ChatProgress, { input: 0 }) })
+        /* @__PURE__ */ jsx("div", { "data-guide-step": "4", children: /* @__PURE__ */ jsx(ChatProgress, { outcomes }) })
       ] }),
       /* @__PURE__ */ jsx(ScrollArea, { className: "flex-grow", "data-guide-step": "2", children: /* @__PURE__ */ jsx(
         ChatIncome,
@@ -4741,7 +5330,7 @@ function App() {
   ] });
 }
 
-const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action,
   default: App,
@@ -4793,12 +5382,6 @@ function eventStream(signal, init, options = {}) {
   return new Response(stream, { headers });
 }
 
-// export function headers() {
-//   return {
-//     "Content-Type": "text/event-stream",
-//   };
-// }
-
 async function loader({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
@@ -4842,6 +5425,14 @@ async function loader({ request }) {
 
           if (s.event === "thread.run.completed") {
             close();
+
+            const {
+              prompt_tokens: input,
+              completion_tokens: output,
+              total_tokens: total,
+            } = s.data.usage;
+
+            await updateUsage(user, thread, { input, output, total });
           }
         }
       }
@@ -4851,12 +5442,12 @@ async function loader({ request }) {
   return null;
 }
 
-const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-CMNBfC3p.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-B2e_hGzZ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-CMNBfC3p.js','/assets/use-toast-DYrZrp-R.js','/assets/react-icons.esm-ChalUmLn.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-DIHXyDF5.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-BLjG10IE.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/createLucideIcon-BXGk8jjN.js','/assets/index-8C1TgZ4U.js','/assets/label-CYdX1xUT.js','/assets/react-icons.esm-ChalUmLn.js','/assets/components-CMNBfC3p.js','/assets/scroll-area-BC_B4EcH.js','/assets/component-DEHOnlZR.js','/assets/input-BcVCSBdC.js','/assets/submit-field-CPo-87WM.js','/assets/use-toast-DYrZrp-R.js','/assets/index-_mLdmCCM.js','/assets/loader-circle-BQ68U3OR.js'],'css':[]},'routes/_auth.auth.callback':{'id':'routes/_auth.auth.callback','parentId':'routes/_auth','path':'auth/callback','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.callback-B0xOLG2O.js','imports':['/assets/jsx-runtime-D2HyDbKh.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-taPmL-FH.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/createLucideIcon-BXGk8jjN.js','/assets/input-BcVCSBdC.js','/assets/label-CYdX1xUT.js','/assets/components-CMNBfC3p.js','/assets/loader-circle-BQ68U3OR.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset--aiogvtv.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-BcVCSBdC.js','/assets/label-CYdX1xUT.js','/assets/index-8C1TgZ4U.js','/assets/info-DLTSnBP6.js','/assets/submit-field-CPo-87WM.js','/assets/components-CMNBfC3p.js','/assets/createLucideIcon-BXGk8jjN.js','/assets/loader-circle-BQ68U3OR.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-ClQz84wO.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-ChalUmLn.js','/assets/separator-x1KIG2rC.js','/assets/createLucideIcon-BXGk8jjN.js','/assets/input-BcVCSBdC.js','/assets/sheet-D80ij1qS.js','/assets/components-CMNBfC3p.js','/assets/component-DEHOnlZR.js','/assets/index-_mLdmCCM.js','/assets/index-FNTIZCDm.js'],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-Mt4z2hxj.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/sheet-D80ij1qS.js','/assets/createLucideIcon-BXGk8jjN.js','/assets/components-CMNBfC3p.js','/assets/arrow-right-CoC8XLXC.js','/assets/index-FNTIZCDm.js','/assets/react-icons.esm-ChalUmLn.js','/assets/component-DEHOnlZR.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-C-zbbgS5.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-0r52sjxv.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/components-CMNBfC3p.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-a8ZNTKKc.js','imports':['/assets/jsx-runtime-D2HyDbKh.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-BHyvjCyZ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/scroll-area-BC_B4EcH.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-ChalUmLn.js','/assets/component-DEHOnlZR.js','/assets/createLucideIcon-BXGk8jjN.js','/assets/separator-x1KIG2rC.js','/assets/submit-field-CPo-87WM.js','/assets/index-_mLdmCCM.js','/assets/components-CMNBfC3p.js','/assets/info-DLTSnBP6.js','/assets/input-BcVCSBdC.js','/assets/arrow-right-CoC8XLXC.js','/assets/index-FNTIZCDm.js','/assets/loader-circle-BQ68U3OR.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-a1998a8a.js','version':'a1998a8a'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-Cx3XEqwq.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-IPy85Wia.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-Cx3XEqwq.js','/assets/use-toast-DYrZrp-R.js','/assets/react-icons.esm-hBWIY6w_.js','/assets/index-8C1TgZ4U.js','/assets/index-JgV2FEYP.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-DM10uIfx.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-BCcO0777.js','/assets/alert-CxUHx0Tb.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-Cx3XEqwq.js','/assets/index-Pb-3CMtO.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-CT_mJW_w.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/label-BBkDCILT.js','/assets/react-icons.esm-hBWIY6w_.js','/assets/components-Cx3XEqwq.js','/assets/index-YzuiAZmv.js','/assets/index-Pb-3CMtO.js','/assets/index-JgV2FEYP.js','/assets/component-CKYenNSE.js','/assets/separator-CETVbfee.js','/assets/index-CVnwZdSA.js','/assets/index-C7IV_NTj.js','/assets/input-BcVCSBdC.js','/assets/submit-field-Cn7LkGx8.js','/assets/use-toast-DYrZrp-R.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/loader-circle-CK3z_Y6g.js'],'css':[]},'routes/_auth.auth.callback':{'id':'routes/_auth.auth.callback','parentId':'routes/_auth','path':'auth/callback','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.callback-B0xOLG2O.js','imports':['/assets/jsx-runtime-D2HyDbKh.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BxBga-60.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-Cvyepwgn.js','/assets/react-icons.esm-hBWIY6w_.js','/assets/index-C7IV_NTj.js','/assets/index-CVnwZdSA.js','/assets/components-Cx3XEqwq.js','/assets/index-8C1TgZ4U.js','/assets/submit-field-Cn7LkGx8.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/input-BcVCSBdC.js','/assets/label-BBkDCILT.js','/assets/button-CTur9RYT.js','/assets/loader-circle-CK3z_Y6g.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-_qb-MXjS.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/label-BBkDCILT.js','/assets/components-Cx3XEqwq.js','/assets/loader-circle-CK3z_Y6g.js','/assets/index-8C1TgZ4U.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CibyJ5LN.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-Cvyepwgn.js','/assets/alert-CxUHx0Tb.js','/assets/index-8C1TgZ4U.js','/assets/info-CQEYT1jC.js','/assets/submit-field-Cn7LkGx8.js','/assets/components-Cx3XEqwq.js','/assets/input-BcVCSBdC.js','/assets/label-BBkDCILT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/button-CTur9RYT.js','/assets/loader-circle-CK3z_Y6g.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-lIHGo3Z1.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-hBWIY6w_.js','/assets/dialog-DnVHnt_0.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/separator-CETVbfee.js','/assets/sheet-DH8RCK9M.js','/assets/components-Cx3XEqwq.js','/assets/index-JgV2FEYP.js','/assets/component-CKYenNSE.js','/assets/index-CVnwZdSA.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/index-BpHXOj71.js'],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-83UNcRav.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/sheet-DH8RCK9M.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/components-Cx3XEqwq.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-BpHXOj71.js','/assets/react-icons.esm-hBWIY6w_.js','/assets/component-CKYenNSE.js','/assets/index-JgV2FEYP.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-C-zbbgS5.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-Ctdmoh59.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/components-Cx3XEqwq.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-BeN6l45y.js','imports':[],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-YKZNtI_q.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-BCcO0777.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-hBWIY6w_.js','/assets/index-YzuiAZmv.js','/assets/index-Pb-3CMtO.js','/assets/component-CKYenNSE.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/separator-CETVbfee.js','/assets/submit-field-Cn7LkGx8.js','/assets/components-Cx3XEqwq.js','/assets/index-CVnwZdSA.js','/assets/loader-circle-CK3z_Y6g.js','/assets/info-CQEYT1jC.js','/assets/index-JgV2FEYP.js','/assets/input-BcVCSBdC.js','/assets/dialog-DnVHnt_0.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-BpHXOj71.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-8327e489.js','version':'8327e489'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
@@ -4902,13 +5493,21 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           caseSensitive: undefined,
           module: route3
         },
+  "routes/_auth.auth.consent": {
+          id: "routes/_auth.auth.consent",
+          parentId: "routes/_auth",
+          path: "auth/consent",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route4
+        },
   "routes/_auth.auth.login": {
           id: "routes/_auth.auth.login",
           parentId: "routes/_auth",
           path: "auth/login",
           index: undefined,
           caseSensitive: undefined,
-          module: route4
+          module: route5
         },
   "routes/_auth.auth.reset": {
           id: "routes/_auth.auth.reset",
@@ -4916,7 +5515,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "auth/reset",
           index: undefined,
           caseSensitive: undefined,
-          module: route5
+          module: route6
         },
   "routes/outcomes.$action": {
           id: "routes/outcomes.$action",
@@ -4924,7 +5523,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "outcomes/:action",
           index: undefined,
           caseSensitive: undefined,
-          module: route6
+          module: route7
         },
   "routes/app.settings": {
           id: "routes/app.settings",
@@ -4932,7 +5531,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route7
+          module: route8
         },
   "routes/_index": {
           id: "routes/_index",
@@ -4940,7 +5539,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: undefined,
           index: true,
           caseSensitive: undefined,
-          module: route8
+          module: route9
         },
   "routes/logout": {
           id: "routes/logout",
@@ -4948,7 +5547,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "logout",
           index: undefined,
           caseSensitive: undefined,
-          module: route9
+          module: route10
         },
   "routes/mobile": {
           id: "routes/mobile",
@@ -4956,7 +5555,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "mobile",
           index: undefined,
           caseSensitive: undefined,
-          module: route10
+          module: route11
         },
   "routes/_auth": {
           id: "routes/_auth",
@@ -4964,7 +5563,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: undefined,
           index: undefined,
           caseSensitive: undefined,
-          module: route11
+          module: route12
         },
   "routes/files": {
           id: "routes/files",
@@ -4972,7 +5571,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "files",
           index: undefined,
           caseSensitive: undefined,
-          module: route12
+          module: route13
         },
   "routes/score": {
           id: "routes/score",
@@ -4980,7 +5579,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "score",
           index: undefined,
           caseSensitive: undefined,
-          module: route13
+          module: route14
         },
   "routes/test": {
           id: "routes/test",
@@ -4988,7 +5587,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "test",
           index: undefined,
           caseSensitive: undefined,
-          module: route14
+          module: route15
         },
   "routes/app": {
           id: "routes/app",
@@ -4996,7 +5595,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "app",
           index: undefined,
           caseSensitive: undefined,
-          module: route15
+          module: route16
         },
   "routes/sse": {
           id: "routes/sse",
@@ -5004,7 +5603,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DXvNZ96h.js','im
           path: "sse",
           index: undefined,
           caseSensitive: undefined,
-          module: route16
+          module: route17
         }
       };
 

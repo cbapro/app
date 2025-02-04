@@ -1,0 +1,1 @@
+import{j as a}from"./jsx-runtime-D2HyDbKh.js";import{I as n}from"./input-BcVCSBdC.js";import{L as i}from"./label-BBkDCILT.js";function m({setValue:s,error:t,...e}){return a.jsxs("div",{className:"grid gap-1.5",children:[e?.label&&a.jsx(i,{children:e?.label}),a.jsx(n,{...e,...s&&{onValueChange:s}}),t&&a.jsx("span",{className:"text-xs text-red-500",children:t})]})}export{m as I};
