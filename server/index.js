@@ -31,6 +31,7 @@ import { Authenticator } from 'remix-auth';
 import { FormStrategy } from 'remix-auth-form';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import nodemailer from 'nodemailer';
 import OpenAI from 'openai';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
@@ -153,7 +154,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-CczRYIOm.css";
+const stylesheet = "/assets/tailwind-DCOVYK22.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -414,6 +415,7 @@ function App$1() {
     ] }),
     /* @__PURE__ */ jsxs("body", { children: [
       /* @__PURE__ */ jsx(Outlet, {}),
+      /* @__PURE__ */ jsx("script", { src: "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" }),
       /* @__PURE__ */ jsx(Toaster, {}),
       /* @__PURE__ */ jsx(Scripts, {})
     ] })
@@ -682,6 +684,7 @@ const sessionStorage = createCookieSessionStorage({
     httpOnly: true,
     path: "/",
     sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30, // 30 days
     secrets: [process.env.SESSION_SECRET],
     secure: process.env.NODE_ENV === "production",
   },
@@ -771,11 +774,15 @@ const {
   PARSE_VERIFY_EMAIL_SUCCESS: verifyEmailSuccess,
 
   APP_ADDITIONAL_MESSAGES: additionalMessages,
+  APP_SCORE_REQUEST_LIMIT: scoreRequestLimit,
+  APP_SCORE_REQUEST_OUTCOME_LIMIT: scoreRequestOutcomeLimit,
 } = process.env;
 
 const vars = {
   app: {
     additionalMessages,
+    scoreRequestLimit,
+    scoreRequestOutcomeLimit,
   },
   admin: {
     key: process.env.ADMIN_KEY,
@@ -811,6 +818,7 @@ const vars = {
     username: process.env.EMAIL_USERNAME,
     password: process.env.EMAIL_PASSWORD,
     from: process.env.EMAIL_FROM,
+    recipient: process.env.EMAIL_RECIPIENT,
   },
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
@@ -854,7 +862,7 @@ async function update$2(args) {
   }
 }
 
-async function loader$b({ request }) {
+async function loader$d({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const profile = (await read$3(user))?.toJSON();
@@ -888,7 +896,7 @@ function Overview() {
 const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Overview,
-  loader: loader$b
+  loader: loader$d
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const labelVariants = cva(
@@ -1116,7 +1124,7 @@ function SubmitField({
     {
       type,
       variant,
-      className: cn("relative", loader && "!pl-8", className),
+      className: cn("relative shadow-none", loader && "!pl-8", className),
       disabled,
       ...props,
       children: [
@@ -1294,7 +1302,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
 ));
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
-async function loader$a({ request }) {
+async function loader$c({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let profile = session.get("profile");
   if (profile) return { profile };
@@ -1314,7 +1322,7 @@ async function loader$a({ request }) {
   }
   return null;
 }
-async function action$7({ request }) {
+async function action$8({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   session.get("user");
   const formData = await request.formData();
@@ -1593,9 +1601,9 @@ const associations = [
 
 const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$7,
+  action: action$8,
   default: ProfilePage,
-  loader: loader$a
+  loader: loader$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Callback() {
@@ -1607,19 +1615,19 @@ const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   default: Callback
 }, Symbol.toStringTag, { value: 'Module' }));
 
-function InputField({ setValue, error, ...props }) {
+function InputField({ ...props }) {
   return /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5", children: [
     props?.label && /* @__PURE__ */ jsx(Label, { children: props?.label }),
     /* @__PURE__ */ jsx(
       Input,
       {
         ...props,
-        ...setValue && {
-          onValueChange: setValue
+        ...props?.setValue && {
+          onValueChange: props.setValue
         }
       }
     ),
-    error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: error })
+    props?.error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: props.error })
   ] });
 }
 
@@ -1731,7 +1739,7 @@ const schema = Joi.object({
   privacyPolicy: Joi.string().required(),
   appRules: Joi.string().required()
 });
-async function loader$9({ request }) {
+async function loader$b({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   let setting = session.get("setting");
@@ -1746,7 +1754,7 @@ async function loader$9({ request }) {
     });
   return null;
 }
-async function action$6({ request }) {
+async function action$7({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   console.log("auth.consent.action", user.objectId);
@@ -1853,9 +1861,9 @@ function Consent() {
 
 const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$6,
+  action: action$7,
   default: Consent,
-  loader: loader$9
+  loader: loader$b
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function isMobileServer(request) {
@@ -1868,6 +1876,34 @@ function isMobileServer(request) {
       ua.substr(0, 4)
     );
   return is ? true : false;
+}
+
+const { TURNSTILE_SECRET_KEY: secretKey, TURNSTILE_VERIFY_URL: verifyUrl } =
+  process.env;
+
+async function challenge({ form }) {
+  const token = form.get("cf-turnstile-response");
+
+  try {
+    const res = await fetch(verifyUrl, {
+      method: "POST",
+      body: JSON.stringify({
+        secret: secretKey,
+        response: token,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await res.json();
+    // console.log(token, data);
+
+    if (data.success) return true;
+    return { error: "Turnstile verification failed" };
+  } catch (error) {
+    console.log("turnstile.sync", error?.message);
+    return { error: "Error verifying Turnstile token" };
+  }
 }
 
 async function remember(email) {
@@ -1931,12 +1967,57 @@ authenticator.use(
     let email = form.get("email");
     let password = form.get("password");
 
+    const challenge$1 = await challenge({ form });
+    if (challenge$1.error)
+      return { error: challenge$1.error, errorType: "challenge" };
+
     return await login(email, password);
   }),
   "user-pass"
 );
 
-async function loader$8({ request }) {
+let isHydrating = true;
+function Turnstile({ onChange, error }) {
+  const [isHydrated, setIsHydrated] = useState(!isHydrating);
+  const [token, setToken] = useState(null);
+  const ref = useRef();
+  useEffect(() => {
+    isHydrating = false;
+    setIsHydrated(true);
+  }, []);
+  useEffect(() => {
+    if (ref.current) {
+      turnstile.remove();
+      turnstile.render(ref.current, {
+        sitekey: "0x4AAAAAAA8rbrKZhit0xcFU",
+        size: "flexible",
+        theme: "light",
+        callback: function(token2) {
+          setToken(token2);
+          onChange?.({ target: { value: token2 } });
+        },
+        "error-callback": function(args) {
+          console.log(args);
+        }
+      });
+    }
+  }, [ref.current]);
+  useEffect(() => {
+    if (error) turnstile.reset();
+  }, [error]);
+  return isHydrated ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("div", { ref }),
+    !token && /* @__PURE__ */ jsx(
+      "input",
+      {
+        required: true,
+        className: "pointer-events-none w-full h-[1px] focus:outline-none text-[0px] text-white -!my-4"
+      }
+    )
+  ] }) : null;
+}
+
+async function loader$a({ request }) {
   console.log("auth:login:loader");
   if (isMobileServer(request)) return redirect$2("/mobile");
   let session = await getSession(request.headers.get("cookie"));
@@ -1944,7 +2025,7 @@ async function loader$8({ request }) {
   if (user) throw redirect$2("/app");
   return null;
 }
-async function action$5({ request }) {
+async function action$6({ request }) {
   console.log("auth:login:action");
   const session = await getSession(request.headers.get("cookie"));
   let user;
@@ -1956,7 +2037,7 @@ async function action$5({ request }) {
     }
     throw error;
   }
-  if (user?.error) return { error: user.error };
+  if (user?.error) return { error: user.error, errorType: user?.errorType };
   session.set("user", user);
   throw redirect$2("/auth/consent", {
     headers: { "Set-Cookie": await commitSession(session) }
@@ -1965,7 +2046,7 @@ async function action$5({ request }) {
 function Login() {
   const actionData = useActionData();
   const { state } = useNavigation();
-  return /* @__PURE__ */ jsx(Form$1, { method: "post", children: /* @__PURE__ */ jsxs("div", { className: "grid gap-4", children: [
+  return /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "grid gap-4", children: [
     /* @__PURE__ */ jsxs("div", { className: "grid gap-2", children: [
       /* @__PURE__ */ jsx(Label, { htmlFor: "email", children: "Email" }),
       /* @__PURE__ */ jsx(Input, { name: "email", type: "email", required: true })
@@ -1984,7 +2065,13 @@ function Login() {
       ] }),
       /* @__PURE__ */ jsx(Input, { name: "password", type: "password", required: true })
     ] }),
-    /* @__PURE__ */ jsxs("div", { className: "mt-8", children: [
+    /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: actionData?.errorType === "challenge" ? actionData.error : null
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { children: [
       /* @__PURE__ */ jsxs(
         Button,
         {
@@ -2012,14 +2099,14 @@ function Login() {
         ]
       }
     )
-  ] }) });
+  ] });
 }
 
 const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$5,
+  action: action$6,
   default: Login,
-  loader: loader$8
+  loader: loader$a
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function AlertField({ message, variant }) {
@@ -2037,7 +2124,7 @@ const variants = {
 
 const emailSchema = Joi.string().email().required().label("Email");
 const passwordSchema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
-async function loader$7({ request }) {
+async function loader$9({ request }) {
   const url = new URL(request.url);
   const link = url.searchParams.get("link");
   const token = url.searchParams.get("token");
@@ -2045,13 +2132,16 @@ async function loader$7({ request }) {
   if (link) return redirect$2(`/auth/reset?token=${token}&username=${username}`);
   return null;
 }
-async function action$4({ request }) {
+async function action$5({ request }) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   const username = url.searchParams.get("username");
   const form = await request.formData();
   const email = form.get("email");
   const password = form.get("password");
+  const challenge$1 = await challenge({ form });
+  if (challenge$1.error)
+    return { error: true, message: challenge$1.error, errorType: "challenge" };
   if (token) {
     if (!password)
       return {
@@ -2115,6 +2205,12 @@ function Reset() {
       }
     ),
     /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: adata?.errorType === "challenge" ? adata.message : null
+      }
+    ),
+    /* @__PURE__ */ jsx(
       SubmitField,
       {
         label: token ? "Reset password" : "Remember password",
@@ -2135,9 +2231,9 @@ function Reset() {
 
 const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$4,
+  action: action$5,
   default: Reset,
-  loader: loader$7
+  loader: loader$9
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Class$2 = "Outcome";
@@ -2179,10 +2275,10 @@ const flags$1 = {
   approved: "approved",
 };
 
-async function loader$6({ request }) {
+async function loader$8({ request }) {
   return redirect$2("/app");
 }
-async function action$3({ request, params }) {
+async function action$4({ request, params }) {
   console.log("outcomes.action", params.action);
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
@@ -2230,8 +2326,8 @@ const outcomeSchema = {
 
 const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$3,
-  loader: loader$6,
+  action: action$4,
+  loader: loader$8,
   outcomeSchema
 }, Symbol.toStringTag, { value: 'Module' }));
 
@@ -3138,13 +3234,232 @@ const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   default: Settings
 }, Symbol.toStringTag, { value: 'Module' }));
 
+const Textarea = React.forwardRef(({ className, ...props }, ref) => {
+  return /* @__PURE__ */ jsx(
+    "textarea",
+    {
+      className: cn(
+        "flex min-h-[60px] w-full rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:placeholder:text-zinc-400 dark:focus-visible:ring-zinc-300",
+        className
+      ),
+      ref,
+      ...props
+    }
+  );
+});
+Textarea.displayName = "Textarea";
+
+function TextareaField({
+  ...props
+}) {
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5", children: [
+    props?.label && /* @__PURE__ */ jsx(Label, { children: props?.label }),
+    /* @__PURE__ */ jsx(
+      Textarea,
+      {
+        ...props,
+        ...props?.setValue && {
+          onValueChange: props?.setValue
+        }
+      }
+    ),
+    props?.error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: props.error })
+  ] });
+}
+
+function module (options) {
+  var transporter = nodemailer.createTransport({
+    service: options.service,
+    auth: {
+      user: options.email,
+      pass: options.password,
+    },
+  });
+
+  const sendMail = function (mail) {
+    console.log("sendMail");
+    return new Promise(function (resolve, reject) {
+      var mailOptions = {
+        from: options.from,
+        sender: options.sender,
+        to: [mail.to],
+        subject: mail.subject,
+        text: mail.text,
+        html: mail.html,
+        attachments: mail.attachments,
+      };
+
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error);
+          reject(error);
+        } else {
+          console.log("Message sent: " + info.response);
+          resolve(info);
+        }
+      });
+    });
+  };
+
+  return {
+    sendMail,
+  };
+}
+
+const { service, username: email, password, from } = vars.email;
+
+const options = {
+  service,
+  email,
+  password,
+};
+
+const Email = async ({ payload }) =>
+  module(options).sendMail({
+    from,
+    sender: from,
+    ...payload,
+  });
+
+async function loader$7() {
+  return null;
+}
+async function action$3({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  if (!user) redirect$2("/app");
+  let profile = session.get("profile");
+  const formData = await request.formData();
+  const type = formData.get("type");
+  const subject = formData.get("subject");
+  const message = formData.get("message");
+  if (!profile) profile = (await read$3(user))?.toJSON();
+  if (profile) {
+    delete profile.objectId;
+    delete profile.user;
+    profile.user = {
+      email: user?.email
+    };
+  }
+  console.log({
+    type,
+    subject,
+    message,
+    profile
+  });
+  const payload = {
+    from: "notify@cbapro.ca",
+    to: "info@competencybasedassessment.ca",
+    subject: `${types$1[type].title}: ${subject}`,
+    text: `${message} 
+
+ ${JSON.stringify(profile)}`
+  };
+  try {
+    await Email({ payload });
+    console.log("email has been sent!");
+    return {
+      message: "Your message sent."
+    };
+  } catch (error) {
+    console.log("app.contact.email", error?.message);
+    return {
+      error: true,
+      message: error?.message
+    };
+  }
+  return null;
+}
+function Contact() {
+  const [open, setOpen] = useState(true);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { state } = useNavigation();
+  const ref = useRef();
+  const adata = useActionData();
+  const type = searchParams.get("type");
+  if (!type || !types$1[type]) return null;
+  useEffect(() => {
+    if (state === "loading") ref?.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsx(Dialog, { open, onOpenChange: (open2) => !open2 && navigate("/app"), children: /* @__PURE__ */ jsxs(
+    DialogContent,
+    {
+      className: cn("overflow-hidden", types$1[type].className),
+      children: [
+        /* @__PURE__ */ jsx(DialogTitle, { children: types$1[type].title }),
+        /* @__PURE__ */ jsx(DialogDescription, { children: types$1[type].description }),
+        /* @__PURE__ */ jsxs(Form$1, { ref, method: "post", className: "space-y-4", children: [
+          /* @__PURE__ */ jsx(InputField, { name: "subject", label: "Subject", required: true }),
+          /* @__PURE__ */ jsx(TextareaField, { name: "message", label: "Message", required: true }),
+          /* @__PURE__ */ jsx(
+            SubmitField,
+            {
+              name: "type",
+              value: type,
+              label: "Send Issue",
+              loader: state === "submitting" || state === "loading"
+            }
+          )
+        ] }),
+        adata && /* @__PURE__ */ jsx("span", { className: adata.error ? "text-red-500" : "text-green-500", children: adata.message }),
+        type === types$1.reviewer.name && /* @__PURE__ */ jsx(Reviewer, {})
+      ]
+    }
+  ) });
+}
+const types$1 = {
+  help: {
+    name: "help",
+    label: "Help",
+    title: "Request for help",
+    description: "",
+    className: ""
+  },
+  reviewer: {
+    name: "reviewer",
+    label: "Reviewer",
+    title: "Requests for reviewer",
+    description: "",
+    className: "md:max-w-[64rem]"
+  }
+};
+function Reviewer() {
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-2 text-sm text-zinc-500", children: [
+    /* @__PURE__ */ jsx("strong", { children: "Professional Engineer (P.Eng.)" }),
+    /* @__PURE__ */ jsx("p", { children: "CBA Review Service Get Expert Feedback Before You Submit Navigating the Competency-Based Assessment (CBA) process for your P.Eng. licensure can be challenging. Ensuring your submission effectively demonstrates your engineering competencies is crucial for success. Our P.Eng. Reviewer Service provides you with expert feedback from a licensed Professional Engineer in your discipline, helping you refine and strengthen your CBA before submission." }),
+    /* @__PURE__ */ jsx("strong", { children: "Why Choose Our P.Eng. Reviewer Service?" }),
+    /* @__PURE__ */ jsxs("ul", { className: "list-disc px-4 text-xs", children: [
+      /* @__PURE__ */ jsx("li", { children: "Discipline-Specific Review – We match you with a P.Eng. in your field to ensure a relevant and informed evaluation of your competencies." }),
+      /* @__PURE__ */ jsx("li", { children: "Comprehensive QA/QC – Our reviewers assess your submission for clarity, completeness, and alignment with regulatory expectations." }),
+      /* @__PURE__ */ jsx("li", { children: "Detailed Feedback & Recommendations – Receive constructive comments and actionable suggestions to enhance your CBA responses." }),
+      /* @__PURE__ */ jsx("li", { children: "Increased Success Rate – A well-reviewed submission reduces the risk of deficiencies or requests for additional information from the regulator." })
+    ] }),
+    /* @__PURE__ */ jsx("strong", { children: "How It Works" }),
+    /* @__PURE__ */ jsx("p", { children: "Submit Your CBA Draft – Send us your competency write-ups for review. Assigned P.Eng. Reviewer – We match you with an experienced P.Eng. in your discipline. Detailed Review & Feedback – Your reviewer provides comments, suggestions, and areas for improvement. Refine & Finalize – Use the feedback to strengthen your submission before applying." }),
+    /* @__PURE__ */ jsx("strong", { children: "Who Can Benefit?" }),
+    /* @__PURE__ */ jsxs("ul", { className: "list-disc px-4 text-xs", children: [
+      /* @__PURE__ */ jsx("li", { children: "Engineers preparing their P.Eng. CBA submission" }),
+      /* @__PURE__ */ jsx("li", { children: "Those seeking a second opinion from an industry expert" }),
+      /* @__PURE__ */ jsx("li", { children: "Applicants aiming to avoid common pitfalls and improve their chances of success" })
+    ] })
+  ] });
+}
+
+const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$3,
+  default: Contact,
+  loader: loader$7
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const navigation = [
   { name: "Features", href: "#" },
   { name: "Guideline", href: "#" },
   { name: "Support", href: "#" },
   { name: "Company", href: "#" }
 ];
-async function loader$5({ request }) {
+async function loader$6({ request }) {
   return redirect$2("/app");
 }
 function Index() {
@@ -3267,13 +3582,13 @@ function Index() {
   ] });
 }
 
-const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Index,
-  loader: loader$5
+  loader: loader$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const loader$4 = async ({ request }) => {
+const loader$5 = async ({ request }) => {
   const session = await getSession(request.headers.get("Cookie"));
   return redirect$2("/auth/login", {
     headers: {
@@ -3282,9 +3597,9 @@ const loader$4 = async ({ request }) => {
   });
 };
 
-const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  loader: loader$4
+  loader: loader$5
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Mobile() {
@@ -3296,7 +3611,7 @@ function Mobile() {
   ] });
 }
 
-const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Mobile
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -3310,7 +3625,7 @@ function Auth() {
     /* @__PURE__ */ jsx("div", { className: "hidden bg-muted lg:block", children: /* @__PURE__ */ jsx(
       "img",
       {
-        src: "https://www.jazzhr.com/wp-content/uploads/2020/05/diversity-training-in-the-workplace.jpg",
+        src: "/auth-bg.jpg",
         alt: "Image",
         width: "1920",
         height: "1080",
@@ -3320,7 +3635,7 @@ function Auth() {
   ] });
 }
 
-const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Auth
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -3374,12 +3689,13 @@ const getOrCreateVectorStore = async (thread) => {
 
 const ClassName = "Thread";
 
-async function read$1(user, purpose = purposes.chat) {
+async function read$1({ user, purpose = purposes.chat, objectId }) {
   try {
     const query = new Parse.Query(ClassName);
-    purpose && query.equalTo("purpose", purpose);
     user && query.equalTo("user", user.objectId);
-    query.descending("createdAt");
+    !objectId && query.equalTo("purpose", purpose);
+    !objectId && query.descending("createdAt");
+    if (objectId) return await query.get(objectId, { useMasterKey: true });
     return await query.find({ useMasterKey: true });
   } catch (error) {
     console.log("thread.read", error.message);
@@ -3411,7 +3727,7 @@ const purposes = {
   score: "score",
 };
 
-async function loader$3() {
+async function loader$4() {
   console.log("files.loader");
   return redirect$2("/app");
 }
@@ -3437,10 +3753,10 @@ async function action$2({ request }) {
   });
 }
 
-const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$2,
-  loader: loader$3
+  loader: loader$4
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Class$1 = "Message";
@@ -3475,12 +3791,17 @@ const roles = {
 };
 
 async function updateUsage(user, thread, usage) {
+  const $thread = await read$1({ user, objectId: thread.objectId });
+  const threadUsage = $thread.get("usage");
+  // console.log("usage.updateUsage:thread.usage", threadUsage);
+
   await update({
     objectId: thread.objectId,
     usage: {
-      input: (thread.usage?.input ?? 0) + usage.input,
-      output: (thread.usage?.output ?? 0) + usage.output,
-      total: (thread.usage?.total ?? 0) + usage.total,
+      count: (threadUsage?.count ?? 0) + 1,
+      input: (threadUsage?.input ?? 0) + usage.input,
+      output: (threadUsage?.output ?? 0) + usage.output,
+      total: (threadUsage?.total ?? 0) + usage.total,
     },
   });
 
@@ -3490,6 +3811,7 @@ async function updateUsage(user, thread, usage) {
   await update$2({
     objectId: profile.id,
     usage: {
+      count: (profileUsage?.count ?? 0) + 1,
       input: (profileUsage?.input ?? 0) + usage.input,
       output: (profileUsage?.output ?? 0) + usage.output,
       total: (profileUsage?.total ?? 0) + usage.total,
@@ -3500,22 +3822,39 @@ async function updateUsage(user, thread, usage) {
 async function sync(request) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
-  const scoreThread = session.get("scoreThread");
+  // const scoreThread = session.get("scoreThread");
   const { competencyItem, outcome } = await request.json();
 
   if (!outcome) return null;
 
-  const ScoreThread = scoreThread ?? (await getScoreThread(user));
+  const outcomCount = outcome?.score?.count;
+  if (outcomCount && outcomCount >= Number(vars.app.scoreRequestOutcomeLimit))
+    return Response.json({
+      error: {
+        message: `Score request limit: ${vars.app.scoreRequestOutcomeLimit} times`,
+      },
+    });
 
-  console.log("score.sync.scoreThread", scoreThread, ScoreThread);
-  if (!ScoreThread) return null;
-  if (!scoreThread) session.set("scoreThread", ScoreThread);
+  // const ScoreThread = scoreThread ?? (await getScoreThread(user));
+  const scoreThread = await getScoreThread(user);
+
+  // console.log("score.sync.scoreThread", scoreThread, ScoreThread);
+  // if (!ScoreThread) return null;
+  // if (!scoreThread) session.set("scoreThread", ScoreThread);
+
+  const scoreCount = scoreThread?.usage?.count;
+  if (scoreCount && scoreCount >= Number(vars.app.scoreRequestLimit))
+    return Response.json({
+      error: {
+        message: `Score request limit: ${vars.app.scoreRequestLimit} times`,
+      },
+    });
 
   const score = await getScore({
     user,
     competencyItem,
     outcome,
-    scoreThread: ScoreThread,
+    scoreThread,
   });
   if (!score) return null;
 
@@ -3550,6 +3889,7 @@ async function getScore({ user, competencyItem, outcome, scoreThread }) {
     console.log("score.getScore.run", r.event);
     if (r.event === "thread.message.completed")
       score = {
+        count: outcome?.score?.count ? outcome.score.count + 1 : 1,
         result:
           Number(
             r.data.content[0].text.value
@@ -3587,7 +3927,7 @@ async function getScore({ user, competencyItem, outcome, scoreThread }) {
 
 async function getScoreThread(user) {
   const purpose = purposes.score;
-  const threads = await read$1(user, purpose);
+  const threads = await read$1({ user, purpose });
 
   console.log("score.getScoreThread.threads", threads.length);
   if (threads?.length)
@@ -3624,7 +3964,7 @@ async function getScoreThread(user) {
   return null;
 }
 
-async function loader$2() {
+async function loader$3() {
   return redirect$2("/app");
 }
 
@@ -3637,19 +3977,23 @@ async function action$1({ request }) {
   return await sync(request);
 }
 
-const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  action: action$1,
-  loader: loader$2
-}, Symbol.toStringTag, { value: 'Module' }));
-
-function Test() {
-  return "TEST";
-}
-
 const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: Test
+  action: action$1,
+  loader: loader$3
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$2() {
+  return redirect$2("/");
+}
+function Test() {
+  return /* @__PURE__ */ jsx("div", { className: "p-8", children: /* @__PURE__ */ jsx(Outlet, {}) });
+}
+
+const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: Test,
+  loader: loader$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function ChatProgress({ className, input = 0, outcomes }) {
@@ -3771,7 +4115,7 @@ function ChatIncome({ competencies, outcomes, getCompetency }) {
             "button",
             {
               className: cn(
-                "pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:text-primary/75 hover:border-primary/50 transition text-left",
+                "peer pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
                 getClassName(ci)
               ),
               onClick: () => onClick("send", cg, ci),
@@ -3789,7 +4133,7 @@ function ChatIncome({ competencies, outcomes, getCompetency }) {
             {
               variant: "default",
               size: "icon",
-              className: "absolute right-1 bottom-1 bg-primary hover:bg-primary/75 rounded-full w-6 h-6 text-xs",
+              className: "absolute right-1 bottom-1 bg-zinc-400 rounded-full w-6 h-6 text-xs peer-hover:scale-110 transition",
               onClick: () => onClick("run", cg, ci),
               children: /* @__PURE__ */ jsx(Play, { size: 4 })
             }
@@ -3803,32 +4147,17 @@ function ChatIncome({ competencies, outcomes, getCompetency }) {
 const flags = {
   idle: {
     title: "Idle",
-    className: "border-zinc-500"
+    className: "border-zinc-500 text-zinc-700 [&+button]:bg-zinc-500"
   },
   pending: {
     title: "Pending",
-    className: "border-blue-500"
+    className: "border-blue-500 text-blue-500 [&+button]:bg-blue-500"
   },
   approved: {
     title: "Approved",
-    className: "border-green-500"
+    className: "border-green-500 text-green-500 [&+button]:bg-green-500"
   }
 };
-
-const Textarea = React.forwardRef(({ className, ...props }, ref) => {
-  return /* @__PURE__ */ jsx(
-    "textarea",
-    {
-      className: cn(
-        "flex min-h-[60px] w-full rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:placeholder:text-zinc-400 dark:focus-visible:ring-zinc-300",
-        className
-      ),
-      ref,
-      ...props
-    }
-  );
-});
-Textarea.displayName = "Textarea";
 
 const badgeVariants = cva(
   "inline-flex items-center rounded-md border border-zinc-200 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 dark:border-zinc-800 dark:focus:ring-zinc-300",
@@ -4072,9 +4401,11 @@ const types = {
 function Score({ competencyItem, outcome, getOutcomes }) {
   const [loader, SetLoader] = useState(false);
   const [score, setScore] = useState(null);
+  const { toast } = useToast();
   useEffect(() => {
     setScore(
       outcome?.score ?? {
+        count: 0,
         result: 0,
         reason: null
       }
@@ -4086,7 +4417,14 @@ function Score({ competencyItem, outcome, getOutcomes }) {
       method: "POST",
       body: JSON.stringify({ competencyItem, outcome })
     });
-    if (res?.error) return;
+    const data = await res.json();
+    if (data?.error) {
+      toast({
+        title: data.error?.message ?? "Error!"
+      });
+      SetLoader(false);
+      return;
+    }
     await getOutcomes();
     SetLoader(false);
   }
@@ -4390,7 +4728,7 @@ function UserMenu() {
         Link,
         {
           to: "/app/settings/overview",
-          className: "w-full hover:text-red-500",
+          className: "w-full hover:text-primary",
           children: "Overview"
         }
       ) }),
@@ -4398,11 +4736,28 @@ function UserMenu() {
         Link,
         {
           to: "/app/settings/profile",
-          className: "w-full hover:text-red-500",
+          className: "w-full hover:text-primary",
           children: "Profile"
         }
       ) }),
-      /* @__PURE__ */ jsx(DropdownMenuItem, { children: /* @__PURE__ */ jsx(Link, { to: "/logout", className: "w-full hover:text-red-500", children: "Logout" }) })
+      /* @__PURE__ */ jsx(DropdownMenuItem, { onClick: () => setOpen(false), children: /* @__PURE__ */ jsx(
+        Link,
+        {
+          to: "/app/contact?type=help",
+          className: "w-full hover:text-primary",
+          children: "Request for Help"
+        }
+      ) }),
+      /* @__PURE__ */ jsx(DropdownMenuItem, { onClick: () => setOpen(false), children: /* @__PURE__ */ jsx(
+        Link,
+        {
+          to: "/app/contact?type=reviewer",
+          className: "w-full hover:text-primary",
+          children: "Request for Reviewer"
+        }
+      ) }),
+      /* @__PURE__ */ jsx(DropdownMenuSeparator, {}),
+      /* @__PURE__ */ jsx(DropdownMenuItem, { children: /* @__PURE__ */ jsx(Link, { to: "/logout", className: "w-full hover:text-orange-500", children: "Logout" }) })
     ] })
   ] });
 }
@@ -4410,7 +4765,6 @@ function UserMenu() {
 const ChatInput = forwardRef(function ChatInput({ getInput }, ref) {
   const [message, setMessage] = useState(null);
   const messageRef = useRef();
-  useSubmit();
   async function onClick(value) {
     messageRef.current.value = "";
     getInput({ status: true, req: message ?? value });
@@ -4694,6 +5048,7 @@ function ChatOutput({ messages, run, setRun }) {
       eventSource.close();
     });
     eventSource.addEventListener("error", (event) => {
+      setLoading(false);
       console.log({ event });
       eventSource.close();
     });
@@ -4841,7 +5196,7 @@ async function init(session) {
     return { thread, file };
   }
 
-  const threads = await read$1(user);
+  const threads = await read$1({ user });
   console.log("chat.init", "all threads", threads.length);
 
   if (threads.length === 0) {
@@ -5231,12 +5586,6 @@ function App() {
       await getOutcomes();
     }
     setOutcome(outcome2);
-    console.log({
-      competencyGroup: cg,
-      competencyItem: ci,
-      outcomes,
-      outcome: outcome2
-    });
   }
   async function getInput({ status, req }) {
     setRun({ status, req });
@@ -5327,7 +5676,7 @@ function App() {
   ] });
 }
 
-const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action,
   default: App,
@@ -5436,15 +5785,16 @@ async function loader({ request }) {
       run();
     });
   }
-  return null;
+
+  return Response.json({});
 }
 
-const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-Cx3XEqwq.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-cDECEOt4.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-Cx3XEqwq.js','/assets/use-toast-DYrZrp-R.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/index-8C1TgZ4U.js','/assets/index-vhwopU7u.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-DM10uIfx.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-BCcO0777.js','/assets/alert-CxUHx0Tb.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-Cx3XEqwq.js','/assets/index-Pb-3CMtO.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-pzb-5bUT.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/label-BBkDCILT.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/components-Cx3XEqwq.js','/assets/index-BZ1eTWhl.js','/assets/index-Pb-3CMtO.js','/assets/index-vhwopU7u.js','/assets/component-Bc1iMdBY.js','/assets/separator-CETVbfee.js','/assets/index-CVU07iFU.js','/assets/index-BqOfbf4Q.js','/assets/input-BcVCSBdC.js','/assets/submit-field-Cn7LkGx8.js','/assets/use-toast-DYrZrp-R.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/loader-circle-CK3z_Y6g.js'],'css':[]},'routes/_auth.auth.callback':{'id':'routes/_auth.auth.callback','parentId':'routes/_auth','path':'auth/callback','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.callback-B0xOLG2O.js','imports':['/assets/jsx-runtime-D2HyDbKh.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BdU19ZJZ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-Cvyepwgn.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/index-BqOfbf4Q.js','/assets/index-CVU07iFU.js','/assets/components-Cx3XEqwq.js','/assets/index-8C1TgZ4U.js','/assets/submit-field-Cn7LkGx8.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/input-BcVCSBdC.js','/assets/label-BBkDCILT.js','/assets/button-CTur9RYT.js','/assets/loader-circle-CK3z_Y6g.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-_qb-MXjS.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/label-BBkDCILT.js','/assets/components-Cx3XEqwq.js','/assets/loader-circle-CK3z_Y6g.js','/assets/index-8C1TgZ4U.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CibyJ5LN.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-Cvyepwgn.js','/assets/alert-CxUHx0Tb.js','/assets/index-8C1TgZ4U.js','/assets/info-CQEYT1jC.js','/assets/submit-field-Cn7LkGx8.js','/assets/components-Cx3XEqwq.js','/assets/input-BcVCSBdC.js','/assets/label-BBkDCILT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/button-CTur9RYT.js','/assets/loader-circle-CK3z_Y6g.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-DCucU6HC.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/dialog-CLKKvV9l.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/separator-CETVbfee.js','/assets/sheet-BMMECLf9.js','/assets/components-Cx3XEqwq.js','/assets/index-vhwopU7u.js','/assets/component-Bc1iMdBY.js','/assets/index-CVU07iFU.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/index-6aKNSpMR.js'],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-CkbRZsuI.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/sheet-BMMECLf9.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/components-Cx3XEqwq.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-6aKNSpMR.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/component-Bc1iMdBY.js','/assets/index-vhwopU7u.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-C-zbbgS5.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-Ctdmoh59.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/components-Cx3XEqwq.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-BeN6l45y.js','imports':[],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-p9FVBW__.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-BCcO0777.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/index-BZ1eTWhl.js','/assets/index-Pb-3CMtO.js','/assets/component-Bc1iMdBY.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/separator-CETVbfee.js','/assets/submit-field-Cn7LkGx8.js','/assets/components-Cx3XEqwq.js','/assets/index-CVU07iFU.js','/assets/loader-circle-CK3z_Y6g.js','/assets/info-CQEYT1jC.js','/assets/index-vhwopU7u.js','/assets/input-BcVCSBdC.js','/assets/dialog-CLKKvV9l.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-6aKNSpMR.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-35dc5041.js','version':'35dc5041'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-CPX-Bud2.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-DkF9kbSH.js','/assets/index-uMwVO9RL.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-Bp42O99U.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-DkF9kbSH.js','/assets/index-uMwVO9RL.js','/assets/use-toast-DYrZrp-R.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/index-8C1TgZ4U.js','/assets/index-vhwopU7u.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-BiHtEP9J.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-CXT1daZi.js','/assets/alert-CxUHx0Tb.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-DkF9kbSH.js','/assets/index-D568rBjH.js','/assets/index-uMwVO9RL.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-DkNCHY6H.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/label-ChaUfWOz.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/components-DkF9kbSH.js','/assets/index-CHq8Q7O-.js','/assets/index-D568rBjH.js','/assets/index-vhwopU7u.js','/assets/component-Bc1iMdBY.js','/assets/separator-Re_kLm1u.js','/assets/index-CVU07iFU.js','/assets/index-BqOfbf4Q.js','/assets/input-BcVCSBdC.js','/assets/submit-field-QqmMDyG3.js','/assets/use-toast-DYrZrp-R.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/index-uMwVO9RL.js','/assets/loader-circle-CK3z_Y6g.js'],'css':[]},'routes/_auth.auth.callback':{'id':'routes/_auth.auth.callback','parentId':'routes/_auth','path':'auth/callback','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.callback-B0xOLG2O.js','imports':['/assets/jsx-runtime-D2HyDbKh.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-DdnrPLCD.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-DCKUkg58.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/index-BqOfbf4Q.js','/assets/index-CVU07iFU.js','/assets/components-DkF9kbSH.js','/assets/index-8C1TgZ4U.js','/assets/submit-field-QqmMDyG3.js','/assets/index-uMwVO9RL.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/input-BcVCSBdC.js','/assets/label-ChaUfWOz.js','/assets/button-CTur9RYT.js','/assets/loader-circle-CK3z_Y6g.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-CKuMtNaQ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/label-ChaUfWOz.js','/assets/turnstile-BrDT1zVU.js','/assets/components-DkF9kbSH.js','/assets/index-uMwVO9RL.js','/assets/loader-circle-CK3z_Y6g.js','/assets/index-8C1TgZ4U.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-DuLctdce.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-DCKUkg58.js','/assets/alert-CxUHx0Tb.js','/assets/index-8C1TgZ4U.js','/assets/info-CQEYT1jC.js','/assets/submit-field-QqmMDyG3.js','/assets/turnstile-BrDT1zVU.js','/assets/components-DkF9kbSH.js','/assets/index-uMwVO9RL.js','/assets/input-BcVCSBdC.js','/assets/label-ChaUfWOz.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/button-CTur9RYT.js','/assets/loader-circle-CK3z_Y6g.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-DPRRp-AZ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/dialog-BqkRBpDz.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/separator-Re_kLm1u.js','/assets/sheet-C3aHNP4p.js','/assets/components-DkF9kbSH.js','/assets/index-vhwopU7u.js','/assets/component-Bc1iMdBY.js','/assets/index-CVU07iFU.js','/assets/index-uMwVO9RL.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/index-B4k-Bx2r.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-PPClYZcq.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/dialog-BqkRBpDz.js','/assets/input-DCKUkg58.js','/assets/label-ChaUfWOz.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-QqmMDyG3.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/index-uMwVO9RL.js','/assets/components-DkF9kbSH.js','/assets/index-B4k-Bx2r.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/component-Bc1iMdBY.js','/assets/index-vhwopU7u.js','/assets/input-BcVCSBdC.js','/assets/loader-circle-CK3z_Y6g.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-B_0_mduY.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/sheet-C3aHNP4p.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/components-DkF9kbSH.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-B4k-Bx2r.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/component-Bc1iMdBY.js','/assets/index-vhwopU7u.js','/assets/index-8C1TgZ4U.js','/assets/index-uMwVO9RL.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-C-zbbgS5.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-C2ekSTH6.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/components-DkF9kbSH.js','/assets/index-uMwVO9RL.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-AVG9l5pb.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-uMwVO9RL.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-BYDNqoht.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-CXT1daZi.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-D7QYvs1O.js','/assets/index-CHq8Q7O-.js','/assets/index-D568rBjH.js','/assets/component-Bc1iMdBY.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/separator-Re_kLm1u.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-QqmMDyG3.js','/assets/components-DkF9kbSH.js','/assets/index-CVU07iFU.js','/assets/use-toast-DYrZrp-R.js','/assets/loader-circle-CK3z_Y6g.js','/assets/info-CQEYT1jC.js','/assets/index-vhwopU7u.js','/assets/input-BcVCSBdC.js','/assets/dialog-BqkRBpDz.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-uMwVO9RL.js','/assets/index-B4k-Bx2r.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-76d8ed72.js','version':'76d8ed72'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
@@ -5530,13 +5880,21 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','im
           caseSensitive: undefined,
           module: route8
         },
+  "routes/app.contact": {
+          id: "routes/app.contact",
+          parentId: "routes/app",
+          path: "contact",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route9
+        },
   "routes/_index": {
           id: "routes/_index",
           parentId: "root",
           path: undefined,
           index: true,
           caseSensitive: undefined,
-          module: route9
+          module: route10
         },
   "routes/logout": {
           id: "routes/logout",
@@ -5544,7 +5902,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','im
           path: "logout",
           index: undefined,
           caseSensitive: undefined,
-          module: route10
+          module: route11
         },
   "routes/mobile": {
           id: "routes/mobile",
@@ -5552,7 +5910,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','im
           path: "mobile",
           index: undefined,
           caseSensitive: undefined,
-          module: route11
+          module: route12
         },
   "routes/_auth": {
           id: "routes/_auth",
@@ -5560,7 +5918,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','im
           path: undefined,
           index: undefined,
           caseSensitive: undefined,
-          module: route12
+          module: route13
         },
   "routes/files": {
           id: "routes/files",
@@ -5568,7 +5926,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','im
           path: "files",
           index: undefined,
           caseSensitive: undefined,
-          module: route13
+          module: route14
         },
   "routes/score": {
           id: "routes/score",
@@ -5576,7 +5934,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','im
           path: "score",
           index: undefined,
           caseSensitive: undefined,
-          module: route14
+          module: route15
         },
   "routes/test": {
           id: "routes/test",
@@ -5584,7 +5942,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','im
           path: "test",
           index: undefined,
           caseSensitive: undefined,
-          module: route15
+          module: route16
         },
   "routes/app": {
           id: "routes/app",
@@ -5592,7 +5950,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','im
           path: "app",
           index: undefined,
           caseSensitive: undefined,
-          module: route16
+          module: route17
         },
   "routes/sse": {
           id: "routes/sse",
@@ -5600,7 +5958,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DkfALfCY.js','im
           path: "sse",
           index: undefined,
           caseSensitive: undefined,
-          module: route17
+          module: route18
         }
       };
 
