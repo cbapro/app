@@ -20,7 +20,7 @@ import { useFormContext, FormProvider, Controller, useForm } from 'react-hook-fo
 import Joi from 'joi';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, X, MousePointerClick, ChevronRight, ChevronDown, Play, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
+import { LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Play as Play$1, X, MousePointerClick, ChevronRight, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { format } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
@@ -153,7 +153,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-sEnv4NZy.css";
+const stylesheet = "/assets/tailwind-j5swn5--.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -861,7 +861,7 @@ async function update$2(args, sessionToken) {
   }
 }
 
-async function loader$d({ request }) {
+async function loader$c({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const profile = (await read$3(user))?.toJSON();
@@ -895,7 +895,7 @@ function Overview() {
 const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Overview,
-  loader: loader$d
+  loader: loader$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const labelVariants = cva(
@@ -1301,7 +1301,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
 ));
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
-async function loader$c({ request }) {
+async function loader$b({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let profile = session.get("profile");
   if (profile) return { profile };
@@ -1602,7 +1602,7 @@ const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$8,
   default: ProfilePage,
-  loader: loader$c
+  loader: loader$b
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Callback() {
@@ -1738,7 +1738,7 @@ const schema = Joi.object({
   privacyPolicy: Joi.string().required(),
   appRules: Joi.string().required()
 });
-async function loader$b({ request }) {
+async function loader$a({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   let setting = session.get("setting");
@@ -1862,7 +1862,7 @@ const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$7,
   default: Consent,
-  loader: loader$b
+  loader: loader$a
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function isMobileServer(request) {
@@ -2029,7 +2029,7 @@ function Turnstile({ onChange, error }) {
   ] }) : null;
 }
 
-async function loader$a({ request }) {
+async function loader$9({ request }) {
   console.log("auth:login:loader");
   if (isMobileServer(request)) return redirect$2("/mobile");
   let session = await getSession(request.headers.get("cookie"));
@@ -2118,7 +2118,7 @@ const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$6,
   default: Login,
-  loader: loader$a
+  loader: loader$9
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function AlertField({ message, variant }) {
@@ -2136,7 +2136,7 @@ const variants = {
 
 const emailSchema = Joi.string().email().required().label("Email");
 const passwordSchema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
-async function loader$9({ request }) {
+async function loader$8({ request }) {
   const url = new URL(request.url);
   const link = url.searchParams.get("link");
   const token = url.searchParams.get("token");
@@ -2245,7 +2245,7 @@ const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$5,
   default: Reset,
-  loader: loader$9
+  loader: loader$8
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Class$2 = "Outcome";
@@ -2287,7 +2287,7 @@ const flags$2 = {
   approved: "approved",
 };
 
-async function loader$8({ request }) {
+async function loader$7({ request }) {
   return redirect$2("/app");
 }
 async function action$4({ request, params }) {
@@ -2339,7 +2339,7 @@ const outcomeSchema = {
 const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$4,
-  loader: loader$8,
+  loader: loader$7,
   outcomeSchema
 }, Symbol.toStringTag, { value: 'Module' }));
 
@@ -3333,7 +3333,7 @@ const Email = async ({ payload }) =>
     ...payload,
   });
 
-async function loader$7() {
+async function loader$6() {
   return null;
 }
 async function action$3({ request }) {
@@ -3462,7 +3462,7 @@ const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$3,
   default: Contact,
-  loader: loader$7
+  loader: loader$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const navigation = [
@@ -3471,7 +3471,7 @@ const navigation = [
   { name: "Support", href: "#" },
   { name: "Company", href: "#" }
 ];
-async function loader$6({ request }) {
+async function loader$5({ request }) {
   return redirect$2("/app");
 }
 function Index() {
@@ -3597,10 +3597,10 @@ function Index() {
 const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Index,
-  loader: loader$6
+  loader: loader$5
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const loader$5 = async ({ request }) => {
+const loader$4 = async ({ request }) => {
   const session = await getSession(request.headers.get("Cookie"));
   await logout();
   return redirect$2("/auth/login", {
@@ -3612,7 +3612,7 @@ const loader$5 = async ({ request }) => {
 
 const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  loader: loader$5
+  loader: loader$4
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Mobile() {
@@ -3741,7 +3741,7 @@ const purposes = {
   score: "score",
 };
 
-async function loader$4() {
+async function loader$3() {
   console.log("files.loader");
   return redirect$2("/app");
 }
@@ -3773,7 +3773,7 @@ async function action$2({ request }) {
 const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$2,
-  loader: loader$4
+  loader: loader$3
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Class$1 = "Message";
@@ -3992,7 +3992,7 @@ async function getScoreThread(user) {
   return null;
 }
 
-async function loader$3() {
+async function loader$2() {
   return redirect$2("/app");
 }
 
@@ -4008,7 +4008,7 @@ async function action$1({ request }) {
 const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$1,
-  loader: loader$3
+  loader: loader$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const initialState = {
@@ -4103,6 +4103,22 @@ function useOutcome() {
   };
 }
 
+function Play({ ...props }) {
+  return /* @__PURE__ */ jsx(
+    Button,
+    {
+      variant: "default",
+      size: "icon",
+      className: cn(
+        "rounded-full w-6 h-6 text-xs peer-hover:scale-110 transition",
+        props?.className
+      ),
+      onClick: props?.onClick,
+      children: /* @__PURE__ */ jsx(Play$1, { size: 4 })
+    }
+  );
+}
+
 function Guides({ ...props }) {
   const [value, setValue] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -4141,40 +4157,54 @@ function Guides({ ...props }) {
       /* @__PURE__ */ jsx("b", { children: "Hint:" }),
       " Mark the checkbox upon completion to go forward."
     ] }),
-    /* @__PURE__ */ jsx("div", { className: "space-y-4 text-xs", children: value && guides.map((item, index) => /* @__PURE__ */ jsxs(Label, { className: "flex gap-2", children: [
-      loading ? /* @__PURE__ */ jsx("span", { children: /* @__PURE__ */ jsx(
-        LoaderCircle,
-        {
-          size: 16,
-          className: "animate-spin text-zinc-500"
-        }
-      ) }) : /* @__PURE__ */ jsx(
-        Checkbox,
-        {
-          disabled: index === 0 || value?.includes?.(index - 1) ? false : true,
-          checked: value?.[index] === index ? true : false,
-          onCheckedChange: (checked) => {
-            const v = checked ? [...value, index] : value.filter((l) => l !== index && l < index);
-            store.outcome("guides", v);
-            setValue(v);
-            onUpdate(v);
-          }
-        }
-      ),
-      /* @__PURE__ */ jsxs(
-        "span",
-        {
-          className: cn(
-            "space-y-1",
-            value?.includes?.(index) && "text-primary line-through"
+    /* @__PURE__ */ jsx("div", { className: "space-y-4 text-xs", children: value && guides.map((item, index) => /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: cn(
+          "flex gap-2",
+          !value?.includes?.(index) && "opacity-50"
+        ),
+        children: [
+          loading ? /* @__PURE__ */ jsx("span", { children: /* @__PURE__ */ jsx(
+            LoaderCircle,
+            {
+              size: 16,
+              className: "animate-spin text-zinc-500"
+            }
+          ) }) : /* @__PURE__ */ jsx(
+            Checkbox,
+            {
+              id: `chkbx-${index}`,
+              disabled: index === 0 || value?.includes?.(index - 1) ? false : true,
+              checked: value?.[index] === index ? true : false,
+              onCheckedChange: (checked) => {
+                const v = checked ? [...value, index] : value.filter((l) => l !== index && l < index);
+                store.outcome("guides", v);
+                setValue(v);
+                onUpdate(v);
+              }
+            }
           ),
-          children: [
-            /* @__PURE__ */ jsx("i", { children: item.title }),
-            /* @__PURE__ */ jsx("p", { className: "text-xs text-zinc-500", children: item.description })
-          ]
-        }
-      )
-    ] }, index)) })
+          /* @__PURE__ */ jsxs(
+            "span",
+            {
+              className: cn(
+                "space-y-1",
+                value?.includes?.(index) && "text-primary line-through"
+              ),
+              children: [
+                /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
+                  /* @__PURE__ */ jsx(Label, { htmlFor: `chkbx-${index}`, children: item.title }),
+                  item?.button && item.button.com(props?.sendChat)
+                ] }),
+                /* @__PURE__ */ jsx("p", { className: "text-xs text-zinc-500", children: item.description })
+              ]
+            }
+          )
+        ]
+      },
+      index
+    )) })
   ] }) });
 }
 const guides = [
@@ -4196,7 +4226,15 @@ const guides = [
   },
   {
     title: "Click Evaluate & Improve",
-    description: "The AI will analyze your response, identify missing details, and suggest improvements for better clarity."
+    description: "The AI will analyze your response, identify missing details, and suggest improvements for better clarity.",
+    button: {
+      separate: true,
+      label: "Evaluate & Improve",
+      com: (sendChat) => Play({
+        className: "-mt-1.5",
+        onClick: () => sendChat("Is this convincing enough for the PEng assessor")
+      })
+    }
   },
   {
     title: "Add Missing Information",
@@ -4508,6 +4546,7 @@ function Outcome({
   outcomes,
   outcome,
   getOutcomes,
+  sendChat,
   ...props
 }) {
   const [data, setData] = useState(null);
@@ -4549,7 +4588,8 @@ function Outcome({
             value: data?.guides,
             competencyItem,
             outcome,
-            getOutcomes
+            getOutcomes,
+            sendChat
           }
         ),
         step: steps$1.guides.id,
@@ -4656,17 +4696,13 @@ const steps$1 = {
   }
 };
 
-async function loader$2() {
-  return redirect$2("/");
-}
 function Test() {
   return /* @__PURE__ */ jsx(AppContextProvider, { children: /* @__PURE__ */ jsx("div", { className: "w-[400px] p-8", children: /* @__PURE__ */ jsx(Outcome, {}) }) });
 }
 
 const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  default: Test,
-  loader: loader$2
+  default: Test
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function ChatProgress({ className, input = 0, outcomes }) {
@@ -4802,13 +4838,10 @@ function ChatIncome({ competencies, outcomes, getCompetency }) {
             }
           ),
           /* @__PURE__ */ jsx(
-            Button,
+            Play,
             {
-              variant: "default",
-              size: "icon",
-              className: "absolute right-1 bottom-1 bg-zinc-400 rounded-full w-6 h-6 text-xs peer-hover:scale-110 transition",
-              onClick: () => onClick("run", cg, ci),
-              children: /* @__PURE__ */ jsx(Play, { size: 4 })
+              className: "absolute right-1 bottom-1 bg-zinc-400",
+              onClick: () => onClick("run", cg, ci)
             }
           )
         ] }, y)) })
@@ -5464,7 +5497,7 @@ function ChatOutput({ messages, run, setRun }) {
   );
 }
 
-function Assessment({ file, getAssessment }) {
+function Assessment({ file, sendChat }) {
   const [afile, setAFile] = useState(file);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -5482,7 +5515,7 @@ function Assessment({ file, getAssessment }) {
     if (!file2.error) {
       setAFile(file2);
       setOpen(false);
-      getAssessment(file2?.filename);
+      sendChat("My CV has been uploaded with the name " + file2?.filename);
       return;
     }
     console.log("assessment.handleFile", file2?.error);
@@ -5967,8 +6000,8 @@ function App() {
     );
     setOutcome(outcome_);
   }
-  async function getAssessment(text) {
-    inputRef.current?.refresh("My CV has been uploaded with the name " + text);
+  function sendChat(text) {
+    inputRef.current?.refresh(text);
   }
   return /* @__PURE__ */ jsx(AppContextProvider, { children: /* @__PURE__ */ jsxs("div", { className: "bg-[#F7F7F7] h-full flex gap-4 p-4", children: [
     /* @__PURE__ */ jsx("div", { className: "w-72 bg-white rounded-xl", children: /* @__PURE__ */ jsxs("div", { className: "h-full flex flex-col", children: [
@@ -5987,7 +6020,7 @@ function App() {
     ] }) }),
     /* @__PURE__ */ jsxs("div", { className: "flex-grow flex flex-col gap-4", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-4 items-center", children: [
-        /* @__PURE__ */ jsx("div", { "data-guide-step": "1", children: /* @__PURE__ */ jsx(Assessment, { file, getAssessment }) }),
+        /* @__PURE__ */ jsx("div", { "data-guide-step": "1", children: /* @__PURE__ */ jsx(Assessment, { file, sendChat }) }),
         /* @__PURE__ */ jsx(Suggestions, {}),
         /* @__PURE__ */ jsxs(
           "a",
@@ -6033,7 +6066,8 @@ function App() {
                 competencyItem,
                 outcomes,
                 outcome,
-                getOutcomes
+                getOutcomes,
+                sendChat
               }
             ) })
           }
@@ -6162,7 +6196,7 @@ const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-dW1T3z1y.js','/assets/components-DqRZEfXm.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-CLTHunc-.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-dW1T3z1y.js','/assets/components-DqRZEfXm.js','/assets/use-toast-DYrZrp-R.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-8C1TgZ4U.js','/assets/index-TJ3nm1pX.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-BC6qXnPO.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-CtznK2Yv.js','/assets/alert-CxUHx0Tb.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-DqRZEfXm.js','/assets/index-C7WJWzrt.js','/assets/index-dW1T3z1y.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-DUWfRdjn.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/loader-circle-bIZ5jMvi.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-dW1T3z1y.js','/assets/scroll-area-yM-xmbM0.js','/assets/index-Dc_FVRD7.js','/assets/index-C7WJWzrt.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/index-Ijrkqbog.js','/assets/floating-ui.react-dom-B9rtmH8R.js','/assets/index-C7zHV73d.js','/assets/index-BpXgjBHo.js','/assets/input-BcVCSBdC.js','/assets/submit-field-D4MDj2if.js','/assets/use-toast-DYrZrp-R.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/separator-BwzyUMNR.js','/assets/components-DqRZEfXm.js'],'css':[]},'routes/_auth.auth.callback':{'id':'routes/_auth.auth.callback','parentId':'routes/_auth','path':'auth/callback','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.callback-B0xOLG2O.js','imports':['/assets/jsx-runtime-D2HyDbKh.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BHiCiwLH.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-BUMsUhUH.js','/assets/checkbox-B0CL4OSu.js','/assets/submit-field-D4MDj2if.js','/assets/components-DqRZEfXm.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/input-BcVCSBdC.js','/assets/index-8C1TgZ4U.js','/assets/loader-circle-bIZ5jMvi.js','/assets/index-dW1T3z1y.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-BpXgjBHo.js','/assets/index-C7zHV73d.js','/assets/button-CTur9RYT.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-DlAVgLXU.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/loader-circle-bIZ5jMvi.js','/assets/turnstile-BrDT1zVU.js','/assets/components-DqRZEfXm.js','/assets/index-8C1TgZ4U.js','/assets/index-dW1T3z1y.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-DoqD4LUt.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-BUMsUhUH.js','/assets/alert-CxUHx0Tb.js','/assets/index-8C1TgZ4U.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/submit-field-D4MDj2if.js','/assets/turnstile-BrDT1zVU.js','/assets/components-DqRZEfXm.js','/assets/input-BcVCSBdC.js','/assets/loader-circle-bIZ5jMvi.js','/assets/index-dW1T3z1y.js','/assets/button-CTur9RYT.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-BgfTdJHJ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-BCFEASBS.js','/assets/dialog-D-jBPCGJ.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/separator-BwzyUMNR.js','/assets/sheet-D8Rxbnav.js','/assets/index-dW1T3z1y.js','/assets/index-TJ3nm1pX.js','/assets/index-Ijrkqbog.js','/assets/floating-ui.react-dom-B9rtmH8R.js','/assets/index-C7zHV73d.js','/assets/components-DqRZEfXm.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/index-D31jKBKC.js','/assets/component-BA4dgY9v.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-D40fcG86.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/dialog-D-jBPCGJ.js','/assets/input-BUMsUhUH.js','/assets/loader-circle-bIZ5jMvi.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-D4MDj2if.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-DqRZEfXm.js','/assets/index-D31jKBKC.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-Ijrkqbog.js','/assets/index-dW1T3z1y.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/input-BcVCSBdC.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-CJOLMsVW.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/sheet-D8Rxbnav.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/components-DqRZEfXm.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-D31jKBKC.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-Ijrkqbog.js','/assets/index-dW1T3z1y.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-C-zbbgS5.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-DrIiYq-R.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/components-DqRZEfXm.js','/assets/index-dW1T3z1y.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/route-C6tCvYCz.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-BoHkweKm.js','/assets/index-8C1TgZ4U.js','/assets/checkbox-B0CL4OSu.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-BpXgjBHo.js','/assets/index-C7zHV73d.js','/assets/index-dW1T3z1y.js','/assets/loader-circle-bIZ5jMvi.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/button-CTur9RYT.js','/assets/separator-BwzyUMNR.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-D4MDj2if.js','/assets/use-toast-DYrZrp-R.js','/assets/index-Dc_FVRD7.js','/assets/index-C7WJWzrt.js','/assets/index-Ijrkqbog.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-BRaJBZum.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-CtznK2Yv.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-BCFEASBS.js','/assets/scroll-area-yM-xmbM0.js','/assets/index-C7WJWzrt.js','/assets/index-Dc_FVRD7.js','/assets/index-BoHkweKm.js','/assets/index-Ijrkqbog.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/separator-BwzyUMNR.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/floating-ui.react-dom-B9rtmH8R.js','/assets/index-C7zHV73d.js','/assets/index-dW1T3z1y.js','/assets/components-DqRZEfXm.js','/assets/textarea-CdWIYD1l.js','/assets/input-BcVCSBdC.js','/assets/dialog-D-jBPCGJ.js','/assets/arrow-right-C9SmgPxt.js','/assets/checkbox-B0CL4OSu.js','/assets/index-BpXgjBHo.js','/assets/loader-circle-bIZ5jMvi.js','/assets/submit-field-D4MDj2if.js','/assets/use-toast-DYrZrp-R.js','/assets/index-D31jKBKC.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-742a105d.js','version':'742a105d'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-dW1T3z1y.js','/assets/components-DqRZEfXm.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-DElYIrQu.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-dW1T3z1y.js','/assets/components-DqRZEfXm.js','/assets/use-toast-DYrZrp-R.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-8C1TgZ4U.js','/assets/index-TJ3nm1pX.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-BC6qXnPO.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-CtznK2Yv.js','/assets/alert-CxUHx0Tb.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-DqRZEfXm.js','/assets/index-C7WJWzrt.js','/assets/index-dW1T3z1y.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-DUWfRdjn.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/loader-circle-bIZ5jMvi.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-dW1T3z1y.js','/assets/scroll-area-yM-xmbM0.js','/assets/index-Dc_FVRD7.js','/assets/index-C7WJWzrt.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/index-Ijrkqbog.js','/assets/floating-ui.react-dom-B9rtmH8R.js','/assets/index-C7zHV73d.js','/assets/index-BpXgjBHo.js','/assets/input-BcVCSBdC.js','/assets/submit-field-D4MDj2if.js','/assets/use-toast-DYrZrp-R.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/separator-BwzyUMNR.js','/assets/components-DqRZEfXm.js'],'css':[]},'routes/_auth.auth.callback':{'id':'routes/_auth.auth.callback','parentId':'routes/_auth','path':'auth/callback','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.callback-B0xOLG2O.js','imports':['/assets/jsx-runtime-D2HyDbKh.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BHiCiwLH.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-BUMsUhUH.js','/assets/checkbox-B0CL4OSu.js','/assets/submit-field-D4MDj2if.js','/assets/components-DqRZEfXm.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/input-BcVCSBdC.js','/assets/index-8C1TgZ4U.js','/assets/loader-circle-bIZ5jMvi.js','/assets/index-dW1T3z1y.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-BpXgjBHo.js','/assets/index-C7zHV73d.js','/assets/button-CTur9RYT.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-DlAVgLXU.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/loader-circle-bIZ5jMvi.js','/assets/turnstile-BrDT1zVU.js','/assets/components-DqRZEfXm.js','/assets/index-8C1TgZ4U.js','/assets/index-dW1T3z1y.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-DoqD4LUt.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-BUMsUhUH.js','/assets/alert-CxUHx0Tb.js','/assets/index-8C1TgZ4U.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/submit-field-D4MDj2if.js','/assets/turnstile-BrDT1zVU.js','/assets/components-DqRZEfXm.js','/assets/input-BcVCSBdC.js','/assets/loader-circle-bIZ5jMvi.js','/assets/index-dW1T3z1y.js','/assets/button-CTur9RYT.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-BgfTdJHJ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-BCFEASBS.js','/assets/dialog-D-jBPCGJ.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/separator-BwzyUMNR.js','/assets/sheet-D8Rxbnav.js','/assets/index-dW1T3z1y.js','/assets/index-TJ3nm1pX.js','/assets/index-Ijrkqbog.js','/assets/floating-ui.react-dom-B9rtmH8R.js','/assets/index-C7zHV73d.js','/assets/components-DqRZEfXm.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/index-D31jKBKC.js','/assets/component-BA4dgY9v.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-D40fcG86.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/dialog-D-jBPCGJ.js','/assets/input-BUMsUhUH.js','/assets/loader-circle-bIZ5jMvi.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-D4MDj2if.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-DqRZEfXm.js','/assets/index-D31jKBKC.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-Ijrkqbog.js','/assets/index-dW1T3z1y.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/input-BcVCSBdC.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-CJOLMsVW.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/sheet-D8Rxbnav.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/components-DqRZEfXm.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-D31jKBKC.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-Ijrkqbog.js','/assets/index-dW1T3z1y.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-C-zbbgS5.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-DrIiYq-R.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/components-DqRZEfXm.js','/assets/index-dW1T3z1y.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/route-Cn5BpwMt.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-CdmmuP1j.js','/assets/index-8C1TgZ4U.js','/assets/checkbox-B0CL4OSu.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-BpXgjBHo.js','/assets/index-C7zHV73d.js','/assets/index-dW1T3z1y.js','/assets/loader-circle-bIZ5jMvi.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/button-CTur9RYT.js','/assets/separator-BwzyUMNR.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-D4MDj2if.js','/assets/use-toast-DYrZrp-R.js','/assets/index-Dc_FVRD7.js','/assets/index-C7WJWzrt.js','/assets/index-Ijrkqbog.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-DlCumOnh.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-CtznK2Yv.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-BCFEASBS.js','/assets/scroll-area-yM-xmbM0.js','/assets/index-C7WJWzrt.js','/assets/index-Dc_FVRD7.js','/assets/index-CdmmuP1j.js','/assets/index-Ijrkqbog.js','/assets/separator-BwzyUMNR.js','/assets/button-CTur9RYT.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/floating-ui.react-dom-B9rtmH8R.js','/assets/index-C7zHV73d.js','/assets/index-dW1T3z1y.js','/assets/components-DqRZEfXm.js','/assets/textarea-CdWIYD1l.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/input-BcVCSBdC.js','/assets/dialog-D-jBPCGJ.js','/assets/arrow-right-C9SmgPxt.js','/assets/checkbox-B0CL4OSu.js','/assets/index-BpXgjBHo.js','/assets/loader-circle-bIZ5jMvi.js','/assets/submit-field-D4MDj2if.js','/assets/use-toast-DYrZrp-R.js','/assets/index-D31jKBKC.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-d8135b66.js','version':'d8135b66'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
