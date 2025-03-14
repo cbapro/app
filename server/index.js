@@ -33,6 +33,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import nodemailer from 'nodemailer';
 import OpenAI from 'openai';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { produce } from 'immer';
 import Markdown from 'react-markdown';
 import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
@@ -3653,9 +3654,12 @@ const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   default: Auth
 }, Symbol.toStringTag, { value: 'Module' }));
 
-// import { HttpsProxyAgent } from "https-proxy-agent";
-
-const openai = new OpenAI();
+// const openai = new OpenAI();
+const openai = new OpenAI({
+  ...(process.env.NODE_ENV === "development" && {
+    httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
+  }),
+});
 
 // upload file to assistant's vector store
 async function CREATE({ thread, file }) {
@@ -5636,9 +5640,13 @@ async function getFile(thread) {
   const vectorStoreId =
     thread?.tool_resources?.file_search?.vector_store_ids?.[0];
   if (vectorStoreId) {
-    const files = await openai.beta.vectorStores.files.list(vectorStoreId);
-    if (files?.data.length > 0)
-      file = await openai.files.retrieve(files.data[0].id);
+    try {
+      const files = await openai.beta.vectorStores.files.list(vectorStoreId);
+      if (files?.data.length > 0)
+        file = await openai.files.retrieve(files.data[0].id);
+    } catch (error) {
+      console.log("chat.getFile", error);
+    }
   }
   return file;
 }
