@@ -1,0 +1,1 @@
+import{r as o}from"./jsx-runtime-D2HyDbKh.js";import{a as n}from"./react-icons.esm-rwe---N-.js";function u(s,e=globalThis?.document){const t=n(s);o.useEffect(()=>{const a=r=>{r.key==="Escape"&&t(r)};return e.addEventListener("keydown",a,{capture:!0}),()=>e.removeEventListener("keydown",a,{capture:!0})},[t,e])}export{u};
