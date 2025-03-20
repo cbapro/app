@@ -20,7 +20,7 @@ import { useFormContext, FormProvider, Controller, useForm } from 'react-hook-fo
 import Joi from 'joi';
 import * as LabelPrimitive from '@radix-ui/react-label';
 import * as SelectPrimitive from '@radix-ui/react-select';
-import { LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Play as Play$1, X, MousePointerClick, ChevronRight, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
+import { LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, LogOut, Play as Play$1, X, MousePointerClick, ChevronRight, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
 import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 import { format } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
@@ -32,14 +32,16 @@ import { FormStrategy } from 'remix-auth-form';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import nodemailer from 'nodemailer';
-import OpenAI from 'openai';
+import Stripe from 'stripe';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import OpenAI from 'openai';
 import { produce } from 'immer';
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import * as SwitchPrimitives from '@radix-ui/react-switch';
+import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import Markdown from 'react-markdown';
 import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
-import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import * as AvatarPrimitive from '@radix-ui/react-avatar';
 
 const ABORT_DELAY = 5e3;
 function handleRequest(request, responseStatusCode, responseHeaders, remixContext, loadContext) {
@@ -154,7 +156,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-j5swn5--.css";
+const stylesheet = "/assets/tailwind-DBgN4ciO.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -829,6 +831,12 @@ const vars = {
         ? process.env.OPENAI_ASSISTANT_ID
         : process.env.OPENAI_ASSISTANT_ID_DEV,
   },
+  stripe: {
+    domain: process.env.STRIPE_DOMAIN,
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+    secretKey: process.env.STRIPE_SECRET_KEY,
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  },
   jsonServer: {
     url: process.env.JSON_SERVER_URL,
   },
@@ -862,7 +870,7 @@ async function update$2(args, sessionToken) {
   }
 }
 
-async function loader$c({ request }) {
+async function loader$e({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const profile = (await read$3(user))?.toJSON();
@@ -896,7 +904,7 @@ function Overview() {
 const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Overview,
-  loader: loader$c
+  loader: loader$e
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const labelVariants = cva(
@@ -1302,7 +1310,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
 ));
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
-async function loader$b({ request }) {
+async function loader$d({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let profile = session.get("profile");
   if (profile) return { profile };
@@ -1322,7 +1330,7 @@ async function loader$b({ request }) {
   }
   return null;
 }
-async function action$8({ request }) {
+async function action$a({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const formData = await request.formData();
@@ -1601,9 +1609,9 @@ const associations = [
 
 const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$8,
+  action: action$a,
   default: ProfilePage,
-  loader: loader$b
+  loader: loader$d
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Callback() {
@@ -1739,22 +1747,17 @@ const schema = Joi.object({
   privacyPolicy: Joi.string().required(),
   appRules: Joi.string().required()
 });
-async function loader$a({ request }) {
+async function loader$c({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   let setting = session.get("setting");
   if (!user) return redirect$1("/auth/login");
   console.log("auth.consent.loader", user.objectId);
   if (!setting) setting = (await READ(user))?.toJSON();
-  if (user && setting?.consent)
-    return redirect$1("/app", {
-      headers: {
-        "Set-Cookie": await commitSession(session)
-      }
-    });
+  if (user && setting?.consent) return redirect$1("/app");
   return null;
 }
-async function action$7({ request }) {
+async function action$9({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   console.log("auth.consent.action", user.objectId);
@@ -1861,9 +1864,9 @@ function Consent() {
 
 const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$7,
+  action: action$9,
   default: Consent,
-  loader: loader$a
+  loader: loader$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function isMobileServer(request) {
@@ -2030,7 +2033,7 @@ function Turnstile({ onChange, error }) {
   ] }) : null;
 }
 
-async function loader$9({ request }) {
+async function loader$b({ request }) {
   console.log("auth:login:loader");
   if (isMobileServer(request)) return redirect$2("/mobile");
   let session = await getSession(request.headers.get("cookie"));
@@ -2038,7 +2041,7 @@ async function loader$9({ request }) {
   if (user) throw redirect$2("/app");
   return null;
 }
-async function action$6({ request }) {
+async function action$8({ request }) {
   console.log("auth:login:action");
   const session = await getSession(request.headers.get("cookie"));
   let user;
@@ -2117,9 +2120,9 @@ function Login() {
 
 const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$6,
+  action: action$8,
   default: Login,
-  loader: loader$9
+  loader: loader$b
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function AlertField({ message, variant }) {
@@ -2137,7 +2140,7 @@ const variants = {
 
 const emailSchema = Joi.string().email().required().label("Email");
 const passwordSchema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
-async function loader$8({ request }) {
+async function loader$a({ request }) {
   const url = new URL(request.url);
   const link = url.searchParams.get("link");
   const token = url.searchParams.get("token");
@@ -2145,7 +2148,7 @@ async function loader$8({ request }) {
   if (link) return redirect$2(`/auth/reset?token=${token}&username=${username}`);
   return null;
 }
-async function action$5({ request }) {
+async function action$7({ request }) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   const username = url.searchParams.get("username");
@@ -2244,9 +2247,9 @@ function Reset() {
 
 const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$5,
+  action: action$7,
   default: Reset,
-  loader: loader$8
+  loader: loader$a
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Class$2 = "Outcome";
@@ -2288,10 +2291,10 @@ const flags$2 = {
   approved: "approved",
 };
 
-async function loader$7({ request }) {
+async function loader$9({ request }) {
   return redirect$2("/app");
 }
-async function action$4({ request, params }) {
+async function action$6({ request, params }) {
   console.log("outcomes.action", params.action);
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
@@ -2339,8 +2342,8 @@ const outcomeSchema = {
 
 const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$4,
-  loader: loader$7,
+  action: action$6,
+  loader: loader$9,
   outcomeSchema
 }, Symbol.toStringTag, { value: 'Module' }));
 
@@ -3166,7 +3169,7 @@ const SidebarMenuSubButton = React.forwardRef(
 );
 SidebarMenuSubButton.displayName = "SidebarMenuSubButton";
 
-const data = {
+const data$1 = {
   nav: [
     {
       name: "overview",
@@ -3184,12 +3187,12 @@ const data = {
 };
 function Settings() {
   const [open, setOpen] = useState(true);
-  const [nav, setNav] = useState(data.nav[0]);
+  const [nav, setNav] = useState(data$1.nav[0]);
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
     const name = location.pathname.replace("/app/settings/", "");
-    const nav2 = data.nav.find((nav3) => nav3.name === name);
+    const nav2 = data$1.nav.find((nav3) => nav3.name === name);
     setNav(nav2);
   }, []);
   function onNav(nav2) {
@@ -3208,7 +3211,7 @@ function Settings() {
           /* @__PURE__ */ jsx(DialogTitle, { className: "sr-only", children: "Settings" }),
           /* @__PURE__ */ jsx(DialogDescription, { className: "sr-only", children: "Customize your settings here." }),
           /* @__PURE__ */ jsxs(SidebarProvider, { className: "items-start", children: [
-            /* @__PURE__ */ jsx(Sidebar, { collapsible: "none", className: "hidden md:flex", children: /* @__PURE__ */ jsx(SidebarContent, { children: /* @__PURE__ */ jsx(SidebarGroup, { children: /* @__PURE__ */ jsx(SidebarGroupContent, { children: /* @__PURE__ */ jsx(SidebarMenu, { children: data.nav.map((item) => /* @__PURE__ */ jsx(SidebarMenuItem, { children: /* @__PURE__ */ jsx(
+            /* @__PURE__ */ jsx(Sidebar, { collapsible: "none", className: "hidden md:flex", children: /* @__PURE__ */ jsx(SidebarContent, { children: /* @__PURE__ */ jsx(SidebarGroup, { children: /* @__PURE__ */ jsx(SidebarGroupContent, { children: /* @__PURE__ */ jsx(SidebarMenu, { children: data$1.nav.map((item) => /* @__PURE__ */ jsx(SidebarMenuItem, { children: /* @__PURE__ */ jsx(
               SidebarMenuButton,
               {
                 asChild: true,
@@ -3334,10 +3337,10 @@ const Email = async ({ payload }) =>
     ...payload,
   });
 
-async function loader$6() {
+async function loader$8() {
   return null;
 }
-async function action$3({ request }) {
+async function action$5({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   if (!user) redirect$2("/app");
@@ -3461,9 +3464,90 @@ function Reviewer() {
 
 const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$3,
+  action: action$5,
   default: Contact,
-  loader: loader$6
+  loader: loader$8
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const stripe = new Stripe(vars.stripe.secretKey, {
+  ...(process.env.USE_OPENAI_PROXY &&
+    process.env.NODE_ENV === "development" && {
+      httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
+    }),
+});
+
+// checkout.session.completed
+// billing_portal.session.created
+
+async function action$4({ request }) {
+  const event = await getStripeEvent(request);
+  let subscription, status;
+
+  switch (event.type) {
+    case "customer.updated":
+      subscription = event.data.object;
+      status = subscription.status;
+      console.log(event.data);
+      // console.log(`Subscription status is ${status}.`);
+      // Then define and call a method to handle the subscription trial ending.
+      // handleSubscriptionTrialEnding(subscription);
+      break;
+    case "customer.subscription.trial_will_end":
+      subscription = event.data.object;
+      status = subscription.status;
+      console.log(`Subscription status is ${status}.`);
+      // Then define and call a method to handle the subscription trial ending.
+      // handleSubscriptionTrialEnding(subscription);
+      break;
+    case "customer.subscription.deleted":
+      subscription = event.data.object;
+      status = subscription.status;
+      console.log(`Subscription status is ${status}.`);
+      // Then define and call a method to handle the subscription deleted.
+      // handleSubscriptionDeleted(subscriptionDeleted);
+      break;
+    case "customer.subscription.created":
+      subscription = event.data.object;
+      status = subscription.status;
+      console.log(`Subscription status is ${status}.`);
+      // Then define and call a method to handle the subscription created.
+      // handleSubscriptionCreated(subscription);
+      break;
+    case "customer.subscription.updated":
+      subscription = event.data.object;
+      status = subscription.status;
+      console.log(`Subscription status is ${status}.`);
+      // Then define and call a method to handle the subscription update.
+      // handleSubscriptionUpdated(subscription);
+      break;
+    case "entitlements.active_entitlement_summary.updated":
+      subscription = event.data.object;
+      console.log(`Active entitlement summary updated for ${subscription}.`);
+      // Then define and call a method to handle active entitlement summary updated
+      // handleEntitlementUpdated(subscription);
+      break;
+    default:
+      // Unexpected event type
+      console.log(`Unhandled event type ${event.type}.`);
+  }
+  // Return a 200 response to acknowledge receipt of the event
+  return new Response(null);
+}
+
+async function getStripeEvent(request) {
+  const signature = request.headers.get("stripe-signature");
+  const payload = await request.text();
+  const event = stripe.webhooks.constructEvent(
+    payload,
+    signature,
+    vars.stripe.webhookSecret
+  );
+  return event;
+}
+
+const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$4
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const navigation = [
@@ -3472,7 +3556,7 @@ const navigation = [
   { name: "Support", href: "#" },
   { name: "Company", href: "#" }
 ];
-async function loader$5({ request }) {
+async function loader$7({ request }) {
   return redirect$2("/app");
 }
 function Index() {
@@ -3595,13 +3679,13 @@ function Index() {
   ] });
 }
 
-const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Index,
-  loader: loader$5
+  loader: loader$7
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const loader$4 = async ({ request }) => {
+const loader$6 = async ({ request }) => {
   const session = await getSession(request.headers.get("Cookie"));
   await logout();
   return redirect$2("/auth/login", {
@@ -3611,9 +3695,9 @@ const loader$4 = async ({ request }) => {
   });
 };
 
-const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  loader: loader$4
+  loader: loader$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Mobile() {
@@ -3625,7 +3709,7 @@ function Mobile() {
   ] });
 }
 
-const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Mobile
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -3649,16 +3733,16 @@ function Auth() {
   ] });
 }
 
-const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Auth
 }, Symbol.toStringTag, { value: 'Module' }));
 
-// const openai = new OpenAI();
 const openai = new OpenAI({
-  ...(process.env.NODE_ENV === "development" && {
-    httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
-  }),
+  ...(process.env.USE_OPENAI_PROXY &&
+    process.env.NODE_ENV === "development" && {
+      httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
+    }),
 });
 
 // upload file to assistant's vector store
@@ -3670,7 +3754,7 @@ async function CREATE({ thread, file }) {
     purpose: "assistants",
   });
 
-  await openai.beta.vectorStores.files.create(
+  await openai.vectorStores.files.create(
     vectorStoreId,
     {
       file_id: file_.id,
@@ -3688,7 +3772,7 @@ const getOrCreateVectorStore = async (thread) => {
   }
 
   console.log("files::", "create vectorStores for thread");
-  const vectorStore = await openai.beta.vectorStores.create({
+  const vectorStore = await openai.vectorStores.create({
     name: `Store for ${thread?.id}`,
   });
 
@@ -3745,11 +3829,11 @@ const purposes = {
   score: "score",
 };
 
-async function loader$3() {
+async function loader$5() {
   console.log("files.loader");
   return redirect$2("/app");
 }
-async function action$2({ request }) {
+async function action$3({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const thread = session.get("thread");
@@ -3774,10 +3858,10 @@ async function action$2({ request }) {
   });
 }
 
-const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$2,
-  loader: loader$3
+  action: action$3,
+  loader: loader$5
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Class$1 = "Message";
@@ -3996,11 +4080,11 @@ async function getScoreThread(user) {
   return null;
 }
 
-async function loader$2() {
+async function loader$4() {
   return redirect$2("/app");
 }
 
-async function action$1({ request }) {
+async function action$2({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   if (!user) return redirect$2("/auth/login");
@@ -4009,10 +4093,137 @@ async function action$1({ request }) {
   return await sync(request);
 }
 
-const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$2,
+  loader: loader$4
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const domain = vars.stripe.domain;
+
+async function createCheckoutSession({ lookup_key }) {
+  console.log("join.createCheckoutSession", lookup_key);
+  const prices = await getPrices({ lookup_keys: [lookup_key] });
+
+  const session = await stripe.checkout.sessions.create({
+    customer: "cus_RyOIZqMTgO8CWQ",
+    billing_address_collection: "auto",
+    line_items: [
+      {
+        price: prices.data[0].id,
+        // For metered billing, do not pass quantity
+        quantity: 1,
+      },
+    ],
+    mode: "subscription",
+    success_url: `${domain}/join?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${domain}/join?canceled=true`,
+  });
+
+  return Response.redirect(session.url);
+}
+
+async function createPortalSession({ session_id }) {
+  console.log("join.createPortalSession", session_id);
+  // For demonstration purposes, we're using the Checkout session to retrieve the customer ID.
+  // Typically this is stored alongside the authenticated user in your database.
+  const checkoutSession = await stripe.checkout.sessions.retrieve(session_id);
+
+  // This is the url to which the customer will be redirected when they're done
+  // managing their billing with the portal.
+  const returnUrl = domain;
+
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer: checkoutSession.customer,
+    return_url: returnUrl,
+  });
+
+  return Response.redirect(portalSession.url);
+}
+
+async function getPrices({ lookup_keys }) {
+  const prices = await stripe.prices.list({
+    lookup_keys,
+    expand: ["data.product"],
+  });
+  console.log(prices?.data?.length);
+  return prices;
+}
+
+async function action$1({ request }) {
+  const query = new URL(request.url).searchParams;
+  const type = query.get("type");
+  const form = await request.formData();
+  const { lookup_key, session_id, ...values } = Object.fromEntries(form);
+  console.log("join.action", { type, lookup_key, session_id, values });
+  if (type === "create-checkout-session")
+    return await createCheckoutSession({ lookup_key });
+  if (type === "create-portal-session")
+    return await createPortalSession({ session_id });
+  return null;
+}
+async function loader$3({ request }) {
+  return redirect$1("/");
+}
+function Join() {
+  let [message, setMessage] = useState("");
+  let [success, setSuccess] = useState(false);
+  let [sessionId, setSessionId] = useState("");
+  const { prices } = useLoaderData();
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("success")) {
+      setSuccess(true);
+      setSessionId(query.get("session_id"));
+    }
+    if (query.get("canceled")) {
+      setSuccess(false);
+      setMessage(
+        "Order canceled -- continue to shop around and checkout when you're ready."
+      );
+    }
+  }, [sessionId]);
+  if (!success && message === "") {
+    return /* @__PURE__ */ jsx(ProductDisplay, { prices });
+  } else if (success && sessionId !== "") {
+    return /* @__PURE__ */ jsx(SuccessDisplay, { sessionId });
+  } else {
+    return /* @__PURE__ */ jsx(Message$1, { message });
+  }
+}
+const ProductDisplay = ({ prices }) => {
+  return /* @__PURE__ */ jsx("section", { className: "flex gap-4", children: prices?.map((price, i) => /* @__PURE__ */ jsx("form", { action: "?type=create-checkout-session", method: "POST", children: /* @__PURE__ */ jsxs("div", { className: "grid gap-2", children: [
+    /* @__PURE__ */ jsx("strong", { children: price.product.name }),
+    /* @__PURE__ */ jsxs("span", { children: [
+      price.currency?.toUpperCase(),
+      " ",
+      price.unit_amount
+    ] }),
+    price.product?.metadata && /* @__PURE__ */ jsx("div", { className: "grid gap-1 divide-y text-sm", children: Object.keys(price.product.metadata).map((item, j) => /* @__PURE__ */ jsxs("span", { children: [
+      item,
+      ": ",
+      price.product.metadata[item]
+    ] }, j)) }),
+    /* @__PURE__ */ jsx("input", { type: "hidden", name: "lookup_key", value: price.lookup_key }),
+    /* @__PURE__ */ jsx(Button, { type: "submit", children: "Checkout" })
+  ] }) }, i)) });
+};
+const SuccessDisplay = ({ sessionId }) => {
+  return /* @__PURE__ */ jsxs("section", { children: [
+    /* @__PURE__ */ jsx("div", { className: "product Box-root", children: /* @__PURE__ */ jsx("div", { className: "description Box-root", children: /* @__PURE__ */ jsx("h3", { children: "Subscription to starter plan successful!" }) }) }),
+    /* @__PURE__ */ jsxs("form", { action: "?type=create-portal-session", method: "POST", children: [
+      /* @__PURE__ */ jsx("input", { type: "hidden", name: "session_id", value: sessionId }),
+      /* @__PURE__ */ jsx(Button, { type: "submit", children: "Manage your billing information" })
+    ] })
+  ] });
+};
+const Message$1 = ({ message }) => /* @__PURE__ */ jsx("section", { children: /* @__PURE__ */ jsx("p", { children: message }) });
+
+const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$1,
-  loader: loader$2
+  default: Join,
+  loader: loader$3
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const initialState = {
@@ -4055,6 +4266,479 @@ function useStore() {
     store
   };
 }
+
+const Avatar = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  AvatarPrimitive.Root,
+  {
+    ref,
+    className: cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className),
+    ...props
+  }
+));
+Avatar.displayName = AvatarPrimitive.Root.displayName;
+const AvatarImage = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  AvatarPrimitive.Image,
+  {
+    ref,
+    className: cn("aspect-square h-full w-full", className),
+    ...props
+  }
+));
+AvatarImage.displayName = AvatarPrimitive.Image.displayName;
+const AvatarFallback = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  AvatarPrimitive.Fallback,
+  {
+    ref,
+    className: cn(
+      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      className
+    ),
+    ...props
+  }
+));
+AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
+
+const DropdownMenu = DropdownMenuPrimitive.Root;
+const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+const DropdownMenuSubTrigger = React.forwardRef(({ className, inset, children, ...props }, ref) => /* @__PURE__ */ jsxs(
+  DropdownMenuPrimitive.SubTrigger,
+  {
+    ref,
+    className: cn(
+      "flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      inset && "pl-8",
+      className
+    ),
+    ...props,
+    children: [
+      children,
+      /* @__PURE__ */ jsx(ChevronRightIcon, { className: "ml-auto" })
+    ]
+  }
+));
+DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
+const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.SubContent,
+  {
+    ref,
+    className: cn(
+      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    ),
+    ...props
+  }
+));
+DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
+const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsx(DropdownMenuPrimitive.Portal, { children: /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.Content,
+  {
+    ref,
+    sideOffset,
+    className: cn(
+      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    ),
+    ...props
+  }
+) }));
+DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
+const DropdownMenuItem = React.forwardRef(({ className, inset, ...props }, ref) => /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.Item,
+  {
+    ref,
+    className: cn(
+      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
+      inset && "pl-8",
+      className
+    ),
+    ...props
+  }
+));
+DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
+const DropdownMenuCheckboxItem = React.forwardRef(({ className, children, checked, ...props }, ref) => /* @__PURE__ */ jsxs(
+  DropdownMenuPrimitive.CheckboxItem,
+  {
+    ref,
+    className: cn(
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className
+    ),
+    checked,
+    ...props,
+    children: [
+      /* @__PURE__ */ jsx("span", { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center", children: /* @__PURE__ */ jsx(DropdownMenuPrimitive.ItemIndicator, { children: /* @__PURE__ */ jsx(CheckIcon, { className: "h-4 w-4" }) }) }),
+      children
+    ]
+  }
+));
+DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName;
+const DropdownMenuRadioItem = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(
+  DropdownMenuPrimitive.RadioItem,
+  {
+    ref,
+    className: cn(
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className
+    ),
+    ...props,
+    children: [
+      /* @__PURE__ */ jsx("span", { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center", children: /* @__PURE__ */ jsx(DropdownMenuPrimitive.ItemIndicator, { children: /* @__PURE__ */ jsx(DotFilledIcon, { className: "h-2 w-2 fill-current" }) }) }),
+      children
+    ]
+  }
+));
+DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
+const DropdownMenuLabel = React.forwardRef(({ className, inset, ...props }, ref) => /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.Label,
+  {
+    ref,
+    className: cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className),
+    ...props
+  }
+));
+DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
+const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.Separator,
+  {
+    ref,
+    className: cn("-mx-1 my-1 h-px bg-muted", className),
+    ...props
+  }
+));
+DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
+
+const Switch = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  SwitchPrimitives.Root,
+  {
+    className: cn(
+      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
+      className
+    ),
+    ...props,
+    ref,
+    children: /* @__PURE__ */ jsx(
+      SwitchPrimitives.Thumb,
+      {
+        className: cn(
+          "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
+        )
+      }
+    )
+  }
+));
+Switch.displayName = SwitchPrimitives.Root.displayName;
+
+const Accordion = AccordionPrimitive.Root;
+const AccordionItem = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Item, { ref, className: cn("border-b", className), ...props }));
+AccordionItem.displayName = "AccordionItem";
+const AccordionTrigger = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Header, { className: "flex", children: /* @__PURE__ */ jsxs(
+  AccordionPrimitive.Trigger,
+  {
+    ref,
+    className: cn(
+      "flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180",
+      className
+    ),
+    ...props,
+    children: [
+      children,
+      /* @__PURE__ */ jsx(
+        ChevronDownIcon,
+        {
+          className: "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200"
+        }
+      )
+    ]
+  }
+) }));
+AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName;
+const AccordionContent = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(
+  AccordionPrimitive.Content,
+  {
+    ref,
+    className: "overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
+    ...props,
+    children: /* @__PURE__ */ jsx("div", { className: cn("pb-4 pt-0", className), children })
+  }
+));
+AccordionContent.displayName = AccordionPrimitive.Content.displayName;
+
+function NavUser({
+  user = {
+    name: "Reza K",
+    email: "reza@cbapro.ca",
+    avatar: "https://i.pravatar.cc/150?img=3"
+  }
+}) {
+  return /* @__PURE__ */ jsxs(DropdownMenu, { children: [
+    /* @__PURE__ */ jsx(DropdownMenuTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(Avatar, { className: "h-12 w-12 rounded-full cursor-pointer", children: [
+      /* @__PURE__ */ jsx(AvatarImage, { src: user.avatar, alt: user.name }),
+      /* @__PURE__ */ jsx(AvatarFallback, { className: "rounded-lg", children: "RK" })
+    ] }) }),
+    /* @__PURE__ */ jsxs(
+      DropdownMenuContent,
+      {
+        className: "min-w-72 rounded-lg space-y-2",
+        align: "end",
+        sideOffset: 4,
+        children: [
+          /* @__PURE__ */ jsx(DropdownMenuLabel, { className: "p-0 font-normal", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 px-1 py-1.5 text-left text-sm", children: [
+            /* @__PURE__ */ jsxs(Avatar, { className: "h-8 w-8 rounded-full", children: [
+              /* @__PURE__ */ jsx(AvatarImage, { src: user.avatar, alt: user.name }),
+              /* @__PURE__ */ jsx(AvatarFallback, { className: "rounded-lg", children: "CN" })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "grid flex-1 text-left text-sm leading-tight", children: [
+              /* @__PURE__ */ jsx("span", { className: "truncate font-semibold", children: user.name }),
+              /* @__PURE__ */ jsx("span", { className: "truncate text-xs", children: user.email })
+            ] })
+          ] }) }),
+          /* @__PURE__ */ jsx(DropdownMenuSeparator, {}),
+          /* @__PURE__ */ jsxs(DropdownMenuLabel, { className: "flex gap-2 justify-between items-center font-medium", children: [
+            /* @__PURE__ */ jsx(Clock, { className: "w-4" }),
+            /* @__PURE__ */ jsxs("span", { className: "grid flex-auto", children: [
+              "Remind me",
+              /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Continue Working alerts" })
+            ] }),
+            /* @__PURE__ */ jsx(Switch, {})
+          ] }),
+          /* @__PURE__ */ jsxs(Accordion, { type: "single", collapsible: true, className: "m-0", children: [
+            /* @__PURE__ */ jsxs(AccordionItem, { value: "item-1", className: "group border-none", children: [
+              /* @__PURE__ */ jsx(AccordionTrigger, { className: "p-0 hover:no-underline group-data-[state=open]:text-primary [&>svg]:absolute [&>svg]:right-4", children: /* @__PURE__ */ jsxs(DropdownMenuLabel, { className: "flex gap-2 justify-between items-center font-medium", children: [
+                /* @__PURE__ */ jsx(User, { className: "w-4" }),
+                /* @__PURE__ */ jsxs("span", { className: "grid", children: [
+                  "My Account",
+                  /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Account Settings" })
+                ] })
+              ] }) }),
+              /* @__PURE__ */ jsxs(AccordionContent, { children: [
+                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", children: [
+                  /* @__PURE__ */ jsx(UserPen, {}),
+                  /* @__PURE__ */ jsxs("span", { className: "grid", children: [
+                    "Edit Profile",
+                    /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Update Profile info" })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", children: [
+                  /* @__PURE__ */ jsx(BatteryCharging, {}),
+                  /* @__PURE__ */ jsxs("span", { className: "grid", children: [
+                    "Usage Overview",
+                    /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Review Account usages" })
+                  ] })
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxs(AccordionItem, { value: "item-2", className: "group border-none", children: [
+              /* @__PURE__ */ jsx(AccordionTrigger, { className: "p-0 hover:no-underline group-data-[state=open]:text-primary [&>svg]:absolute [&>svg]:right-4", children: /* @__PURE__ */ jsxs(DropdownMenuLabel, { className: "flex gap-2 justify-between items-center font-medium", children: [
+                /* @__PURE__ */ jsx(BadgeHelp, { className: "w-4" }),
+                /* @__PURE__ */ jsxs("span", { className: "grid", children: [
+                  "Contact Support Team",
+                  /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "24/7 Access Help Desk" })
+                ] })
+              ] }) }),
+              /* @__PURE__ */ jsxs(AccordionContent, { children: [
+                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", children: [
+                  /* @__PURE__ */ jsx(MessageSquareText, {}),
+                  /* @__PURE__ */ jsxs("span", { className: "grid", children: [
+                    "Live Chat",
+                    /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Get in Touch whit our Support team" })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", children: [
+                  /* @__PURE__ */ jsx(MessageSquareDot, {}),
+                  /* @__PURE__ */ jsxs("span", { className: "grid", children: [
+                    "Feature Request",
+                    /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "We will build what's missing" })
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", children: [
+                  /* @__PURE__ */ jsx(MessageSquareX, {}),
+                  /* @__PURE__ */ jsxs("span", { className: "grid", children: [
+                    "Report a Bug",
+                    /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Something is Broken? Let us Know!" })
+                  ] })
+                ] })
+              ] })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs(DropdownMenuItem, { children: [
+            /* @__PURE__ */ jsx(Glasses, {}),
+            /* @__PURE__ */ jsxs("span", { className: "grid", children: [
+              "Request for PEng Reviewer",
+              /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Account Expert Advice" })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx(DropdownMenuSeparator, {}),
+          /* @__PURE__ */ jsx("div", { className: "p-1", children: /* @__PURE__ */ jsx(Link, { to: "/logout", className: "w-full", children: /* @__PURE__ */ jsxs(
+            Button,
+            {
+              variant: "outline",
+              className: "w-full !text-orange-500 border-orange-500 !bg-transparent",
+              children: [
+                /* @__PURE__ */ jsx(LogOut, {}),
+                "Log out"
+              ]
+            }
+          ) }) })
+        ]
+      }
+    )
+  ] });
+}
+
+async function loader$2({ request }) {
+  return null;
+}
+function Test() {
+  return /* @__PURE__ */ jsx(AppContextProvider, { children: /* @__PURE__ */ jsx("div", { className: "w-[400px] p-8", children: /* @__PURE__ */ jsx(NavUser, {}) }) });
+}
+
+const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: Test,
+  loader: loader$2
+}, Symbol.toStringTag, { value: 'Module' }));
+
+function ChatProgress({ className, input = 0, outcomes }) {
+  const [value, setValue] = useState(input);
+  const [status, setStatus] = useState(statuses.notStarted);
+  const competenciesLength = 34;
+  useEffect(() => {
+    if (outcomes.length) {
+      const length = outcomes.filter(
+        (outcome) => outcome.flag === "approved" && outcome?.score
+      ).length;
+      const value2 = Math.round(100 / competenciesLength * length);
+      setValue(value2);
+    }
+  }, [outcomes]);
+  useEffect(() => {
+    if (value === 0) return setStatus(statuses.notStarted);
+    if (value < 100) return setStatus(statuses.inProgress);
+    return setStatus(statuses.done);
+  }, [value]);
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-4", children: [
+    /* @__PURE__ */ jsxs("div", { className: "grid gap-1", children: [
+      /* @__PURE__ */ jsx("span", { className: "text-sm text-zinc-400", children: "Total progress" }),
+      /* @__PURE__ */ jsx(
+        Progress,
+        {
+          value,
+          className: cn(className, status.progressClassname)
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "flex gap-4", children: [
+      /* @__PURE__ */ jsx(ProgressStatus, { status: statuses.notStarted }),
+      /* @__PURE__ */ jsx(ProgressStatus, { status: statuses.inProgress }),
+      /* @__PURE__ */ jsx(ProgressStatus, { status: statuses.done })
+    ] })
+  ] });
+}
+const ProgressStatus = ({ status = statuses.notStarted }) => /* @__PURE__ */ jsx("div", { className: "flex justify-between", children: /* @__PURE__ */ jsxs("div", { className: `flex gap-1 items-center text-xs ${status.className}`, children: [
+  /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full" }),
+  /* @__PURE__ */ jsx("span", { children: status.label })
+] }) });
+const statuses = {
+  notStarted: {
+    className: "text-zinc-500 [&>span:first-child]:bg-zinc-500",
+    progressClassname: "bg-zinc-500/20 [&>div]:bg-zinc-500",
+    label: "Not Started"
+  },
+  inProgress: {
+    className: "text-blue-500 [&>span:first-child]:bg-blue-500",
+    progressClassname: "bg-primary/20 [&>div]:bg-primary",
+    label: "In Progress"
+  },
+  done: {
+    className: "text-green-500 [&>span:first-child]:bg-green-500",
+    progressClassname: "bg-green-500/20 [&>div]:bg-green-500",
+    label: "Done"
+  }
+};
+
+function Play({ ...props }) {
+  return /* @__PURE__ */ jsx(
+    Button,
+    {
+      variant: "default",
+      size: "icon",
+      className: cn(
+        "rounded-full w-6 h-6 text-xs peer-hover:scale-110 transition",
+        props?.className
+      ),
+      onClick: props?.onClick,
+      children: /* @__PURE__ */ jsx(Play$1, { size: 4 })
+    }
+  );
+}
+
+function ChatIncome({ competencies, outcomes, getCompetency }) {
+  function getClassName(ci) {
+    const outcome = outcomes?.find(
+      (item) => item.competency.objectId === ci.objectId
+    );
+    return outcome ? flags$1[outcome.flag].className : "";
+  }
+  function onClick(type, cg, ci) {
+    getCompetency?.(type, cg, ci);
+  }
+  return /* @__PURE__ */ jsx(Accordion, { type: "single", collapsible: true, children: competencies.map((cg, x) => /* @__PURE__ */ jsxs(
+    AccordionItem,
+    {
+      value: cg.objectId,
+      className: "border-none group",
+      children: [
+        /* @__PURE__ */ jsxs(AccordionTrigger, { className: "hover:no-underline border border-zinc-200 group-data-[state=open]:border-primary group-data-[state=open]:text-primary rounded-lg p-3 my-1", children: [
+          cg.order,
+          ". ",
+          cg.title
+        ] }),
+        /* @__PURE__ */ jsx(AccordionContent, { className: "space-y-1", children: cg.items.map((ci, y) => /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+          /* @__PURE__ */ jsxs(
+            "button",
+            {
+              className: cn(
+                "peer pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
+                getClassName(ci)
+              ),
+              onClick: () => onClick("send", cg, ci),
+              children: [
+                cg.order,
+                ".",
+                ci.order,
+                " ",
+                ci.title
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            Play,
+            {
+              className: "absolute right-1 bottom-1 bg-zinc-400",
+              onClick: () => onClick("run", cg, ci)
+            }
+          )
+        ] }, y)) })
+      ]
+    },
+    x
+  )) });
+}
+const flags$1 = {
+  idle: {
+    title: "Idle",
+    className: "border-zinc-500 text-zinc-700 [&+button]:bg-zinc-500"
+  },
+  pending: {
+    title: "Pending",
+    className: "border-blue-500 text-blue-500 [&+button]:bg-blue-500"
+  },
+  approved: {
+    title: "Approved",
+    className: "border-green-500 text-green-500 [&+button]:bg-green-500"
+  }
+};
 
 const badgeVariants = cva(
   "inline-flex items-center rounded-md border border-zinc-200 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 dark:border-zinc-800 dark:focus:ring-zinc-300",
@@ -4107,22 +4791,6 @@ function useOutcome() {
   };
 }
 
-function Play({ ...props }) {
-  return /* @__PURE__ */ jsx(
-    Button,
-    {
-      variant: "default",
-      size: "icon",
-      className: cn(
-        "rounded-full w-6 h-6 text-xs peer-hover:scale-110 transition",
-        props?.className
-      ),
-      onClick: props?.onClick,
-      children: /* @__PURE__ */ jsx(Play$1, { size: 4 })
-    }
-  );
-}
-
 function Guides({ ...props }) {
   const [value, setValue] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -4166,7 +4834,7 @@ function Guides({ ...props }) {
       {
         className: cn(
           "flex gap-2",
-          !value?.includes?.(index) && "opacity-50"
+          !value?.includes?.(index) && !value?.includes?.(index - 1) && "opacity-50"
         ),
         children: [
           loading ? /* @__PURE__ */ jsx("span", { children: /* @__PURE__ */ jsx(
@@ -4194,7 +4862,8 @@ function Guides({ ...props }) {
             {
               className: cn(
                 "space-y-1",
-                value?.includes?.(index) && "text-primary line-through"
+                value?.includes?.(index) && "text-primary- line-through",
+                index === value.length && "text-primary"
               ),
               children: [
                 /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
@@ -4251,7 +4920,7 @@ function SAO({ ...props }) {
   const { syncSteps } = useOutcome();
   useEffect(() => {
     if (props?.outcome?.flag)
-      syncSteps(props.outcome.flag === flags$1.approved, props?.step);
+      syncSteps(props.outcome.flag === flags.approved, props?.step);
   }, [props?.outcome]);
   return /* @__PURE__ */ jsx("div", { className: "flex flex-col space-y-8", children: !state?.outcome?.steps?.includes("guides") ? /* @__PURE__ */ jsx("div", { className: "text-yellow-700 text-xs text-center", children: "Complete previous step to continue" }) : /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsxs("div", { className: "text-yellow-700 text-xs", children: [
@@ -4323,7 +4992,7 @@ function OutcomeBox({
         })
       });
       if (res?.error) return;
-      syncSteps(flag === flags$1.approved, props?.step);
+      syncSteps(flag === flags.approved, props?.step);
       await getOutcomes();
       setPreviousValue(value);
       setLoading(false);
@@ -4404,7 +5073,7 @@ const types = {
     limit: 300
   }
 };
-const flags$1 = {
+const flags = {
   idle: "idle",
   pending: "pending",
   approved: "approved"
@@ -4486,39 +5155,310 @@ function Score({
   ] }) });
 }
 
+const data = [
+	{
+		competency: "1.1",
+		title: "Environmental Engineering - PEO",
+		situation: "This situation demonstrates my understanding of the OBC, OFC, ANSI and ASC. I was responsible for estimating and value engineering, ensuring that the hardware and doors in a long-term care home building met the minimum requirements stipulated by the Ontario Building Code.",
+		action: "I was involved in the writing of the hardware schedule and preparing options for value engineering.\n This includes:\n - I notified the consultant about errors and inconsistencies in door specifications, advocating for necessary corrections.\n - I collaborated with an Architectural Hardware Consultant to create the hardware schedule in compliance with OBC and ASC standards.\n - I estimated costs for wood/steel doors, and hardware.\n - I developed various cost-saving alternatives for the client's consideration.\n - I prepared the drawings and specifications for the tender documents.\n - I created shop drawings for all doors, including those with custom designs.\n - I was responsible for designing the doors, windows and hardware of the building to adhere to the regulations outlined in the Ontario Fire Code.\n - I was responsible for doing back checks and correction of the shop drawings.",
+		outcome: "I handled estimation, value engineering, writing hardware schedule, and shop drawings, presenting the client with cost-saving options they ultimately chose, resulting in significant savings. The client expressed satisfaction with the provided cost-saving solutions."
+	},
+	{
+		competency: "1.2",
+		title: "Environmental Engineering - PEO",
+		situation: "I was involved in a project that the owner had some budget issues, and they were trying to lower their expenses. The project was to build xxx",
+		action: "I had multiple meetings with the project managers and clients, and I recommended a couple of options to ensure the high quality of the work is fulfilled, while I lessen the costs. My instructions are included below: \n - I suggested they should use an alternative product from a different manufacturer for the exit devices (exit device is mechanical door hardware operated from the inside of an out-swing exit door). I kept the grade of the exit device and its finish the same to meet the requirements of the specs.\n - I suggested they should use \"\"End Matched\"\" instead of \"\"Book Matched\"\" wood doors. Book Matched is one of the priciest matches of the woods because of its nature.\n They presented the architect with both of these ideas, and they were accepted. We move forward by giving them a credit change order.\n ",
+		outcome: "The applied suggestions to the existing buildings helped lower their costs, therefore the client was happy with the project's results."
+	},
+	{
+		competency: "1.3",
+		title: "Environmental Engineering - PEO",
+		situation: "At XYZ company, I served as project management support for delivery of planning, design and construction of municipal infrastructure and building projects in Manitoba. Project management service involves risk management which includes identifying and responding to project-specific risks at different phases of each\n project.",
+		action: "• For each project, I met with the project team to review project objectives and establish the scope. I worked with the project lead to produce design services RFP with detailed and well defined scope of work. As an example at the planning stage of the project XYZ, I suggested to include implementation\n of zebra mussel control/mitigation system in the scope of work for the design consultant. As another example, during the planning stage of the ABCD Renovation project, I worked with the project team and developed design-stage scope of work to conduct a thorough inspection/condition assessment of the building. Based on findings of the inspection, we established scope of the construction. I also, engaged a consultant to conduct hazardous\n material inspection and identify areas affected by mould and mould remediation preclusions and requirements.\n • I produced and maintained budget tracking spreadsheet for each project. I worked with project lead and updated the budget tracker with any potential changes. For each change, I conducted budget impact assessment and provided recommendations for budgetary decisions to project team.\n • I worked with the project lead and conducted regular/monthly schedule analyses and forecasting. When there was schedule delays, we worked with the project team to plan for the remainder of the project and mitigate risks associated with the delays.",
+		outcome: "• At ABCD company, for each project, potential risks were successfully identified at each stage of the project, risk impact were determined, solutions were assessed and\n recommendations were provided.\n • I gained valuable experience in risk management, including project-specific potential risk identification and finding strategies to avoid or mitigate risks."
+	},
+	{
+		competency: "1.4",
+		title: "Environmental Engineering - EGM",
+		situation: "I was involved in a project to design door, frame and hardware for a public washroom. The client reported that previous washrooms were being very cold during winter time, so they requested the doors to be insulated.",
+		action: "After examining the existing doors, I figured doors are steel stiffened filled with polystyrene. So they were already insulated by polystyrene, and in standard practice, they should not been conducting much heat. After assessing the situation, and doing calculations regarding the thermal conductivity coefficient  and how much heat is transferred through the steel stiffeners. I noticed the issue is caused by steel stiffeners. I suggested they should omit the steel stiffeners and keep the polystyrene, also for durability purposes I advised to increases the gauge of the doors. My responsibilities on this project were:\n - I was the primary point of contact with the client, and explained the issues to the client regarding the thermal conductivity issues.\n - I estimated the job including the engineering cost, material, and labour.\n - I was in contact with distributors to resolve the client's issue and requested them to do R-value tests (the R-value is the building industry term for thermal resistance per unit area) for doors with steel stiffeners filled with Polystyrene. The standard test was conducted by manufacturers for doors with either steel stiffened or Polystyrene filled, I proposed to manufacturer to conduct a unique test  to find R-value of a door which consists of both materials.\n - I prepared technical specification for doors with the gauge and core they want\n - I designed and drew the elevations for their openings.\n ",
+		outcome: "It was a great accomplishment for me to define and propose a new set of test to find R-value of a specific type of door. The objective of test was fulfilled, as the client was happy with the outcome."
+	},
+	{
+		competency: "1.5",
+		title: "Environmental Engineering - PEO",
+		situation: "The project included design and construction of an Access Road for XYZ client in Manitoba. For this project, I was tasked with the design calculation\n and development of design drawings and specifications and construction contract administration.",
+		action: "1. I worked with the design team on developing the preliminary design using available background and arial images.\n 2. I coordinated with the filed surveyor and produced the existing topography in AutoCAD.\n 3. For the design, I created volume surfaces in Civil 3D and estimated cut-and-fill volumes.\n 4. During the construction, I reviewed contractor's shop drawings and materials testing results.\n 5. I used survey data collected at different stages of construction to assess cut-and-fill and granular materials quantities.",
+		outcome: "1. Using the estimated earthworks quantities, construction cost estimate was produced.\n 2. The estimated volumes were used in tender forms, as well as, in the construction contract.\n The quantity analysis during the construction provided the actual volumes of earthwork and was based for progress and certification of payments to the\n contractor."
+	},
+	{
+		competency: "1.6",
+		title: "Environmental Engineering - EGM",
+		situation: "A comprehensive site inspection was essential due to the involvement of diverse disciplines. Anticipating and mitigating all potential hazards before our team's visit was imperative. This required meticulous preparation of a Risk Assessment and Safety Plan to ensure utmost safety and preparedness.",
+		action: "It was essential to anticipate and take measures to mitigate all potential hazards and safety risks ahead of our site visit according to Canada Occupational  Health and Safety Regulations. In facilitating our team's site visit, I arranged a comprehensive work plan comprising the following elements:\n - I developed a Job Hazard Assessment table, attentively assessing hazards, their likelihood, consequences, and corresponding controls.\n - Compilation of a detailed report delineating the impact of site visit on the surrounding community, train operations, and roadway infrastructure.\n - I appointed a competent supervisor to oversee the site visit.\n - I prepared the reports outlining access points to the job site, parking areas, and muster points.\n - I provided the directions to the nearest hospital.\n - I formulated a site-specific emergency plan encompassing emergency contact information, evacuation procedures, medical protocols, and other pertinent details.\n ",
+		outcome: "I assured that our team of 15, consisting of inspectors from utility, structural, environmental, geo-engineering, grounding and bonding, cable containment, and track, visited the site over two days without encountering any safety issues."
+	},
+	{
+		competency: "1.7",
+		title: "Environmental Engineering - PEO",
+		situation: "",
+		action: "",
+		outcome: ""
+	},
+	{
+		competency: "1.8",
+		title: "Environmental Engineering - PEO",
+		situation: "",
+		action: "",
+		outcome: ""
+	},
+	{
+		competency: "1.9",
+		title: "Environmental Engineering - PEO",
+		situation: "Under the supervision of the project lead, I served as Project Manager for the delivery of the planning, design and construction of the XYZ Water Treatment\n Plant (WTP) project in Manitoba",
+		action: "1. I reviewed the feasibility study and met with the project team to validate the project scope and establish project requirements\n 2. I created and maintained (throughout the project) GANTT schedule and financial tracking forms throughout the project\n 3. I reviewed design consultant's proposed work plan, methodology, schedule and cost, and oversight of the design development process\n 4. I reviewed design consultant's field investigations plans and processes such as geotech investigation and water sampling/testing\n I reviewed design documents such as filed investigation reports, technical memo, preliminary design report, design drawings and specs and provided\n recommendation to owner\n 5.\n 6. I worked with the design consultant to review treatment technology/equipment selection process\n 7. I reviewed design consultant's reports/submissions for regulatory approvals such as ISC's Land Status and Environmental Review requirements\n 8. I reviewed Tender and Construction Contract documents prepared by the design consultant\n 9. I conducted monthly construction site visits and chaired construction progress review meetings\n 10. I reviewed proposed construction changes and conducted schedule and budget impact assessment and recommendation\n 11. I reviewed construction progress payment certificates and recommended payment",
+		outcome: "1. Project’s needs were identified, and project scope was established\n 2. Project’s scope management was successfully achieved\n 3. Project’s cost and schedule monitoring and control were successfully achieved\n 4. I gained additional skills in review and quality control of projects from planning to design and construction"
+	},
+	{
+		competency: "1.10",
+		title: "Environmental Engineering - EGM",
+		situation: "While engaged in the project, I served as a reviewer and observed a discrepancy  xxxxx",
+		action: "Upon reviewing pertinent documents, I communicated to the disciplines the accurate milepost and emphasized the importance of alignment with it because the intention of the design was that all of the disciplines must have covered a certain mileage. Consequently, they revised their drawings to ensure consistency before submitting them for client review. Finally, I prepared an internal lessons learned report for the benefit of our team to make sure we will implement this experience to avoid any inconsistency happening in mileposts in future submissions.",
+		outcome: "The outcome was a cohesive set of drawings where the milepost was accurate and consistent across all disciplines, and we received no critical comments from the client."
+	},
+	{
+		competency: "2.1",
+		title: "Environmental Engineering - EGM",
+		situation: "As a project coordinator for a large-scale infrastructure project, my responsibilities include scheduling meetings with various disciplines and ensuring timely completion of assigned tasks. This position requires effective communication with the team, clients and stakeholders.",
+		action: "",
+		outcome: ""
+	},
+	{
+		competency: "",
+		title: "In this project, my role involves continuous verbal communication with the team for various tasks, including:\n - Managing deliverables, including their creation, cancellation, or adjustment, ensuring clarity on titles, drawing numbers, milestones, and platforms like BIM360 or ProjectWise.\n - Collaborating with senior project managers, project controls, designers, and clients to establish processes, work plans, consultant staff lists, and reports.\n - Facilitating meetings with clients, external stakeholders, and the project team, coordinating schedules, and participating actively in the discussions to make sure the whole team is on the same page.\n - Preparing and distributing meeting materials and minutes, ensuring comprehensive documentation.\n - Monitoring and following up on meeting action items to ensure completion.\n - Assisting the resource team in creating and presenting a concise presentation at Queen's University to introduce opportunities and challenges in the rail and transit industry to Civil Eng. students. It was an interactive session, and I talked about the project I am involved in and the challenges I face through my position.",
+		situation: "I scheduled weekly discipline-specific meetings and team-wide meetings to enhance communication among team members. Both the client and team provided positive feedback on the effectiveness of these meetings. ",
+		action: "",
+		outcome: ""
+	},
+	{
+		competency: "2.2",
+		title: "Environmental Engineering - PEO",
+		situation: "I served as a Design Engineer for the delivery of the following Feasibility Studies in Manitoba (in English!)",
+		action: "• I contributed in preparing proposals by writing technical and non-technical sections of ODK's proposals\n • I met with the project team (owner, funding agent and other disciplines) took meeting notes and wrote meeting minutes/summary notes.\n • I reviewed the existing drawings, reports and available data and made summary notes\n • I conducted field review/inspection took notes and pictures and prepared report on the existing conditions\n • I conducted data analysis and prepared tables and charts for data presentation and wrote detailed discussion of the results\n I presented my design calculations (e.g. population projection, water demand, wastewater/waste production, systems sizing) in tables and wrote detailed\n description of the calculation methods and final results\n •\n • I wrote request for proposal/quote for services delivered by others such as water/wastewater equipment, geotech and soil/water/wastewater testing\n • I wrote regular status update emails to the owner/client and funding agency at each stage of the project\n • I prepared drawings for existing conditions and figures/diagram/drawings for proposed options\n • I prepared unit price table to estimate capital and O&M cost of selected options\n I created Tables/charts in MS Excel, prepared and formatted reports/memos in MS Word, created presentations in MS PowerPoint, and created and compiled\n reports in Adobe Acrobat",
+		outcome: "• The clients and funding agents reviewed the reports and provided comments\n • l responded to the review comments and implemented them in to reports\n • The final report was prepared based on the review comments and the client and funding agent were satisficed\n • I received positive feedback from my manager and supervisor"
+	},
+	{
+		competency: "2.3",
+		title: "Environmental Engineering - PEO",
+		situation: "As a member of ABDC project management team, I served for the delivery of the various municipal infrastructure and building projects in Manitoba. This role requires\n reviewing and understanding technical documents and providing briefings to the client.",
+		action: "• I reviewed the project’s Terms of Reference (TOR) for the project management services\n • I reviewed background information such as the feasibility study report and as-built drawings\n • I provided review project approval request document and provided comments to the project officer at Indigenous Services Canada (ISC)\n • I reviewed the project requirements, prepared TOR for design consulting services, administered the call for proposals and answered proponent’s questions\n • As part of the evaluation committee, I reviewed the technical proposals for design consultant services and provided scoring and comments\n I reviewed Indigenous Services Canada’s guidelines/requirements for professional service contract with first nation communities - Namely CN-2 and prepared\n professional service contracts\n •\n • I reviewed design consultant’s submissions such as, condition assessment report, technical memoranda, preliminary design report and provided comments\n • I reviewed drawings and specifications developed by the design consultant and provided comments\n • I reviewed construction tender/contract documents developed by the design consultant and provided comments\n I reviewed professional service scope changes and construction proposed change notices (PCN) and provided comments/recommendation to the project\n table\n •\n • I reviewed weekly/monthly construction progress reports prepared by design consultant",
+		outcome: "• On behalf of the clients, technical review and comments were provided on different technical documents\n • All the tasks that required review of technical documents were successfully performed\n • I received positive feedback from the clients and other project stakeholders"
+	},
+	{
+		competency: "3.1",
+		title: "Environmental Engineering - EGM",
+		situation: "I provided a project estimate in 2020, and we were awarded the project in 2021 amidst the COVID-19 pandemic. As we commenced work, I realized that our company would incur financial losses due to the impact of the pandemic.",
+		action: "I considered delays from material distributors and supply chain disruptions, along with increases in labour, gas, and material prices. Given our unit price contract, I filed a change order to address the impacts of COVID-19. I had a meeting with the project manager of the client and provided a detailed breakdown of the costs, leading to their approval of the proposed change order.",
+		outcome: "Through careful planning and strategic decision-making, I was able to prevent financial losses for our company."
+	},
+	{
+		competency: "3.2",
+		title: "Environmental Engineering - EGM",
+		situation: "As my professional journey advances, I have actively expanded my skill set, assumed greater responsibilities, and enhanced project deliverables across various roles and assignments.",
+		action: "I have consistently demonstrated increasing levels of responsibility in project planning and implementation throughout my career. Initially, I was involved in fundamental tasks such as more basic calculations, design support, and drafting. As I gained experience, I transitioned to providing time estimates and fixed-price quotes to project managers, showcasing my ability to handle more complex responsibilities. Subsequently, I expanded my role to include preparing specs and estimating larger projects, indicating my growing proficiency in project management.\n Currently, as a member of the project management team, I am actively involved in coordinating various project activities under the guidance of senior project managers. In this capacity, I contribute to the planning and execution of projects by overseeing timelines/schedules, resources, and deliverables.\n During a recent project submission, I identified an error in track alignment. Recognizing the critical impact of this issue on the project, I promptly notified the relevant disciplines whose work was dependent on track alignment. Through effective communication and collaboration, they were able to rectify the error in a timely manner, ensuring the project remained on track.\n ",
+		outcome: "My contribution was integral to the functioning of our engineering services practice. Across different roles within the company, I took on growing responsibilities, enhancing my comprehension of the professional engineer's role."
+	},
+	{
+		competency: "3.3",
+		title: "Environmental Engineering - EGM",
+		situation: "My contribution was integral to the functioning of our engineering services practice. Across different roles within the company, I took on growing responsibilities, enhancing my comprehension of the professional engineer's role.",
+		action: "The contract was based on unit prices, but unfortunately, the construction schedule experienced significant extensions. Concurrently, the costs associated with labour, materials, and fuel surged considerably. I was responsible for the estimating and doing the shop drawing for this project.\n I communicated with the client’s project manager regarding the impact of the extended schedule on our operations. To substantiate my concerns, I followed these steps:\n -I assessed the project timeline, comparing the original schedule with the current extended one. \n - I conducted a comprehensive analysis of the escalating costs. This involved tracking the rising prices of labour, materials, and fuel. By presenting these cost implications, I emphasized the financial strain caused by the prolonged schedule. Also, I anticipated the price increase we may face during the next 6 months bases on fluctuation in market.\n -I  documented the delays, cost fluctuations, and their cumulative effect on the project. This documentation served as evidence to support our case when communicating with the client.\n As part of the mitigation process, they agreed to authorize the difference between my original quotation and the adjusted cost based on updated prices by approving the change order I have issued.\n We also met the updated deadline.",
+		outcome: "The successful completion of this project represents a significant personal achievement. I proactively identified potential challenges that could arise during the project’s life cycle, allowing me to mitigate schedule extensions and control additional costs effectively. \n "
+	},
+	{
+		competency: "3.4",
+		title: "Environmental Engineering - EGM",
+		situation: "I provided estimates for doors, frames, and hardware for xxxxx",
+		action: "I oversaw the financial aspects of this project, my responsibilities included:\n - Request for information in case I noticed any discrepancies in specs versus OBC requirements or if there was any inconsistencies in architectural drawings and needs corrections/clarifications.\n - Conducting detailed cost estimations for doors, frames, hardware, and installation.\n - Offering innovative cost-saving solutions to the client without compromising quality.\n - Assessing and analyzing tender bids, offering valuable feedback, and making recommendations.\n - Efficiently managing and attentively tracking construction changes via change orders to maintain financial integrity and project transparency.\n - Given our unit price contract, I filed a change order to address the impacts of COVID-19.\n ",
+		outcome: "The project was successfully completed, and I gained valuable knowledge regarding the financial and budgeting aspects of the projects."
+	},
+	{
+		competency: "3.5",
+		title: "Environmental Engineering - EGM",
+		situation: "On a project I helped the architect beyond the scope with preparing specifications for wood doors, as they did not have sufficient knowledge about the specs of the wood doors. I procured multiple corner samples featuring various finishes and plastic laminate for assessment by the interior designer.",
+		action: "I facilitated a meeting with the contractor and the interior designer to assess the samples. While they approved the option for exterior doors, they expressed dissatisfaction with my proposal for interior doors. After evaluating alternatives, I presented additional options, noting their higher costs and the potential need for a change order to accommodate the difference. Upon receiving approval from both the interior designer and contractor, I proceeded to finalize the design and tender documents.",
+		outcome: "The participation of the interior designer in the decision-making process provided a remarkable help with selecting the option which fit the requirements of the client perfectly."
+	},
+	{
+		competency: "4.1",
+		title: "Environmental Engineering - EGM",
+		situation: "I contributed to a project focused on designing for the rail and transit industry. To ensure timely completion, collaboration within an interdisciplinary team including tracks, utility, environmental, structural, cable containment, and geo-engineering disciplines was essential.",
+		action: "In my role as a project coordinator, I upheld respectful collaboration with both internal and external stakeholders, fostering cooperation and diplomacy throughout the team. We engaged in discussions to determine the most efficient routes aligning with our schedules and workloads. The design reviews were conducted in tandem with the client, ensuring a harmonious workflow. Through mutual cooperation, we ensured that no aspect of the work was rushed, working collaboratively to gather information and meet project deadlines.",
+		outcome: "The project was successfully delivered within the designated timeline and budget constraints. The client expressed satisfaction with the outcome. I find that my productivity increases in an environment where respect is prioritized."
+	},
+	{
+		competency: "4.2",
+		title: "Environmental Engineering - PEO",
+		situation: "I participated in a business development project aimed at promoting our company's growth. Collaborating with colleagues from diverse roles, our objective was to introduce our company and team to inspire students to join us.",
+		action: "",
+		outcome: ""
+	},
+	{
+		competency: "5.1",
+		title: "Environmental Engineering - EGM",
+		situation: "Our track team expressed the need to conduct an on-site inspection of the tracks/rails, which was not initially included in the primary site visit plan. ",
+		action: "I upheld the principles of the Code of Ethics within the Canadian engineering environment by communicating openly with stakeholders and prioritizing the delivery of a safe and reliable product over meeting unrealistic deadlines. Despite pressure to expedite the site visit due to its dependency on the designers' work, I prioritized the safety of the public and colleagues. I revised the Work Plan to include the hazards of walking on the tracks and our strategies for hazard control, resulting in a delayed site visit but ensuring its safety. I believe my measures were aligned with professional engineers obligations.",
+		outcome: "Through my efforts, I ensured that public safety standards were met and the client's satisfaction was achieved."
+	},
+	{
+		competency: "5.2",
+		title: "Environmental Engineering - EGM",
+		situation: "Upon commencing the development of the Package Management Template for deliverables, I recognized my limitations and pro-actively sought clarification through asking questions to ensure the completeness of my work. My responsibilities included creating and updating stubs for various disciplines.",
+		action: "To ensure the accuracy and consistency of deliverable titles and numbers with the project overview I sought assistance from the design manager. After incorporating their input and clarifying any uncertainties, including the xxxx",
+		outcome: "Following review by the Document Control team, the work was completed without receiving any comments regarding the accuracy of the deliverable titles and numbers. This indicates that they were deemed accurate and met the required standards moving forward."
+	},
+	{
+		competency: "5.3",
+		title: "Environmental Engineering - EGM",
+		situation: "I received an invitation to attend a seminar sponsored by a prominent hardware distributor. During the event, the distributor provided dinner for all participants.",
+		action: "I maintained regular communication with hardware distributors to remain updated on the latest technology, providing clients with diverse options. Attending the Door and Hardware Institute seminar broadened my understanding across various product lines. Using this knowledge, I integrated products from distributor which was sponsor of the program into hardware schedules while ensuring adding equivalent alternatives from other manufacturers to prevent conflicts of interest. Prioritizing client satisfaction, I provided multiple recommendations and welcomed client-submitted product reviews to optimize their choices.",
+		outcome: "In this scenario, the project was successfully completed to the client's contentment, incorporating products from the sponsoring distributor as well as other sources."
+	},
+	{
+		competency: "5.4",
+		title: "Environmental Engineering - EGM",
+		situation: "During the design phase of an irrigation and drainage network project, I encountered a challenge where the proposed layout conflicted with existing utility lines, complicating the implementation process and potentially leading to delays and cost overrun.",
+		action: "To address this issue, I conducted a thorough review of the project area for further inspection, collaborating closely with utility providers to obtain accurate information about the location and depth of existing infrastructure. Using this data, I revised the design layout, optimizing the alignment of the irrigation and drainage network to minimize interference with utilities. ",
+		outcome: "I accepted the professional responsibility of this issue, and by implementing the proper measure, I successfully resolved the conflict between the proposed irrigation and drainage network and existing utility lines, averting potential disruptions and costly setbacks."
+	},
+	{
+		competency: "5.5",
+		title: "Environmental Engineering - PEO",
+		situation: "At ABCD Engineering, I was involved in the delivery of professional design services, as well as project management for delivery of design and construction of\n municipal infrastructure and building projects. For these I worked under supervision of a professional engineer (PEng) registered in Manitoba and they reviewed and stamped my works.",
+		action: "I was involved in delivery of design services for water/wastewater servicing of new/expanded buildings for XYZ projects. I prepared design calculations, drawings and specifications. I double checked my work first then provided to the\n design lead for review. I provided revision/clarification if required and the final designs were sealed by the design lead. During the construction phase, I was\n responsible for construction contract administration. I reviewed contractors monthly progress claims and prepared progress payment certificates. I double\n checked my work and then provided to the design lead for review and seal.\n • I was also responsible for delivery of feasibility study reports for municipal component of School feasibility projects for ABCD project. I prepared the reports and submitted for review by the design lead. I provided revision/clarification if required and the final report were\n sealed by the design lead.\n • I also served as assistant project manager for delivery of design and construction of infrastructure projects including water supply and treatment facilities for\n XYZ projects. I prepared monthly financial reports. I double checked my work and\n then provided to the design lead for review and seal.",
+		outcome: "• I gained knowledge and understanding of the process and procedure required when a professional engineer is signing and sealing documents prepared by\n others.\n • A good project delivery system was developed between me and the responsible PEng for preparing, double check, review, finalizing and seal professional\n works, and he was satisfied with my works."
+	},
+	{
+		competency: "5.6",
+		title: "Environmental Engineering - EGM",
+		situation: "To excel in my professional endeavors, I recognize the significance of being self-aware regarding my strengths and weaknesses. Within my career development plan, I monitor self-evaluations to pinpoint areas that need improvement. Also, I delineate actionable steps aimed at enhancing my skills.",
+		action: "I update my career development plan twice a year to assess my professional trajectory and identify areas for enhancement. Presently, my focus lies on several areas:\n - Increasing my proficiency in Building Information Modeling \n - I am planning to take courses regarding modeling in PCSWMM software\n - Strengthening my presentation skills for large-scale meetings.\n - I also took training courses regarding collaboration softwares like ProjecWise and BIM360\n ",
+		outcome: "Completion of relevant courses has enriched my comprehension of collaboration tools and their effective utilization. Tracking my professional development plan has facilitated a structured approach to continual growth, enabling me to address any work-related deficiencies."
+	},
+	{
+		competency: "6.1",
+		title: "Environmental Engineering - PEO",
+		situation: "When I was working on estimating and shop drawing of openings ABCD, it was imperative for the contractor to adhere to LEED requirements and to follow OFC. This ensured the promotion of sustainable building practices and facilitated efforts to address climate change.",
+		action: "In this project, my primary role was to ensure adherence to LEED criteria by carefully selecting products that not only met sustainability standards but also aligned with project specifications. This entailed conducting a thorough analysis of technical product documentation to determine factors such as the percentage of recycled material and recyclability of the product. Additionally, I took into account the distance between the manufacturer and the job site to minimize transportation and reduce fuel emissions. Despite the limited options provided in the specifications, I successfully identified suitable manufacturers while meeting the required quality design aesthetics and, most importantly, fulfilling LEED criteria. Such adherence is pivotal in advancing sustainable development practices, mitigating climate change, and fostering resilience.\n In the design process of the doors and frames, I always ensured that fire codes such as fire-rating of the doors and frames, or the type of glass, and area of the windows or transoms were being followed because missing fire-rating of even a single door in shop drawings would cause not getting occupancy and could risk the public safety.\n ",
+		outcome: ""
+	},
+	{
+		competency: "LEED requirements were successfully fulfilled, resulting in a satisfied customer upon project completion. This project got occupancy without any issues.\"",
+		title: "",
+		situation: "",
+		action: "",
+		outcome: ""
+	},
+	{
+		competency: "6.2",
+		title: "Environmental Engineering - EGM",
+		situation: "As part of my responsibilities for project ABCD, I coordinated and scheduled site walk-throughs/visits. Occasionally, inspectors may need to access areas close to the rail lines, potentially impacting public transportation routes.",
+		action: "As a project coordinator who oversees the construction of a new rail and transit system, I understand the intrinsic link between engineering activities such as on-site inspection and the public. I prepared a thorough work plan report for the site visit including safety concerns to the inspectors and to the public and potential disruption to the public transportation. Through effective project management, I ensure that inspection progresses smoothly, minimizing disruptions to nearby residents and businesses. By coordinating with engineers and inspectors, I ensure that all aspects of the project, from safety measures to noise control, are carefully managed to prioritize the well-being and satisfaction of the local community. ",
+		outcome: "Due to my commitment to public safety, the walk-through I organized proceeded smoothly, with no disruption to the public. Inspectors were able to conduct necessary measurements without incident."
+	},
+	{
+		competency: "6.3",
+		title: "Environmental Engineering - EGM",
+		situation: "In my professional experience during project ABCD, I collaborated with practitioners from related fields whose work intersects with the area of professional engineering. Specifically, I regularly engaged with hardware consultants as part of my practice.",
+		action: "When I was working with hardware consultants I understood the role and certification process of the AHC, Architectural Hardware Consultants, DHT, Door and Hardware Technician, EHC, Electrified Hardware Consultants qualifications granted by the trade members. Therefore, I understand the interface of various regulations in a single project and its importance of their role.\n I had the chance to work on different projects in Ontario and Quebec, which there are some specific differences in each building codes. For instance, I reviewed the shape and area of the push button/actuators for automatic door operators in design process, as each province required different dimension and shape. I respect the regional regulations in my practice.",
+		outcome: "I prioritize building respectful relationships with colleagues, regulatory bodies, and utility representatives, fostering understanding of roles and regulations to collectively maintain safety in our work."
+	},
+	{
+		competency: "6.4",
+		title: "Environmental Engineering - EGM",
+		situation: "A key part of my practice are projects such as ABDC, XYZ, etc. that include sustainability and energy saving measures accordingly.  During the process of developing shop drawings and cut sheets for openings of a project, I had to make sure all the material used was aligned with the LEED requirements.",
+		action: "I prepared a report and supporting documents to show this project aligns with the LEED requirements and my design process ensured sustainable approach. My reports included:\n - List of all of the material used in the project for doors, frames and hardware\n - Showing recycling and recycled percentage of each material, and presenting supporting documents from the manufacturers\n - A comprehensive table to indicate the material versus the distance that the material will be freighted in interest of fuel consumption\n I have also read and tried to comply with the principles of national guideline on sustainable development and environmental stewardship for professional engineers.",
+		outcome: "The outcome of the project was meeting the requirements and applicable codes and standards. I gained valuable information about Canada Green Building Council, and this project got Silver rating in LEED certification."
+	},
+	{
+		competency: "6.5",
+		title: "Environmental Engineering - EGM",
+		situation: "I had a project for client ABCD to review and upgrade doors, frame and hardware of a student resident to renovate the building and improve accessibility based on the Accessibility for Ontarians with Disabilities Act, AODA.",
+		action: "The primary objective was to design the doors and improve the hardware and accessibility of the building. After reviewing a few options, I presented an option that we could buy material from a manufacturer that was in Quebec, and we did not have to freight material overseas.\n I calculated the cost of material as well as the shipping and fuel expenses for two options, one from a Canadian and the other from a non-Canadian manufacturer. Based on my estimation, I found out that despite the cheaper price of the material from the non-Canadian company, I can reduce expenses when I take into account the shipping cost. By the sustainability analysis, I figured that I could lessen the carbon footprint significantly by ordering the material from a Canadian supplier.\n ",
+		outcome: "When presenting my report to the client I promoted the benefits of fuel saving options, while we would meet the accessibility requirements specified by laws. The project was implemented and the client was happy."
+	},
+	{
+		competency: "7.1",
+		title: "Environmental Engineering - EGM",
+		situation: "It is important for me to be aware of technical advancements and consistently identify areas necessitating further education to enhance my comprehension and effectively utilize this knowledge in my projects. Additionally, I actively engage in technical gatherings alongside DHI professionals.",
+		action: "As part of my course I read several Door Hardware Institute, DHI, standards and guidelines as well as technical articles and manufacturer literature, and I participated in several courses such as below:\n - 40-hour in-person course - Electrified Architectural Hardware course, which includes brand new sections on battery backup configurations, step-by-step elevation drawings, new relay applications, as well as door position switches and how to use them correctly. \n - 24-hour in-person course - using codes and standards - which includes staying current and up-to-date on the ever-changing codes and standards requires both professional and personal commitment. This course covers NFPA 80, standard for fire doors and other opening protective (2013 edition), NFPA 101, Life Safety Code (2012 edition), ICC/ ANSI A117.1, Usable and Accessible Buildings and Facilities (2009 edition), and International Building Code (2015 edition). I learned the subjects below and applied them in designing:\n Tell the differences between codes and standards and how to interpret them.\n Implement the recent fire codes in designing the fire-rated openings.\n Determine requirements for means of egress openings.\n - I also had the chance to participate in PEO events and I am a government liaison program representative, and I met wonderful people during these events. I learned how to deliver PEO's messages to MPPs and other stakeholders.",
+		outcome: "I have gained a better understanding of the recent advancements in the industry. I also shared my knowledge with my colleagues. I was able to identify and interpret codes and standards by taking these courses, and determine requirements for fire-rated openings."
+	},
+	{
+		competency: "7.2",
+		title: "Environmental Engineering - PEO",
+		situation: "I understand that in order to develop professionally and advance my career, I am required to continually identify my weaknesses, as well as gaps in my knowledge\n and skills and create development strategy that focuses on my specific development needs.",
+		action: "• At company ABCD, I started involvement in both design and project management services. I was was aware that despite to the technical skills I had previously gained in the field of civil/municipal/environmental engineering in my undergrad and grad studies, I still needed to improve my knowledge and skills in the engineering project delivery. As per my supervisor's  recommendation, I read a book on planning and execution of engineering projects titled “Project Delivery System”.\n • To be able to complete design tasks for the municipal projects, I read federal and provincial guidelines on design and implementation of infrastructure\n projects. Most of the resources were available in ODK’s library, but I did more research and found additional and more recent publications to read and\n updated the library.\n • The other important area that I needed education/training was administration and enforcement of construction contract during the bidding and construction\n phase of the projects. I read Canadian Construction Contracts Guide for CCDC2, as well as CN1 Contract Administration Training publication for Construction\n contracting for First Nation communities.",
+		outcome: "I continually practiced training needs identification and improved my engineering and project management knowledge and skills by taking different courses and by\n researching and reading training guides and books."
+	},
+	{
+		competency: "7.3",
+		title: "Environmental Engineering - EGM",
+		situation: "In my role as a project coordinator for project ABCD, I am required to possess a diverse skill set and expertise to effectively manage various projects to improve professional development. Our company has implemented a career development program along with annual goal-setting initiatives.",
+		action: "I have structured my career development program alongside my annual goals, each assigned a weight out of 100. We regularly update the status of achieving these goals, reviewing and ranking them both personally and with our supervisors. This list undergoes annual updates, enabling me to track my progress and learning. Collaborating with my supervisor, I identify relevant areas for development aligned with my current and future work objectives. Subsequently, I set my yearly goals and search courses and opportunities to further my learning and apply newfound skills.\n I have already taken a few courses regarding the health and safety and have decided to take courses to get my PMP designation through a program that our company offers.\n ",
+		outcome: "Following the assessment of this activity, I establish my annual goals and search relevant courses to undertake, along with upcoming opportunities to apply the new knowledge in my career."
+	}
+];
+const cbas = {
+	data: data
+};
+
 function Sample({ ...props }) {
+  const [CBA, setCBA] = useState();
+  useEffect(() => {
+    const cba = cbas.data.find(
+      (cba2) => cba2.competency === `${props?.competencyGroup.order}.${props?.competencyItem.order}`
+    );
+    setCBA(cba);
+  }, [props?.competencyItem]);
   return /* @__PURE__ */ jsxs("div", { className: "space-y-4", children: [
-    /* @__PURE__ */ jsx("strong", { className: "text-primary", children: "Civil Engineering - PEO" }),
-    /* @__PURE__ */ jsx("div", { className: "space-y-8", children: items.map((item, i) => /* @__PURE__ */ jsxs("div", { className: "divide-y space-y-1", children: [
+    /* @__PURE__ */ jsx("strong", { className: "text-primary", children: CBA?.title }),
+    /* @__PURE__ */ jsx("div", { className: "space-y-8", children: Object.keys(items).map((key, i) => /* @__PURE__ */ jsxs("div", { className: "divide-y space-y-1", children: [
       /* @__PURE__ */ jsxs("span", { className: "space-x-1", children: [
-        /* @__PURE__ */ jsx("strong", { className: "font-semibold", children: item.title }),
+        /* @__PURE__ */ jsx("strong", { className: "font-semibold", children: items[key].title }),
         /* @__PURE__ */ jsxs("small", { className: "text-green-500", children: [
           "(",
-          item.count,
+          items[key].count,
           ")"
         ] })
       ] }),
-      /* @__PURE__ */ jsx("p", { className: "text-zinc-500 pt-1", children: item.content })
+      /* @__PURE__ */ jsx("div", { className: "text-zinc-500 pt-1", children: /* @__PURE__ */ jsx(
+        Markdown,
+        {
+          children: CBA?.[key]?.replace(/\\n/gi, "\n "),
+          className: "space-y-2 [&>ul]:space-y-2 [&>ul]:list-[auto] [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:list-[auto] [&>ol]:my-2 [&>ol]:pl-4"
+        }
+      ) })
     ] }, i)) })
   ] });
 }
-const items = [
-  {
+const items = {
+  situation: {
     title: "Situation",
     content: "Content ...",
     count: "207 of 300"
   },
-  {
+  action: {
     title: "Action taken",
     content: "Content ...",
     count: "925 of 1650"
   },
-  {
+  outcome: {
     title: "Outcome",
     content: "Content ...",
     count: "267 of 300"
   }
-];
+};
 
 const Collapsible = CollapsiblePrimitive.Root;
 const CollapsibleTrigger = CollapsiblePrimitive.CollapsibleTrigger;
@@ -4646,7 +5586,14 @@ function Outcome({
       Step$1,
       {
         trigger: steps$1.sample.title,
-        content: /* @__PURE__ */ jsx(Sample, { step: steps$1.sample.id }),
+        content: /* @__PURE__ */ jsx(
+          Sample,
+          {
+            step: steps$1.sample.id,
+            competencyGroup,
+            competencyItem
+          }
+        ),
         step: steps$1.sample.id,
         open
       }
@@ -4697,175 +5644,6 @@ const steps$1 = {
     id: "sample",
     label: "Sample",
     title: "Approved Competency Examples"
-  }
-};
-
-function Test() {
-  return /* @__PURE__ */ jsx(AppContextProvider, { children: /* @__PURE__ */ jsx("div", { className: "w-[400px] p-8", children: /* @__PURE__ */ jsx(Outcome, {}) }) });
-}
-
-const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  default: Test
-}, Symbol.toStringTag, { value: 'Module' }));
-
-function ChatProgress({ className, input = 0, outcomes }) {
-  const [value, setValue] = useState(input);
-  const [status, setStatus] = useState(statuses.notStarted);
-  const competenciesLength = 34;
-  useEffect(() => {
-    if (outcomes.length) {
-      const length = outcomes.filter(
-        (outcome) => outcome.flag === "approved" && outcome?.score
-      ).length;
-      const value2 = Math.round(100 / competenciesLength * length);
-      setValue(value2);
-    }
-  }, [outcomes]);
-  useEffect(() => {
-    if (value === 0) return setStatus(statuses.notStarted);
-    if (value < 100) return setStatus(statuses.inProgress);
-    return setStatus(statuses.done);
-  }, [value]);
-  return /* @__PURE__ */ jsxs("div", { className: "grid gap-4", children: [
-    /* @__PURE__ */ jsxs("div", { className: "grid gap-1", children: [
-      /* @__PURE__ */ jsx("span", { className: "text-sm text-zinc-400", children: "Total progress" }),
-      /* @__PURE__ */ jsx(
-        Progress,
-        {
-          value,
-          className: cn(className, status.progressClassname)
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex gap-4", children: [
-      /* @__PURE__ */ jsx(ProgressStatus, { status: statuses.notStarted }),
-      /* @__PURE__ */ jsx(ProgressStatus, { status: statuses.inProgress }),
-      /* @__PURE__ */ jsx(ProgressStatus, { status: statuses.done })
-    ] })
-  ] });
-}
-const ProgressStatus = ({ status = statuses.notStarted }) => /* @__PURE__ */ jsx("div", { className: "flex justify-between", children: /* @__PURE__ */ jsxs("div", { className: `flex gap-1 items-center text-xs ${status.className}`, children: [
-  /* @__PURE__ */ jsx("span", { className: "w-1.5 h-1.5 rounded-full" }),
-  /* @__PURE__ */ jsx("span", { children: status.label })
-] }) });
-const statuses = {
-  notStarted: {
-    className: "text-zinc-500 [&>span:first-child]:bg-zinc-500",
-    progressClassname: "bg-zinc-500/20 [&>div]:bg-zinc-500",
-    label: "Not Started"
-  },
-  inProgress: {
-    className: "text-blue-500 [&>span:first-child]:bg-blue-500",
-    progressClassname: "bg-primary/20 [&>div]:bg-primary",
-    label: "In Progress"
-  },
-  done: {
-    className: "text-green-500 [&>span:first-child]:bg-green-500",
-    progressClassname: "bg-green-500/20 [&>div]:bg-green-500",
-    label: "Done"
-  }
-};
-
-const Accordion = AccordionPrimitive.Root;
-const AccordionItem = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Item, { ref, className: cn("border-b", className), ...props }));
-AccordionItem.displayName = "AccordionItem";
-const AccordionTrigger = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Header, { className: "flex", children: /* @__PURE__ */ jsxs(
-  AccordionPrimitive.Trigger,
-  {
-    ref,
-    className: cn(
-      "flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180",
-      className
-    ),
-    ...props,
-    children: [
-      children,
-      /* @__PURE__ */ jsx(
-        ChevronDownIcon,
-        {
-          className: "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200"
-        }
-      )
-    ]
-  }
-) }));
-AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName;
-const AccordionContent = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(
-  AccordionPrimitive.Content,
-  {
-    ref,
-    className: "overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
-    ...props,
-    children: /* @__PURE__ */ jsx("div", { className: cn("pb-4 pt-0", className), children })
-  }
-));
-AccordionContent.displayName = AccordionPrimitive.Content.displayName;
-
-function ChatIncome({ competencies, outcomes, getCompetency }) {
-  function getClassName(ci) {
-    const outcome = outcomes?.find(
-      (item) => item.competency.objectId === ci.objectId
-    );
-    return outcome ? flags[outcome.flag].className : "";
-  }
-  function onClick(type, cg, ci) {
-    getCompetency?.(type, cg, ci);
-  }
-  return /* @__PURE__ */ jsx(Accordion, { type: "single", collapsible: true, children: competencies.map((cg, x) => /* @__PURE__ */ jsxs(
-    AccordionItem,
-    {
-      value: cg.objectId,
-      className: "border-none group",
-      children: [
-        /* @__PURE__ */ jsxs(AccordionTrigger, { className: "hover:no-underline border border-zinc-200 group-data-[state=open]:border-primary group-data-[state=open]:text-primary rounded-lg p-3 my-1", children: [
-          cg.order,
-          ". ",
-          cg.title
-        ] }),
-        /* @__PURE__ */ jsx(AccordionContent, { className: "space-y-1", children: cg.items.map((ci, y) => /* @__PURE__ */ jsxs("div", { className: "relative", children: [
-          /* @__PURE__ */ jsxs(
-            "button",
-            {
-              className: cn(
-                "peer pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
-                getClassName(ci)
-              ),
-              onClick: () => onClick("send", cg, ci),
-              children: [
-                cg.order,
-                ".",
-                ci.order,
-                " ",
-                ci.title
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            Play,
-            {
-              className: "absolute right-1 bottom-1 bg-zinc-400",
-              onClick: () => onClick("run", cg, ci)
-            }
-          )
-        ] }, y)) })
-      ]
-    },
-    x
-  )) });
-}
-const flags = {
-  idle: {
-    title: "Idle",
-    className: "border-zinc-500 text-zinc-700 [&+button]:bg-zinc-500"
-  },
-  pending: {
-    title: "Pending",
-    className: "border-blue-500 text-blue-500 [&+button]:bg-blue-500"
-  },
-  approved: {
-    title: "Approved",
-    className: "border-green-500 text-green-500 [&+button]:bg-green-500"
   }
 };
 
@@ -4970,147 +5748,6 @@ const Icon = () => /* @__PURE__ */ jsxs(
     ]
   }
 );
-
-const DropdownMenu = DropdownMenuPrimitive.Root;
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
-const DropdownMenuSubTrigger = React.forwardRef(({ className, inset, children, ...props }, ref) => /* @__PURE__ */ jsxs(
-  DropdownMenuPrimitive.SubTrigger,
-  {
-    ref,
-    className: cn(
-      "flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-      inset && "pl-8",
-      className
-    ),
-    ...props,
-    children: [
-      children,
-      /* @__PURE__ */ jsx(ChevronRightIcon, { className: "ml-auto" })
-    ]
-  }
-));
-DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
-const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.SubContent,
-  {
-    ref,
-    className: cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
-    ),
-    ...props
-  }
-));
-DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
-const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsx(DropdownMenuPrimitive.Portal, { children: /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.Content,
-  {
-    ref,
-    sideOffset,
-    className: cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
-      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
-    ),
-    ...props
-  }
-) }));
-DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
-const DropdownMenuItem = React.forwardRef(({ className, inset, ...props }, ref) => /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.Item,
-  {
-    ref,
-    className: cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
-      inset && "pl-8",
-      className
-    ),
-    ...props
-  }
-));
-DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
-const DropdownMenuCheckboxItem = React.forwardRef(({ className, children, checked, ...props }, ref) => /* @__PURE__ */ jsxs(
-  DropdownMenuPrimitive.CheckboxItem,
-  {
-    ref,
-    className: cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
-    ),
-    checked,
-    ...props,
-    children: [
-      /* @__PURE__ */ jsx("span", { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center", children: /* @__PURE__ */ jsx(DropdownMenuPrimitive.ItemIndicator, { children: /* @__PURE__ */ jsx(CheckIcon, { className: "h-4 w-4" }) }) }),
-      children
-    ]
-  }
-));
-DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName;
-const DropdownMenuRadioItem = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(
-  DropdownMenuPrimitive.RadioItem,
-  {
-    ref,
-    className: cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
-    ),
-    ...props,
-    children: [
-      /* @__PURE__ */ jsx("span", { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center", children: /* @__PURE__ */ jsx(DropdownMenuPrimitive.ItemIndicator, { children: /* @__PURE__ */ jsx(DotFilledIcon, { className: "h-2 w-2 fill-current" }) }) }),
-      children
-    ]
-  }
-));
-DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
-const DropdownMenuLabel = React.forwardRef(({ className, inset, ...props }, ref) => /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.Label,
-  {
-    ref,
-    className: cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className),
-    ...props
-  }
-));
-DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
-const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.Separator,
-  {
-    ref,
-    className: cn("-mx-1 my-1 h-px bg-muted", className),
-    ...props
-  }
-));
-DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
-
-const Avatar = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  AvatarPrimitive.Root,
-  {
-    ref,
-    className: cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className),
-    ...props
-  }
-));
-Avatar.displayName = AvatarPrimitive.Root.displayName;
-const AvatarImage = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  AvatarPrimitive.Image,
-  {
-    ref,
-    className: cn("aspect-square h-full w-full", className),
-    ...props
-  }
-));
-AvatarImage.displayName = AvatarPrimitive.Image.displayName;
-const AvatarFallback = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  AvatarPrimitive.Fallback,
-  {
-    ref,
-    className: cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
-      className
-    ),
-    ...props
-  }
-));
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
 
 function UserAvatar({ className }) {
   return /* @__PURE__ */ jsxs(Avatar, { className: cn("rounded-xl", className), children: [
@@ -5641,7 +6278,7 @@ async function getFile(thread) {
     thread?.tool_resources?.file_search?.vector_store_ids?.[0];
   if (vectorStoreId) {
     try {
-      const files = await openai.beta.vectorStores.files.list(vectorStoreId);
+      const files = await openai.vectorStores.files.list(vectorStoreId);
       if (files?.data.length > 0)
         file = await openai.files.retrieve(files.data[0].id);
     } catch (error) {
@@ -6086,7 +6723,7 @@ function App() {
   ] }) });
 }
 
-const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action,
   default: App,
@@ -6199,12 +6836,12 @@ async function loader({ request }) {
   return Response.json({});
 }
 
-const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-dW1T3z1y.js','/assets/components-DqRZEfXm.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-DElYIrQu.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-dW1T3z1y.js','/assets/components-DqRZEfXm.js','/assets/use-toast-DYrZrp-R.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-8C1TgZ4U.js','/assets/index-TJ3nm1pX.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-BC6qXnPO.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-CtznK2Yv.js','/assets/alert-CxUHx0Tb.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-DqRZEfXm.js','/assets/index-C7WJWzrt.js','/assets/index-dW1T3z1y.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-DUWfRdjn.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/loader-circle-bIZ5jMvi.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-dW1T3z1y.js','/assets/scroll-area-yM-xmbM0.js','/assets/index-Dc_FVRD7.js','/assets/index-C7WJWzrt.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/index-Ijrkqbog.js','/assets/floating-ui.react-dom-B9rtmH8R.js','/assets/index-C7zHV73d.js','/assets/index-BpXgjBHo.js','/assets/input-BcVCSBdC.js','/assets/submit-field-D4MDj2if.js','/assets/use-toast-DYrZrp-R.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/separator-BwzyUMNR.js','/assets/components-DqRZEfXm.js'],'css':[]},'routes/_auth.auth.callback':{'id':'routes/_auth.auth.callback','parentId':'routes/_auth','path':'auth/callback','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.callback-B0xOLG2O.js','imports':['/assets/jsx-runtime-D2HyDbKh.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BHiCiwLH.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-BUMsUhUH.js','/assets/checkbox-B0CL4OSu.js','/assets/submit-field-D4MDj2if.js','/assets/components-DqRZEfXm.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/input-BcVCSBdC.js','/assets/index-8C1TgZ4U.js','/assets/loader-circle-bIZ5jMvi.js','/assets/index-dW1T3z1y.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-BpXgjBHo.js','/assets/index-C7zHV73d.js','/assets/button-CTur9RYT.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-DlAVgLXU.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/loader-circle-bIZ5jMvi.js','/assets/turnstile-BrDT1zVU.js','/assets/components-DqRZEfXm.js','/assets/index-8C1TgZ4U.js','/assets/index-dW1T3z1y.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-DoqD4LUt.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-BUMsUhUH.js','/assets/alert-CxUHx0Tb.js','/assets/index-8C1TgZ4U.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/submit-field-D4MDj2if.js','/assets/turnstile-BrDT1zVU.js','/assets/components-DqRZEfXm.js','/assets/input-BcVCSBdC.js','/assets/loader-circle-bIZ5jMvi.js','/assets/index-dW1T3z1y.js','/assets/button-CTur9RYT.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-BgfTdJHJ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-BCFEASBS.js','/assets/dialog-D-jBPCGJ.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/separator-BwzyUMNR.js','/assets/sheet-D8Rxbnav.js','/assets/index-dW1T3z1y.js','/assets/index-TJ3nm1pX.js','/assets/index-Ijrkqbog.js','/assets/floating-ui.react-dom-B9rtmH8R.js','/assets/index-C7zHV73d.js','/assets/components-DqRZEfXm.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/index-D31jKBKC.js','/assets/component-BA4dgY9v.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-D40fcG86.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/dialog-D-jBPCGJ.js','/assets/input-BUMsUhUH.js','/assets/loader-circle-bIZ5jMvi.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-D4MDj2if.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-DqRZEfXm.js','/assets/index-D31jKBKC.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-Ijrkqbog.js','/assets/index-dW1T3z1y.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/input-BcVCSBdC.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-CJOLMsVW.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/sheet-D8Rxbnav.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/components-DqRZEfXm.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-D31jKBKC.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-Ijrkqbog.js','/assets/index-dW1T3z1y.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-C-zbbgS5.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-DrIiYq-R.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/components-DqRZEfXm.js','/assets/index-dW1T3z1y.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/route-Cn5BpwMt.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-CdmmuP1j.js','/assets/index-8C1TgZ4U.js','/assets/checkbox-B0CL4OSu.js','/assets/react-icons.esm-BCFEASBS.js','/assets/index-BpXgjBHo.js','/assets/index-C7zHV73d.js','/assets/index-dW1T3z1y.js','/assets/loader-circle-bIZ5jMvi.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/button-CTur9RYT.js','/assets/separator-BwzyUMNR.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-D4MDj2if.js','/assets/use-toast-DYrZrp-R.js','/assets/index-Dc_FVRD7.js','/assets/index-C7WJWzrt.js','/assets/index-Ijrkqbog.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-DlCumOnh.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-CtznK2Yv.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-BCFEASBS.js','/assets/scroll-area-yM-xmbM0.js','/assets/index-C7WJWzrt.js','/assets/index-Dc_FVRD7.js','/assets/index-CdmmuP1j.js','/assets/index-Ijrkqbog.js','/assets/separator-BwzyUMNR.js','/assets/button-CTur9RYT.js','/assets/index-TJ3nm1pX.js','/assets/component-BA4dgY9v.js','/assets/floating-ui.react-dom-B9rtmH8R.js','/assets/index-C7zHV73d.js','/assets/index-dW1T3z1y.js','/assets/components-DqRZEfXm.js','/assets/textarea-CdWIYD1l.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/input-BcVCSBdC.js','/assets/dialog-D-jBPCGJ.js','/assets/arrow-right-C9SmgPxt.js','/assets/checkbox-B0CL4OSu.js','/assets/index-BpXgjBHo.js','/assets/loader-circle-bIZ5jMvi.js','/assets/submit-field-D4MDj2if.js','/assets/use-toast-DYrZrp-R.js','/assets/index-D31jKBKC.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-d8135b66.js','version':'d8135b66'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-CzHzQRDF.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-CX0sUFVy.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-DExKJvnW.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/components-CX0sUFVy.js','/assets/use-toast-DYrZrp-R.js','/assets/react-icons.esm-rwe---N-.js','/assets/index-8C1TgZ4U.js','/assets/index-DKSfMDA3.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-CWu3NX4u.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-B-OOUUU4.js','/assets/alert-CxUHx0Tb.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-CX0sUFVy.js','/assets/index-Bw096r3b.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-GAN-dthQ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/loader-circle-DhGAlDXI.js','/assets/react-icons.esm-rwe---N-.js','/assets/components-CX0sUFVy.js','/assets/scroll-area-L3FUHWQ2.js','/assets/Combination-UUIhIHuY.js','/assets/index-Bw096r3b.js','/assets/index-DKSfMDA3.js','/assets/component-BNoCFiKk.js','/assets/floating-ui.react-dom-BG5e4N6P.js','/assets/index-CX1UruNB.js','/assets/index-DgbcTfU2.js','/assets/input-BcVCSBdC.js','/assets/submit-field-B0R-B0PH.js','/assets/use-toast-DYrZrp-R.js','/assets/index-Ch1Hn_2w.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/separator-BpOIB7rr.js'],'css':[]},'routes/_auth.auth.callback':{'id':'routes/_auth.auth.callback','parentId':'routes/_auth','path':'auth/callback','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.callback-B0xOLG2O.js','imports':['/assets/jsx-runtime-D2HyDbKh.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-DEz4xp_m.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-CedBB6hn.js','/assets/checkbox-D-SfQNGd.js','/assets/submit-field-B0R-B0PH.js','/assets/components-CX0sUFVy.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/input-BcVCSBdC.js','/assets/index-8C1TgZ4U.js','/assets/loader-circle-DhGAlDXI.js','/assets/react-icons.esm-rwe---N-.js','/assets/index-DgbcTfU2.js','/assets/index-CX1UruNB.js','/assets/index-Ch1Hn_2w.js','/assets/button-CTur9RYT.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-DJC6JO6Y.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/loader-circle-DhGAlDXI.js','/assets/turnstile-BrDT1zVU.js','/assets/components-CX0sUFVy.js','/assets/index-8C1TgZ4U.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CRik6mDo.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/input-CedBB6hn.js','/assets/alert-CxUHx0Tb.js','/assets/index-8C1TgZ4U.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/submit-field-B0R-B0PH.js','/assets/turnstile-BrDT1zVU.js','/assets/components-CX0sUFVy.js','/assets/input-BcVCSBdC.js','/assets/loader-circle-DhGAlDXI.js','/assets/button-CTur9RYT.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-DaQ6i4dg.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/index-8C1TgZ4U.js','/assets/react-icons.esm-rwe---N-.js','/assets/dialog-DXOPFsfq.js','/assets/button-CTur9RYT.js','/assets/input-BcVCSBdC.js','/assets/separator-BpOIB7rr.js','/assets/sheet-BCrmqtr7.js','/assets/components-CX0sUFVy.js','/assets/index-DKSfMDA3.js','/assets/component-BNoCFiKk.js','/assets/floating-ui.react-dom-BG5e4N6P.js','/assets/index-CX1UruNB.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/user-DKdd1BuT.js','/assets/index-B8TYSf5L.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-CHunbkWb.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/dialog-DXOPFsfq.js','/assets/input-CedBB6hn.js','/assets/loader-circle-DhGAlDXI.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-B0R-B0PH.js','/assets/button-CTur9RYT.js','/assets/index-8C1TgZ4U.js','/assets/components-CX0sUFVy.js','/assets/index-B8TYSf5L.js','/assets/react-icons.esm-rwe---N-.js','/assets/component-BNoCFiKk.js','/assets/index-DKSfMDA3.js','/assets/input-BcVCSBdC.js','/assets/createLucideIcon-DrJDHJGQ.js'],'css':[]},'routes/join.cb':{'id':'routes/join.cb','parentId':'routes/join','path':'cb','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.cb-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-C9OSsTPZ.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/sheet-BCrmqtr7.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/components-CX0sUFVy.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-B8TYSf5L.js','/assets/react-icons.esm-rwe---N-.js','/assets/component-BNoCFiKk.js','/assets/index-DKSfMDA3.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-C-zbbgS5.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-Df417TZO.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/components-CX0sUFVy.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-CeC3s8uq.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/button-CTur9RYT.js','/assets/components-CX0sUFVy.js','/assets/index-8C1TgZ4U.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/route-CZ6w_NVx.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/accordion-DSijrcwe.js','/assets/react-icons.esm-rwe---N-.js','/assets/index-DgbcTfU2.js','/assets/index-CX1UruNB.js','/assets/components-CX0sUFVy.js','/assets/index-8C1TgZ4U.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/user-DKdd1BuT.js','/assets/index-Bw096r3b.js','/assets/Combination-UUIhIHuY.js','/assets/component-BNoCFiKk.js','/assets/index-DKSfMDA3.js','/assets/floating-ui.react-dom-BG5e4N6P.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-2V6j56XO.js','imports':['/assets/jsx-runtime-D2HyDbKh.js','/assets/logo-ByS3sw0U.js','/assets/progress-B-OOUUU4.js','/assets/index-8C1TgZ4U.js','/assets/accordion-DSijrcwe.js','/assets/button-CTur9RYT.js','/assets/createLucideIcon-DrJDHJGQ.js','/assets/checkbox-D-SfQNGd.js','/assets/loader-circle-DhGAlDXI.js','/assets/separator-BpOIB7rr.js','/assets/textarea-CdWIYD1l.js','/assets/submit-field-B0R-B0PH.js','/assets/use-toast-DYrZrp-R.js','/assets/scroll-area-L3FUHWQ2.js','/assets/components-CX0sUFVy.js','/assets/input-BcVCSBdC.js','/assets/dialog-DXOPFsfq.js','/assets/arrow-right-C9SmgPxt.js','/assets/index-Bw096r3b.js','/assets/react-icons.esm-rwe---N-.js','/assets/Combination-UUIhIHuY.js','/assets/component-BNoCFiKk.js','/assets/index-DKSfMDA3.js','/assets/floating-ui.react-dom-BG5e4N6P.js','/assets/index-CX1UruNB.js','/assets/index-DgbcTfU2.js','/assets/index-Ch1Hn_2w.js','/assets/index-B8TYSf5L.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-5d8e09e0.js','version':'5d8e09e0'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
@@ -6298,13 +6935,21 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','im
           caseSensitive: undefined,
           module: route9
         },
+  "routes/join.cb": {
+          id: "routes/join.cb",
+          parentId: "routes/join",
+          path: "cb",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route10
+        },
   "routes/_index": {
           id: "routes/_index",
           parentId: "root",
           path: undefined,
           index: true,
           caseSensitive: undefined,
-          module: route10
+          module: route11
         },
   "routes/logout": {
           id: "routes/logout",
@@ -6312,7 +6957,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','im
           path: "logout",
           index: undefined,
           caseSensitive: undefined,
-          module: route11
+          module: route12
         },
   "routes/mobile": {
           id: "routes/mobile",
@@ -6320,7 +6965,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','im
           path: "mobile",
           index: undefined,
           caseSensitive: undefined,
-          module: route12
+          module: route13
         },
   "routes/_auth": {
           id: "routes/_auth",
@@ -6328,7 +6973,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','im
           path: undefined,
           index: undefined,
           caseSensitive: undefined,
-          module: route13
+          module: route14
         },
   "routes/files": {
           id: "routes/files",
@@ -6336,7 +6981,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','im
           path: "files",
           index: undefined,
           caseSensitive: undefined,
-          module: route14
+          module: route15
         },
   "routes/score": {
           id: "routes/score",
@@ -6344,7 +6989,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','im
           path: "score",
           index: undefined,
           caseSensitive: undefined,
-          module: route15
+          module: route16
+        },
+  "routes/join": {
+          id: "routes/join",
+          parentId: "root",
+          path: "join",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route17
         },
   "routes/test": {
           id: "routes/test",
@@ -6352,7 +7005,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','im
           path: "test",
           index: undefined,
           caseSensitive: undefined,
-          module: route16
+          module: route18
         },
   "routes/app": {
           id: "routes/app",
@@ -6360,7 +7013,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','im
           path: "app",
           index: undefined,
           caseSensitive: undefined,
-          module: route17
+          module: route19
         },
   "routes/sse": {
           id: "routes/sse",
@@ -6368,7 +7021,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Dl4Sqz5l.js','im
           path: "sse",
           index: undefined,
           caseSensitive: undefined,
-          module: route18
+          module: route20
         }
       };
 

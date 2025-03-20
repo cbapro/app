@@ -1,0 +1,6 @@
+import{r as t,j as o}from"./jsx-runtime-D2HyDbKh.js";import"./components-CX0sUFVy.js";import{S as p,c as f,a as u}from"./index-8C1TgZ4U.js";import{c as b}from"./createLucideIcon-DrJDHJGQ.js";var v=["a","button","div","form","h2","h3","img","input","label","li","nav","ol","p","span","svg","ul"],w=v.reduce((r,e)=>{const a=t.forwardRef((i,n)=>{const{asChild:d,...c}=i,m=d?p:e;return typeof window<"u"&&(window[Symbol.for("radix-ui")]=!0),o.jsx(m,{...c,ref:n})});return a.displayName=`Primitive.${e}`,{...r,[e]:a}},{}),x="Label",s=t.forwardRef((r,e)=>o.jsx(w.label,{...r,ref:e,onMouseDown:a=>{a.target.closest("button, input, select, textarea")||(r.onMouseDown?.(a),!a.defaultPrevented&&a.detail>1&&a.preventDefault())}}));s.displayName=x;var l=s;const y=u("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"),N=t.forwardRef(({className:r,...e},a)=>o.jsx(l,{ref:a,className:f(y(),r),...e}));N.displayName=l.displayName;/**
+ * @license lucide-react v0.469.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const h=b("LoaderCircle",[["path",{d:"M21 12a9 9 0 1 1-6.219-8.56",key:"13zald"}]]);export{N as L,h as a};
