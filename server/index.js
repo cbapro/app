@@ -1,7 +1,7 @@
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { PassThrough } from 'node:stream';
-import { createReadableStreamFromReadable, createCookieSessionStorage, redirect as redirect$1 } from '@remix-run/node';
-import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useNavigate, useActionData, useSubmit, useNavigation, Form as Form$1, redirect as redirect$2, Link, useSearchParams, useLocation } from '@remix-run/react';
+import { createReadableStreamFromReadable, redirect as redirect$1, createCookieSessionStorage } from '@remix-run/node';
+import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useActionData, useSubmit, useNavigation, Form as Form$1, redirect as redirect$2, Link, useSearchParams, useNavigate, useLocation } from '@remix-run/react';
 import * as isbotModule from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import * as React from 'react';
@@ -14,7 +14,8 @@ import { Cross2Icon, CaretSortIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, C
 import { produce } from 'immer';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { Slot } from '@radix-ui/react-slot';
-import { X, AlertOctagon, LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, LogOut, Play as Play$1, MousePointerClick, ChevronRight, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
+import { X, AlertOctagon, LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, MousePointerClick, ChevronRight, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
+import Markdown from 'react-markdown';
 import Stripe from 'stripe';
 import 'dotenv/config';
 import { HttpsProxyAgent } from 'https-proxy-agent';
@@ -41,7 +42,6 @@ import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as SwitchPrimitives from '@radix-ui/react-switch';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import Markdown from 'react-markdown';
 import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
 import remarkGfm from 'remark-gfm';
 
@@ -158,7 +158,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-DU11pG-i.css";
+const stylesheet = "/assets/tailwind-B4oy1zfY.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -770,6 +770,8 @@ const {
   APP_ADDITIONAL_MESSAGES: additionalMessages,
   APP_SCORE_REQUEST_LIMIT: scoreRequestLimit,
   APP_SCORE_REQUEST_OUTCOME_LIMIT: scoreRequestOutcomeLimit,
+
+  SITE_PRICING_URL: sitePricingUrl,
 } = process.env;
 
 const vars = {
@@ -777,6 +779,9 @@ const vars = {
     additionalMessages,
     scoreRequestLimit,
     scoreRequestOutcomeLimit,
+  },
+  site: {
+    pricingUrl: sitePricingUrl,
   },
   admin: {
     key: process.env.ADMIN_KEY,
@@ -853,8 +858,6 @@ const getPointer = (className, objectId) => ({
   objectId,
 });
 
-// export * as outcomes from "./outcome.server";
-
 const models = {
   user: "_User",
   competency: "Competency",
@@ -866,6 +869,11 @@ const models = {
   profile: "Profile",
   settting: "Setting",
 };
+
+function handleInvalidSessionToken(error) {
+  if (error.code === Parse.Error.INVALID_SESSION_TOKEN)
+    return redirect$1("/logout");
+}
 
 const Class$5 = "License";
 
@@ -898,6 +906,7 @@ async function read$6(user, args) {
     return data[0];
   } catch (error) {
     console.log("license.read", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -947,6 +956,7 @@ async function read$5(user) {
     return data[0];
   } catch (error) {
     console.log("profile.read", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -962,14 +972,16 @@ async function update$3(user, args) {
 
 const Class$3 = "Outcome";
 
-async function read$4(user, thread) {
+async function read$4(user, { thread, include }) {
   try {
     const query = new Parse.Query(Class$3);
     user && query.equalTo("user", user.objectId);
     thread && query.equalTo("thread", thread.objectId || thread.id);
+    include && query.include(include);
     return await query.find({ sessionToken: user.sessionToken });
   } catch (error) {
     console.log("outcome.read", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -1126,42 +1138,27 @@ async function createCheckoutSession(user, { customerId, lookup_key }) {
       })
     )?.data?.[0];
 
-    const { id: sessionId, url: sessionUrl } =
-      await stripe.checkout.sessions.create({
-        customer: customerId,
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-        mode: "payment",
-        success_url: `${domain}/join?success=true&sessionId={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${domain}/join?canceled=true`,
-        metadata: {
-          userId: user.objectId,
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
         },
-      });
+      ],
+      mode: "payment",
+      success_url: `${domain}/join?success=true&sessionId={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${domain}/join?canceled=true&priceKey=${lookup_key}`,
+      metadata: {
+        userId: user.objectId,
+      },
+    });
 
-    return Response.redirect(sessionUrl);
+    return Response.redirect(session.url);
   } catch (error) {
     console.log("join.createCheckoutSession", error.message);
     return { error: error.message };
   }
-}
-
-async function createPortalSession({ sessionId }) {
-  console.log("join.createPortalSession", sessionId);
-  // get customerId from db later
-  const { customer } = await stripe.checkout.sessions.retrieve(sessionId);
-  const return_url = domain + "/join";
-
-  const portalSession = await stripe.billingPortal.sessions.create({
-    customer,
-    return_url,
-  });
-
-  return Response.redirect(portalSession.url);
 }
 
 async function checkoutSessionCompleted(session) {
@@ -1196,6 +1193,7 @@ async function checkoutSessionCompleted(session) {
 async function check$1(
   request,
   redirected = true,
+  competency,
   url = "/app/settings/overview"
 ) {
   console.log("join.check");
@@ -1209,15 +1207,25 @@ async function check$1(
 
   let error = {};
   const isFree = prices[license.priceKey].plan === plans.free;
-  const { cycles, tokens } = prices[license.priceKey].limit;
+  const { cycles, cyclesIncludes, tokens } = prices[license.priceKey].limit;
   const { total: $tokens } = (await read$5(user))?.toJSON()?.usage;
-  const $cycles = (await read$4(user, thread))?.length;
+  const $cycles = (await read$4(user, { thread }))?.length;
+
+  if (cyclesIncludes && competency && !cyclesIncludes.includes(competency))
+    error.cycles = true;
 
   if (isFree && $cycles >= cycles) error.cycles = true;
   if ($tokens >= tokens) error.tokens = true;
   const hasError = Object.keys(error).length > 0;
 
+  const {
+    product: { name },
+  } = await stripe.prices.retrieve(license.priceId, {
+    expand: ["product"],
+  });
+
   const plan = {
+    name,
     isFree,
     cycles,
     $cycles,
@@ -1239,6 +1247,20 @@ async function check$1(
   }
 
   return plan;
+}
+
+async function createPortalSession({ sessionId }) {
+  console.log("join.createPortalSession", sessionId);
+  // get customerId from db later
+  const { customer } = await stripe.checkout.sessions.retrieve(sessionId);
+  const return_url = domain + "/join";
+
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer,
+    return_url,
+  });
+
+  return Response.redirect(portalSession.url);
 }
 
 async function getPrices({ lookup_keys }) {
@@ -1263,6 +1285,7 @@ const prices = {
     plan: plans.free,
     limit: {
       cycles: 1,
+      cyclesIncludes: ["1.1"],
       tokens: 30000,
     },
   },
@@ -1298,7 +1321,7 @@ async function loader$g({ request }) {
   if (!plan) plan = await check$1(request, false);
   session.unset("plan");
   return Response.json(
-    { plan },
+    { plan, sitePricingUrl: vars.site.pricingUrl },
     {
       headers: {
         "Set-Cookie": await commitSession(session)
@@ -1308,7 +1331,6 @@ async function loader$g({ request }) {
 }
 function Overview() {
   const data = useLoaderData();
-  const navigate = useNavigate();
   return /* @__PURE__ */ jsxs("div", { className: "grid gap-4", children: [
     /* @__PURE__ */ jsx("div", { className: "grid", children: /* @__PURE__ */ jsxs(
       "span",
@@ -1319,7 +1341,7 @@ function Overview() {
         ),
         children: [
           "License: ",
-          data?.plan?.isFree ? "FREE" : "PAID"
+          data?.plan?.name
         ]
       }
     ) }),
@@ -1337,13 +1359,13 @@ function Overview() {
           ...{
             className: "mt-8",
             icon: /* @__PURE__ */ jsx(AlertOctagon, {}),
-            title: "Your licence has been Expired!",
+            title: "Free Trial License has come to an end!",
             description: "License tokens finished, Go to Pricing to get a new license.",
             variant: "destructive",
             actionButton: {
               title: "Upgrade Now",
               onClick: () => {
-                navigate("/join");
+                window.location = data?.sitePricingUrl;
               }
             },
             open: true
@@ -1351,9 +1373,31 @@ function Overview() {
         }
       )
     ] }),
+    /* @__PURE__ */ jsx(
+      Markdown,
+      {
+        children: trialDescription,
+        className: "p-4 text-sm space-y-4 [&>ul]:space-y-2 [&>ul]:list-disc [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:list-disc [&>ol]:my-2 [&>ol]:pl-4"
+      }
+    ),
     /* @__PURE__ */ jsx("div", { className: "hidden h-full flex- justify-center items-center", children: /* @__PURE__ */ jsx(Logo, { subtitle: true, vartical: true, className: "opacity-25" }) })
   ] });
 }
+const trialDescription = `
+  You're currently using the Free Trial version of CBA Pro.
+
+  The free trial is designed to give you a hands-on experience with how the platform works --- but it includes access to only one competency: **1.1 -- Regulation, Codes & Standards.**
+
+  All other competencies (2.1 to 7.5) are locked in the trial version.
+  To unlock the full set of 34 competencies and submit a complete competency report, you'll need to upgrade your license.
+
+  - This limited access allows you to:
+  - Explore the dashboard layout
+  - Interact with memory-triggering questions
+  - Understand how personalized prompts guide your writing
+  - Experience the self-assessment scoring system
+  - Preview the report writing tool
+`;
 
 const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
@@ -2155,6 +2199,7 @@ async function read$3(user) {
     return data[0];
   } catch (error) {
     console.log("setting.read", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -2476,7 +2521,7 @@ async function loader$d({ request }) {
   const user = session.get("user");
   const url = new URL(request.url);
   const from = url.searchParams.get("from");
-  if (user) throw redirect$1(from ?? "/app");
+  if (user) throw redirect$1(decodeURIComponent(from) ?? "/app");
   return null;
 }
 async function action$8({ request }) {
@@ -2700,8 +2745,11 @@ async function action$6({ request, params }) {
   const user = session.get("user");
   if (!user) return redirect$1("/auth/login");
   const action2 = params.action;
+  const body = await request.json();
   if (action2 === "create" || action2 === "update") {
-    const plan = await check$1(request, false);
+    const competency = body.competency;
+    const $competency = `${competency?.competencyGroup?.order}.${competency?.order}`;
+    const plan = await check$1(request, false, $competency);
     if (plan?.hasError) {
       session.flash("plan", plan);
       return Response.json(
@@ -2720,7 +2768,7 @@ async function action$6({ request, params }) {
   let result;
   const thread = session.get("thread");
   if (action2 === "create") {
-    const { competency } = await request.json();
+    const competency = body.competency;
     result = await create$3(
       {
         user: getPointer(models.user, user.objectId),
@@ -2732,10 +2780,10 @@ async function action$6({ request, params }) {
     );
   }
   if (action2 === "get") {
-    result = await read$4(user, thread);
+    result = await read$4(user, { thread });
   }
   if (action2 === "update") {
-    const body = await request.json();
+    body.competency;
     result = await update$2(
       {
         ...body
@@ -3888,20 +3936,6 @@ const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
 
 async function loader$9({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
-  const user = session.get("user");
-
-  if (!user) return redirect$1("/auth/login");
-
-  return await check$1(request);
-}
-
-const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  loader: loader$9
-}, Symbol.toStringTag, { value: 'Module' }));
-
-async function loader$8({ request }) {
-  const session = await getSession(request.headers.get("Cookie"));
   const plan = session.get("plan");
   return { plan };
 }
@@ -3939,9 +3973,40 @@ function AppAlert() {
   );
 }
 
-const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: AppAlert,
+  loader: loader$9
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$8({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+
+  if (!user) return redirect$1("/auth/login");
+
+  let profile = session.get("profile");
+  let license = session.get("license");
+
+  if (!profile) profile = (await read$5(user))?.toJSON();
+
+  if (!license) license = (await read$6(user))?.toJSON();
+
+  if (license) {
+    const {
+      product: { name },
+    } = await stripe.prices.retrieve(license.priceId, {
+      expand: ["product"],
+    });
+
+    license = { ...license, name };
+  }
+
+  return Response.json({ profile, license });
+}
+
+const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
   loader: loader$8
 }, Symbol.toStringTag, { value: 'Module' }));
 
@@ -4423,8 +4488,7 @@ async function read$2({ user, purpose = purposes.chat, objectId }) {
     return await query.find({ sessionToken: user.sessionToken });
   } catch (error) {
     console.log("thread.read", error.message);
-    if (error.code === Parse.Error.INVALID_SESSION_TOKEN)
-      return redirect$1("/logout");
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -4502,8 +4566,7 @@ async function read$1(user, thread, limit) {
     return await query.find({ sessionToken: user.sessionToken });
   } catch (error) {
     console.log("message.read", error.message);
-    if (error.code === Parse.Error.INVALID_SESSION_TOKEN)
-      return redirect$1("/logout");
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -4747,17 +4810,27 @@ async function loader$3({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const url = new URL(request.url);
-  if (!user) return redirect$2(`/auth/login?from=${url.pathname}`);
+  if (!user)
+    return redirect$2(
+      `/auth/login?from=${encodeURIComponent(url.pathname + url.search)}`
+    );
   const { type, priceKey, sessionId, success, canceled } = Object.fromEntries(
     url.searchParams
   );
   if (type === "create" && priceKey)
     return await strat(user, { priceKey });
-  let message;
-  if (success) await wait(2e3);
+  let message, toUrl;
+  if (success) {
+    await wait(3e3);
+    message = "The checkout was successful.";
+    toUrl = "/app/settings/overview";
+    return redirect$2(toUrl);
+  }
+  if (canceled) {
+    message = "Order canceled, Try again!";
+    toUrl = `/join?type=create&priceKey=${priceKey}`;
+  }
   const license = (await read$6(user))?.toJSON();
-  if (canceled) message = "Order canceled, Try again!";
-  if (success) message = "The checkout was successful.";
   const lookup_keys = Object.keys(prices);
   const prices$1 = await getPrices({ lookup_keys });
   return Response.json({
@@ -4766,7 +4839,8 @@ async function loader$3({ request }) {
     sessionId,
     success,
     canceled,
-    license
+    license,
+    toUrl
   });
 }
 async function action$1({ request }) {
@@ -4784,7 +4858,7 @@ async function action$1({ request }) {
   return null;
 }
 function join() {
-  const { prices, message, sessionId, success, canceled, license } = useLoaderData();
+  const { prices, message, sessionId, success, canceled, license, toUrl } = useLoaderData();
   const { state } = useNavigation();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -4806,8 +4880,8 @@ function join() {
         {
           variant: "outline",
           className: "!text-primary border-primary hover:bg-primary/5 shadow-none mt-16",
-          onClick: () => navigate("/app"),
-          children: "Back to App"
+          onClick: () => navigate(toUrl),
+          children: success ? "Back to App" : "Try again"
         }
       )
     ] }),
@@ -5069,16 +5143,27 @@ const AccordionContent = React.forwardRef(({ className, children, ...props }, re
 ));
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;
 
-function NavUser({
-  user = {
-    name: "Reza K",
-    email: "reza@cbapro.ca",
-    avatar: "https://i.pravatar.cc/150?img=3"
+function NavUser() {
+  const [open, setOpen] = useState(false);
+  const [reminder, setReminder] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [plan, setPlan] = useState(null);
+  useEffect(() => {
+    if (open && !plan) read();
+  }, [open]);
+  async function read() {
+    const res = await fetch("/nav-user");
+    const { profile: profile2, license } = await res.json();
+    setProfile({
+      name: `${profile2?.firstName} ${profile2?.lastName}`,
+      email: profile2?.email,
+      avatar: profile2?.avatar
+    });
+    setPlan({ name: license?.name });
   }
-}) {
-  return /* @__PURE__ */ jsxs(DropdownMenu, { children: [
-    /* @__PURE__ */ jsx(DropdownMenuTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(Avatar, { className: "h-12 w-12 rounded-full cursor-pointer", children: [
-      /* @__PURE__ */ jsx(AvatarImage, { src: user.avatar, alt: user.name }),
+  return /* @__PURE__ */ jsxs(DropdownMenu, { open, onOpenChange: setOpen, children: [
+    /* @__PURE__ */ jsx(DropdownMenuTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(Avatar, { className: "rounded-xl cursor-pointer", children: [
+      /* @__PURE__ */ jsx(AvatarImage, { src: profile?.avatar ?? "/avatar.jpg" }),
       /* @__PURE__ */ jsx(AvatarFallback, { className: "rounded-lg", children: "RK" })
     ] }) }),
     /* @__PURE__ */ jsxs(
@@ -5090,13 +5175,13 @@ function NavUser({
         children: [
           /* @__PURE__ */ jsx(DropdownMenuLabel, { className: "p-0 font-normal", children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 px-1 py-1.5 text-left text-sm", children: [
             /* @__PURE__ */ jsxs(Avatar, { className: "h-8 w-8 rounded-full", children: [
-              /* @__PURE__ */ jsx(AvatarImage, { src: user.avatar, alt: user.name }),
+              /* @__PURE__ */ jsx(AvatarImage, { src: profile?.avatar ?? "/avatar.jpg" }),
               /* @__PURE__ */ jsx(AvatarFallback, { className: "rounded-lg", children: "CN" })
             ] }),
-            /* @__PURE__ */ jsxs("div", { className: "grid flex-1 text-left text-sm leading-tight", children: [
-              /* @__PURE__ */ jsx("span", { className: "truncate font-semibold", children: user.name }),
-              /* @__PURE__ */ jsx("span", { className: "truncate text-xs", children: user.email })
-            ] })
+            profile ? /* @__PURE__ */ jsxs("div", { className: "grid flex-1 text-left text-sm leading-tight", children: [
+              /* @__PURE__ */ jsx("span", { className: "truncate font-semibold", children: profile?.name }),
+              /* @__PURE__ */ jsx("span", { className: "truncate text-xs", children: profile?.email })
+            ] }) : /* @__PURE__ */ jsx(SKeleton, {})
           ] }) }),
           /* @__PURE__ */ jsx(DropdownMenuSeparator, {}),
           /* @__PURE__ */ jsxs(DropdownMenuLabel, { className: "flex gap-2 justify-between items-center font-medium", children: [
@@ -5105,7 +5190,7 @@ function NavUser({
               "Remind me",
               /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Continue Working alerts" })
             ] }),
-            /* @__PURE__ */ jsx(Switch, {})
+            /* @__PURE__ */ jsx(Switch, { checked: reminder, onCheckedChange: setReminder })
           ] }),
           /* @__PURE__ */ jsxs(Accordion, { type: "single", collapsible: true, className: "m-0", children: [
             /* @__PURE__ */ jsxs(AccordionItem, { value: "item-1", className: "group border-none", children: [
@@ -5117,19 +5202,33 @@ function NavUser({
                 ] })
               ] }) }),
               /* @__PURE__ */ jsxs(AccordionContent, { children: [
-                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", children: [
+                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", onClick: () => setOpen(false), children: [
                   /* @__PURE__ */ jsx(UserPen, {}),
-                  /* @__PURE__ */ jsxs("span", { className: "grid", children: [
-                    "Edit Profile",
-                    /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Update Profile info" })
-                  ] })
+                  /* @__PURE__ */ jsxs(
+                    Link,
+                    {
+                      to: "/app/settings/profile",
+                      className: "grid w-full hover:text-primary",
+                      children: [
+                        "Edit Profile",
+                        /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Update Profile info" })
+                      ]
+                    }
+                  )
                 ] }),
-                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", children: [
+                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", onClick: () => setOpen(false), children: [
                   /* @__PURE__ */ jsx(BatteryCharging, {}),
-                  /* @__PURE__ */ jsxs("span", { className: "grid", children: [
-                    "Usage Overview",
-                    /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Review Account usages" })
-                  ] })
+                  /* @__PURE__ */ jsxs(
+                    Link,
+                    {
+                      to: "/app/settings/overview",
+                      className: "grid w-full hover:text-primary",
+                      children: [
+                        "Usage Overview",
+                        /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Review Account usages" })
+                      ]
+                    }
+                  )
                 ] })
               ] })
             ] }),
@@ -5149,29 +5248,67 @@ function NavUser({
                     /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Get in Touch whit our Support team" })
                   ] })
                 ] }),
-                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", children: [
+                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", onClick: () => setOpen(false), children: [
                   /* @__PURE__ */ jsx(MessageSquareDot, {}),
-                  /* @__PURE__ */ jsxs("span", { className: "grid", children: [
-                    "Feature Request",
-                    /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "We will build what's missing" })
-                  ] })
+                  /* @__PURE__ */ jsxs(
+                    Link,
+                    {
+                      to: "/app/contact?type=help",
+                      className: "grid w-full hover:text-primary",
+                      children: [
+                        "Feature Request",
+                        /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "We will build what's missing" })
+                      ]
+                    }
+                  )
                 ] }),
-                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", children: [
+                /* @__PURE__ */ jsxs(DropdownMenuItem, { className: "pl-8", onClick: () => setOpen(false), children: [
                   /* @__PURE__ */ jsx(MessageSquareX, {}),
-                  /* @__PURE__ */ jsxs("span", { className: "grid", children: [
-                    "Report a Bug",
-                    /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Something is Broken? Let us Know!" })
-                  ] })
+                  /* @__PURE__ */ jsxs(
+                    Link,
+                    {
+                      to: "/app/contact?type=help",
+                      className: "grid w-full hover:text-primary",
+                      children: [
+                        "Report a Bug",
+                        /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Something is Broken? Let us Know!" })
+                      ]
+                    }
+                  )
                 ] })
               ] })
             ] })
           ] }),
-          /* @__PURE__ */ jsxs(DropdownMenuItem, { children: [
+          /* @__PURE__ */ jsxs(DropdownMenuItem, { onClick: () => setOpen(false), children: [
             /* @__PURE__ */ jsx(Glasses, {}),
-            /* @__PURE__ */ jsxs("span", { className: "grid", children: [
-              "Request for PEng Reviewer",
-              /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Account Expert Advice" })
-            ] })
+            /* @__PURE__ */ jsxs(
+              Link,
+              {
+                to: "/app/contact?type=reviewer",
+                className: "grid w-full hover:text-primary",
+                children: [
+                  "Request for PEng Reviewer",
+                  /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Account Expert Advice" })
+                ]
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs(DropdownMenuItem, { onClick: () => setOpen(false), children: [
+            /* @__PURE__ */ jsx(CircleFadingArrowUp, {}),
+            plan ? /* @__PURE__ */ jsxs(
+              Link,
+              {
+                to: "/app/settings/overview",
+                className: "grid w-full hover:text-primary",
+                children: [
+                  "Upgrade your Plan",
+                  /* @__PURE__ */ jsxs("small", { className: "text-zinc-400", children: [
+                    "Current Plan: ",
+                    /* @__PURE__ */ jsx("b", { children: plan?.name })
+                  ] })
+                ]
+              }
+            ) : /* @__PURE__ */ jsx(SKeleton, {})
           ] }),
           /* @__PURE__ */ jsx(DropdownMenuSeparator, {}),
           /* @__PURE__ */ jsx("div", { className: "p-1", children: /* @__PURE__ */ jsx(Link, { to: "/logout", className: "w-full", children: /* @__PURE__ */ jsxs(
@@ -5190,26 +5327,10 @@ function NavUser({
     )
   ] });
 }
-
-function useOngoing () {
-  const { state, store } = useStore();
-  const { toast } = useToast();
-
-  function setOngoing(arg) {
-    if (arg && state.ongoing)
-      return toast({
-        title: "Wait, Another Process Ongoing",
-        description:
-          "The request has been stopped until another process be completed!",
-      });
-    store.ongoing(null, arg);
-  }
-
-  return {
-    ongoing: state.ongoing,
-    setOngoing,
-  };
-}
+const SKeleton = () => /* @__PURE__ */ jsxs("div", { className: "w-full space-y-2 py-1", children: [
+  /* @__PURE__ */ jsx(Skeleton, { className: "h-4 w-full" }),
+  /* @__PURE__ */ jsx(Skeleton, { className: "h-2 w-1/2" })
+] });
 
 const steps$1 = [
 	{
@@ -5383,28 +5504,13 @@ function Layout({ ...props }) {
 
 async function action({ request }) {
   console.log("test.action");
-  await wait(3e3);
-  return Response.json({ ongoing: false });
-}
-async function loader$2({ request }) {
   return null;
 }
+async function loader$2({ request }) {
+  return redirect$1("/app");
+}
 function Test() {
-  const actionData = useActionData();
-  const { ongoing, setOngoing } = useOngoing();
-  const { toast } = useToast();
-  useEffect(() => {
-    if (actionData?.ongoing) setOngoing(false);
-  }, [actionData]);
-  useEffect(() => {
-    toast({ title: `Ongoing is ${ongoing}` });
-  }, [ongoing]);
-  return /* @__PURE__ */ jsx(Layout, { children: /* @__PURE__ */ jsxs("div", { className: "w-[400px] p-8 grid gap-16", children: [
-    /* @__PURE__ */ jsx(NavUser, {}),
-    JSON.stringify(ongoing),
-    /* @__PURE__ */ jsx("button", { onClick: () => setOngoing(true), children: "onClick" }),
-    /* @__PURE__ */ jsx("form", { method: "post", children: /* @__PURE__ */ jsx("button", { children: "Post" }) })
-  ] }) });
+  return /* @__PURE__ */ jsx(Layout, { children: /* @__PURE__ */ jsx("div", { className: "w-[400px] p-8 grid gap-16", children: /* @__PURE__ */ jsx(NavUser, {}) }) });
 }
 
 const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5487,6 +5593,26 @@ function Play({ ...props }) {
       children: /* @__PURE__ */ jsx(Play$1, { size: 4 })
     }
   );
+}
+
+function useOngoing () {
+  const { state, store } = useStore();
+  const { toast } = useToast();
+
+  function setOngoing(arg) {
+    if (arg && state.ongoing)
+      return toast({
+        title: "Wait, Another Process Ongoing",
+        description:
+          "The request has been stopped until another process be completed!",
+      });
+    store.ongoing(null, arg);
+  }
+
+  return {
+    ongoing: state.ongoing,
+    setOngoing,
+  };
 }
 
 function ChatIncome({ competencies, outcomes, getCompetency }) {
@@ -5652,7 +5778,7 @@ function Guides({ ...props }) {
       {
         className: cn(
           "flex gap-2",
-          !value?.includes?.(index) && !value?.includes?.(index - 1) && "opacity-50"
+          !value?.includes?.(index) && !value?.includes?.(index - 1) && index !== 0 && "opacity-50"
         ),
         children: [
           loading ? /* @__PURE__ */ jsx("span", { children: /* @__PURE__ */ jsx(
@@ -6578,53 +6704,8 @@ const Icon = () => /* @__PURE__ */ jsxs(
 
 function UserAvatar({ className }) {
   return /* @__PURE__ */ jsxs(Avatar, { className: cn("rounded-xl", className), children: [
-    /* @__PURE__ */ jsx(AvatarImage, { src: "https://i.pinimg.com/736x/fa/60/51/fa6051d72b821cb48a8cc71d3481dfef.jpg" }),
+    /* @__PURE__ */ jsx(AvatarImage, { src: "/avatar.jpg" }),
     /* @__PURE__ */ jsx(AvatarFallback, { children: "CN" })
-  ] });
-}
-
-function UserMenu() {
-  const [open, setOpen] = useState(false);
-  return /* @__PURE__ */ jsxs(DropdownMenu, { open, onOpenChange: setOpen, children: [
-    /* @__PURE__ */ jsx(DropdownMenuTrigger, { children: /* @__PURE__ */ jsx(UserAvatar, {}) }),
-    /* @__PURE__ */ jsxs(DropdownMenuContent, { children: [
-      /* @__PURE__ */ jsx(DropdownMenuLabel, { children: "My Account" }),
-      /* @__PURE__ */ jsx(Separator, {}),
-      /* @__PURE__ */ jsx(DropdownMenuItem, { onClick: () => setOpen(false), children: /* @__PURE__ */ jsx(
-        Link,
-        {
-          to: "/app/settings/overview",
-          className: "w-full hover:text-primary",
-          children: "Overview"
-        }
-      ) }),
-      /* @__PURE__ */ jsx(DropdownMenuItem, { onClick: () => setOpen(false), children: /* @__PURE__ */ jsx(
-        Link,
-        {
-          to: "/app/settings/profile",
-          className: "w-full hover:text-primary",
-          children: "Profile"
-        }
-      ) }),
-      /* @__PURE__ */ jsx(DropdownMenuItem, { onClick: () => setOpen(false), children: /* @__PURE__ */ jsx(
-        Link,
-        {
-          to: "/app/contact?type=help",
-          className: "w-full hover:text-primary",
-          children: "Request for Help"
-        }
-      ) }),
-      /* @__PURE__ */ jsx(DropdownMenuItem, { onClick: () => setOpen(false), children: /* @__PURE__ */ jsx(
-        Link,
-        {
-          to: "/app/contact?type=reviewer",
-          className: "w-full hover:text-primary",
-          children: "Request for Reviewer"
-        }
-      ) }),
-      /* @__PURE__ */ jsx(DropdownMenuSeparator, {}),
-      /* @__PURE__ */ jsx(DropdownMenuItem, { children: /* @__PURE__ */ jsx(Link, { to: "/logout", className: "w-full hover:text-orange-500", children: "Logout" }) })
-    ] })
   ] });
 }
 
@@ -7086,6 +7167,7 @@ async function read() {
     return modifier(data);
   } catch (error) {
     console.log("competency.getAll", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -7324,7 +7406,7 @@ async function start(request) {
   if (!user) return redirect$1("/auth/login");
   console.log("app.start", user.objectId);
 
-  const { setting, license } = await check(user, session);
+  const { profile, setting, license } = await check(user, session);
 
   if (!license)
     return redirect$1(`/join?type=create&priceKey=${prices.P0.key}`);
@@ -7388,7 +7470,7 @@ async function init(user, session) {
   const competencies = await read();
   console.log("app.init.competencies", competencies.length);
 
-  const outcomes = await read$4(user, thread);
+  const outcomes = await read$4(user, { thread });
   console.log("app.init.outcomes", outcomes.length);
 
   const data = {
@@ -7501,7 +7583,7 @@ function App() {
         ),
         /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
           /* @__PURE__ */ jsx(Button, { variant: "ghost", size: "icon", children: /* @__PURE__ */ jsx(Bell, {}) }),
-          /* @__PURE__ */ jsx(UserMenu, {})
+          /* @__PURE__ */ jsx(NavUser, {})
         ] })
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "flex gap-4 flex-grow", children: [
@@ -7712,7 +7794,7 @@ const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-BjSNsPwr.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js','/assets/use-toast-DPb081JK.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/use-store-BFAQnfD-.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-DMr4kHYV.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/progress-DOOeRDkq.js','/assets/alert-DTTcjJsS.js','/assets/index-Bm4zUeiC.js','/assets/components-Dbuj-jCe.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-FySp-Rtv.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/components-Dbuj-jCe.js','/assets/scroll-area-MU3Ab1D6.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-BxWJknF1.js','/assets/index-fwHVxwM4.js','/assets/input-BA-aycuy.js','/assets/submit-field-DqAfEN8S.js','/assets/use-toast-DPb081JK.js','/assets/separator-DjWL-SG6.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-D-KSlnF1.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/checkbox-kRAsVnok.js','/assets/submit-field-DqAfEN8S.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/index-FAq9z4ls.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-BxWJknF1.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-3s72pyha.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js','/assets/index-Bm4zUeiC.js','/assets/index-Cu60BknP.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CKMEQocB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/alert-Qr8uk1we.js','/assets/index-Bm4zUeiC.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-BkXmGYrH.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/index-Bm4zUeiC.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/dialog-COA1u6GI.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/separator-DjWL-SG6.js','/assets/sheet-B-hyboHM.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/user-180uCeto.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/index-DMkDirOg.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-Dt0XDl8D.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/dialog-COA1u6GI.js','/assets/input-q0MbOGkw.js','/assets/label-DZUXmkCl.js','/assets/textarea-B9ABGBnz.js','/assets/submit-field-DqAfEN8S.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js','/assets/input-BA-aycuy.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/join.check':{'id':'routes/join.check','parentId':'routes/join','path':'check','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.check-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-JiI_zyDs.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/alert-DTTcjJsS.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-tX39jnSe.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/sheet-B-hyboHM.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/components-Dbuj-jCe.js','/assets/arrow-right-huveuXEQ.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-DcWzYqq_.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-TMD5jM7r.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-DoHWyRp3.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/index-Bm4zUeiC.js','/assets/use-toast-DPb081JK.js','/assets/logo-D1cHmNYB.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-C3tSk0jX.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/layout-CGHsQf1S.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-FAq9z4ls.js','/assets/index-BxWJknF1.js','/assets/index-DMkDirOg.js','/assets/index-Cu60BknP.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/user-180uCeto.js','/assets/components-Dbuj-jCe.js','/assets/use-toast-DPb081JK.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/use-store-BFAQnfD-.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-DSMThsmE.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/progress-DOOeRDkq.js','/assets/index-Bm4zUeiC.js','/assets/layout-CGHsQf1S.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/checkbox-kRAsVnok.js','/assets/label-DZUXmkCl.js','/assets/use-store-BFAQnfD-.js','/assets/loader-circle-cINCiDbR.js','/assets/separator-DjWL-SG6.js','/assets/textarea-B9ABGBnz.js','/assets/components-Dbuj-jCe.js','/assets/x-BsuXUyX7.js','/assets/submit-field-DqAfEN8S.js','/assets/use-toast-DPb081JK.js','/assets/scroll-area-MU3Ab1D6.js','/assets/input-BA-aycuy.js','/assets/dialog-COA1u6GI.js','/assets/arrow-right-huveuXEQ.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-DMkDirOg.js','/assets/index-BxWJknF1.js','/assets/index-BNl-ebS2.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-a74d6896.js','version':'a74d6896'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-BKaMPeLn.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js','/assets/use-toast-DPb081JK.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/use-store-BFAQnfD-.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-TO1kS4-n.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/index-DRridQs4.js','/assets/alert-DTTcjJsS.js','/assets/index-Bm4zUeiC.js','/assets/components-Dbuj-jCe.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-FySp-Rtv.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/components-Dbuj-jCe.js','/assets/scroll-area-MU3Ab1D6.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-BxWJknF1.js','/assets/index-fwHVxwM4.js','/assets/input-BA-aycuy.js','/assets/submit-field-DqAfEN8S.js','/assets/use-toast-DPb081JK.js','/assets/separator-DjWL-SG6.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-D-KSlnF1.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/checkbox-kRAsVnok.js','/assets/submit-field-DqAfEN8S.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/index-FAq9z4ls.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-BxWJknF1.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-3s72pyha.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js','/assets/index-Bm4zUeiC.js','/assets/index-Cu60BknP.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CKMEQocB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/alert-Qr8uk1we.js','/assets/index-Bm4zUeiC.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-DS5QrWqx.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/index-Bm4zUeiC.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/dialog-COA1u6GI.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/separator-DjWL-SG6.js','/assets/sheet-B-hyboHM.js','/assets/skeleton-CyQC5eHP.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/index-DMkDirOg.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-Dt0XDl8D.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/dialog-COA1u6GI.js','/assets/input-q0MbOGkw.js','/assets/label-DZUXmkCl.js','/assets/textarea-B9ABGBnz.js','/assets/submit-field-DqAfEN8S.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js','/assets/input-BA-aycuy.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-JiI_zyDs.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/alert-DTTcjJsS.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-tX39jnSe.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/sheet-B-hyboHM.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/components-Dbuj-jCe.js','/assets/arrow-right-huveuXEQ.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-DcWzYqq_.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-TMD5jM7r.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-DXOz2NiG.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/index-Bm4zUeiC.js','/assets/use-toast-DPb081JK.js','/assets/logo-D1cHmNYB.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-C40UsWCC.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/layout-BuN8tbiG.js','/assets/index-FAq9z4ls.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-Cu60BknP.js','/assets/components-Dbuj-jCe.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-DMkDirOg.js','/assets/index-BxWJknF1.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/skeleton-CyQC5eHP.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-DoNDSooH.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/index-DRridQs4.js','/assets/index-Bm4zUeiC.js','/assets/layout-BuN8tbiG.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/use-store-BFAQnfD-.js','/assets/use-toast-DPb081JK.js','/assets/checkbox-kRAsVnok.js','/assets/label-DZUXmkCl.js','/assets/loader-circle-cINCiDbR.js','/assets/separator-DjWL-SG6.js','/assets/textarea-B9ABGBnz.js','/assets/components-Dbuj-jCe.js','/assets/x-BsuXUyX7.js','/assets/submit-field-DqAfEN8S.js','/assets/scroll-area-MU3Ab1D6.js','/assets/input-BA-aycuy.js','/assets/dialog-COA1u6GI.js','/assets/arrow-right-huveuXEQ.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-DMkDirOg.js','/assets/index-BxWJknF1.js','/assets/skeleton-CyQC5eHP.js','/assets/index-BNl-ebS2.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-71ccd37e.js','version':'71ccd37e'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
@@ -7798,18 +7880,18 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           caseSensitive: undefined,
           module: route8
         },
-  "routes/join.check": {
-          id: "routes/join.check",
-          parentId: "routes/join",
-          path: "check",
-          index: undefined,
-          caseSensitive: undefined,
-          module: route9
-        },
   "routes/app.alert": {
           id: "routes/app.alert",
           parentId: "routes/app",
           path: "alert",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route9
+        },
+  "routes/nav-user": {
+          id: "routes/nav-user",
+          parentId: "root",
+          path: "nav-user",
           index: undefined,
           caseSensitive: undefined,
           module: route10
