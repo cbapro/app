@@ -14,7 +14,7 @@ import { Cross2Icon, CaretSortIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, C
 import { produce } from 'immer';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { Slot } from '@radix-ui/react-slot';
-import { X, AlertOctagon, LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, MousePointerClick, ChevronRight, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
+import { X, AlertOctagon, LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, Lock, MousePointerClick, ChevronRight, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
 import Markdown from 'react-markdown';
 import Stripe from 'stripe';
 import 'dotenv/config';
@@ -158,7 +158,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-B4oy1zfY.css";
+const stylesheet = "/assets/tailwind-B2ZIWvVe.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -1193,7 +1193,7 @@ async function checkoutSessionCompleted(session) {
 async function check$1(
   request,
   redirected = true,
-  competency,
+  $cyclesIn,
   url = "/app/settings/overview"
 ) {
   console.log("join.check");
@@ -1207,16 +1207,18 @@ async function check$1(
 
   let error = {};
   const isFree = prices[license.priceKey].plan === plans.free;
-  const { cycles, cyclesIncludes, tokens } = prices[license.priceKey].limit;
-  const { total: $tokens } = (await read$5(user))?.toJSON()?.usage;
+  const { cycles, cyclesIn, tokens } = prices[license.priceKey].limit;
+  const profile = (await read$5(user))?.toJSON();
+  const $tokens = profile?.usage?.total;
   const $cycles = (await read$4(user, { thread }))?.length;
 
-  if (cyclesIncludes && competency && !cyclesIncludes.includes(competency))
-    error.cycles = true;
+  if (cyclesIn && $cyclesIn && !cyclesIn.includes($cyclesIn))
+    error.cyclesIn = true;
 
   if (isFree && $cycles >= cycles) error.cycles = true;
   if ($tokens >= tokens) error.tokens = true;
   const hasError = Object.keys(error).length > 0;
+  const expired = error?.tokens;
 
   const {
     product: { name },
@@ -1229,15 +1231,18 @@ async function check$1(
     isFree,
     cycles,
     $cycles,
+    cyclesIn,
+    $cyclesIn,
     tokens,
     $tokens,
     error,
     hasError,
+    expired,
     redirected,
     url,
   };
 
-  if (hasError && redirected) {
+  if (expired && redirected) {
     session.flash("plan", plan);
     return redirect$1(url, {
       headers: {
@@ -1285,7 +1290,7 @@ const prices = {
     plan: plans.free,
     limit: {
       cycles: 1,
-      cyclesIncludes: ["1.1"],
+      cyclesIn: ["1.1"],
       tokens: 30000,
     },
   },
@@ -1337,7 +1342,7 @@ function Overview() {
       {
         className: cn(
           "text-primary",
-          data?.plan?.hasError ? "text-red-500" : "text-green-500"
+          data?.plan?.expired ? "text-red-500" : "text-green-500"
         ),
         children: [
           "License: ",
@@ -1350,10 +1355,10 @@ function Overview() {
         UsageProgress,
         {
           tokens: data?.plan?.tokens,
-          total: data?.plan?.$tokens
+          total: data?.plan?.$tokens ?? 0
         }
       ),
-      data?.plan?.hasError && /* @__PURE__ */ jsx(
+      data?.plan?.expired && /* @__PURE__ */ jsx(
         AlertModule,
         {
           ...{
@@ -2745,12 +2750,13 @@ async function action$6({ request, params }) {
   const user = session.get("user");
   if (!user) return redirect$1("/auth/login");
   const action2 = params.action;
-  const body = await request.json();
+  let body;
   if (action2 === "create" || action2 === "update") {
+    body = await request.json();
     const competency = body.competency;
     const $competency = `${competency?.competencyGroup?.order}.${competency?.order}`;
     const plan = await check$1(request, false, $competency);
-    if (plan?.hasError) {
+    if (plan?.expired) {
       session.flash("plan", plan);
       return Response.json(
         {
@@ -2783,7 +2789,6 @@ async function action$6({ request, params }) {
     result = await read$4(user, { thread });
   }
   if (action2 === "update") {
-    body.competency;
     result = await update$2(
       {
         ...body
@@ -4617,11 +4622,11 @@ async function updateUsage(user, thread, usage) {
   });
 }
 
-async function sync(request) {
+async function sync(request, body) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   // const scoreThread = session.get("scoreThread");
-  const { competencyItem, outcome } = await request.json();
+  const { competencyItem, outcome } = body;
 
   if (!outcome) return null;
 
@@ -4776,8 +4781,13 @@ async function action$2({ request }) {
 
   console.log("score.action", user.objectId);
 
-  const plan = await check$1(request, false);
-  if (plan?.hasError) {
+  const body = await request.json();
+  const { competencyGroup, competencyItem } = body;
+  console.log(competencyGroup, competencyItem);
+  const competency = `${competencyGroup?.order}.${competencyItem?.order}`;
+
+  const plan = await check$1(request, false, competency);
+  if (plan?.expired) {
     session.flash("plan", plan);
     return Response.json(
       {
@@ -4792,7 +4802,7 @@ async function action$2({ request }) {
     );
   }
 
-  return await sync(request);
+  return await sync(request, body);
 }
 
 const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
@@ -5615,7 +5625,12 @@ function useOngoing () {
   };
 }
 
-function ChatIncome({ competencies, outcomes, getCompetency }) {
+function ChatIncome({
+  competencies,
+  outcomes,
+  getCompetency,
+  plan
+}) {
   const { ongoing } = useOngoing();
   function getClassName(ci) {
     const outcome = outcomes?.find(
@@ -5637,33 +5652,36 @@ function ChatIncome({ competencies, outcomes, getCompetency }) {
           ". ",
           cg.title
         ] }),
-        /* @__PURE__ */ jsx(AccordionContent, { className: "space-y-1", children: cg.items.map((ci, y) => /* @__PURE__ */ jsxs("div", { className: "relative", children: [
-          /* @__PURE__ */ jsxs(
-            "button",
-            {
-              className: cn(
-                "peer pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
-                getClassName(ci)
-              ),
-              onClick: () => onClick("send", cg, ci),
-              children: [
-                cg.order,
-                ".",
-                ci.order,
-                " ",
-                ci.title
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsx(
-            Play,
-            {
-              className: "absolute right-1 bottom-1 bg-zinc-400",
-              onClick: () => onClick("run", cg, ci),
-              disabled: ongoing
-            }
-          )
-        ] }, y)) })
+        /* @__PURE__ */ jsx(AccordionContent, { className: "space-y-1", children: cg.items.map((ci, y) => {
+          const ip = `${cg.order}.${ci.order}`;
+          const ipIn = plan?.limit?.cyclesIn ? plan.limit.cyclesIn.includes(ip) : true;
+          return /* @__PURE__ */ jsxs("div", { className: "relative", children: [
+            /* @__PURE__ */ jsxs(
+              "button",
+              {
+                className: cn(
+                  "peer pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
+                  getClassName(ci)
+                ),
+                onClick: () => ipIn && onClick("send", cg, ci),
+                children: [
+                  ip,
+                  " ",
+                  ci.title
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              Play,
+              {
+                className: "absolute right-1 bottom-1 bg-zinc-400",
+                onClick: () => ipIn && onClick("run", cg, ci),
+                disabled: ongoing || !ipIn
+              }
+            ),
+            !ipIn && /* @__PURE__ */ jsx(Lock, { size: 12, className: "absolute right-8 bottom-1" })
+          ] }, y);
+        }) })
       ]
     },
     x
@@ -6025,6 +6043,7 @@ const flags = {
 };
 
 function Score({
+  competencyGroup,
   competencyItem,
   outcome,
   getOutcomes,
@@ -6054,7 +6073,7 @@ function Score({
     setOngoing(true);
     const res = await fetch("/score", {
       method: "POST",
-      body: JSON.stringify({ competencyItem, outcome })
+      body: JSON.stringify({ competencyGroup, competencyItem, outcome })
     });
     const data = await res.json();
     setOngoing(false);
@@ -6526,6 +6545,7 @@ function Outcome({
           {
             step: steps.score.id,
             value: data?.score,
+            competencyGroup,
             competencyItem,
             outcome,
             getOutcomes
@@ -6701,13 +6721,6 @@ const Icon = () => /* @__PURE__ */ jsxs(
     ]
   }
 );
-
-function UserAvatar({ className }) {
-  return /* @__PURE__ */ jsxs(Avatar, { className: cn("rounded-xl", className), children: [
-    /* @__PURE__ */ jsx(AvatarImage, { src: "/avatar.jpg" }),
-    /* @__PURE__ */ jsx(AvatarFallback, { children: "CN" })
-  ] });
-}
 
 const ChatInput = forwardRef(function ChatInput({ getInput }, ref) {
   const [message, setMessage] = useState(null);
@@ -6923,6 +6936,13 @@ const Icon3 = () => /* @__PURE__ */ jsxs(
   }
 );
 
+function UserAvatar({ className }) {
+  return /* @__PURE__ */ jsxs(Avatar, { className: cn("rounded-xl", className), children: [
+    /* @__PURE__ */ jsx(AvatarImage, { src: "/avatar.jpg" }),
+    /* @__PURE__ */ jsx(AvatarFallback, { children: "CN" })
+  ] });
+}
+
 function Message({
   assistant = false,
   content = "",
@@ -6961,7 +6981,13 @@ function Message({
   );
 }
 
-function ChatOutput({ messages, run, setRun }) {
+function ChatOutput({
+  messages,
+  run,
+  setRun,
+  competencyGroup,
+  competencyItem
+}) {
   const [results, setResults] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef();
@@ -6997,7 +7023,8 @@ function ChatOutput({ messages, run, setRun }) {
   }, []);
   function handleStream(q) {
     setOngoing(true);
-    const eventSource = new EventSource("/sse?q=" + q);
+    const c = `${competencyGroup?.order}.${competencyItem?.order}`;
+    const eventSource = new EventSource(`/sse?q=${q}&c=${c}`);
     eventSource.addEventListener("redirected", (event) => {
       setLoading(false);
       setResults(
@@ -7007,7 +7034,7 @@ function ChatOutput({ messages, run, setRun }) {
       const url = data.url;
       eventSource.close();
       setOngoing(false);
-      return navigate(url);
+      navigate(url);
     });
     eventSource.addEventListener("thread.message.delta", (event) => {
       setLoading(false);
@@ -7454,7 +7481,8 @@ async function check(user, session) {
 
   if (!license) {
     license = (await read$6(user))?.toJSON();
-    console.log("app.check.license", license?.objectId);
+    console.log("app.check.license.read", license?.objectId);
+    if (license) session.set("license", license);
   }
 
   return { profile, setting, license };
@@ -7473,12 +7501,16 @@ async function init(user, session) {
   const outcomes = await read$4(user, { thread });
   console.log("app.init.outcomes", outcomes.length);
 
+  const license = session.get("license");
+  const plan = prices[license.priceKey];
+
   const data = {
     thread,
     messages: messages.reverse(),
     file,
     competencies,
     outcomes,
+    plan,
   };
 
   return Response.json(data, {
@@ -7560,7 +7592,8 @@ function App() {
         {
           competencies: loaderData.competencies,
           outcomes,
-          getCompetency
+          getCompetency,
+          plan: loaderData?.plan
         }
       ) })
     ] }) }),
@@ -7598,7 +7631,9 @@ function App() {
                 {
                   messages: loaderData?.messages,
                   run,
-                  setRun
+                  setRun,
+                  competencyGroup,
+                  competencyItem
                 }
               )
             }
@@ -7702,13 +7737,15 @@ async function loader({ request }) {
   if (!user) return redirect("/auth/login");
 
   console.log("sse.loader", user.objectId);
-  let content = new URL(request.url).searchParams.get("q");
+  const searchParams = new URL(request.url).searchParams;
+  let content = searchParams.get("q");
+  let competency = searchParams.get("c");
 
   if (!thread || !content) return Response.json({});
 
   // Check plan access
-  const plan = await check$1(request, false);
-  if (plan?.hasError) {
+  const plan = await check$1(request, false, competency);
+  if (plan?.expired) {
     session.flash("plan", plan);
     return redirectStream(plan.url, session, request);
   }
@@ -7724,7 +7761,16 @@ async function loader({ request }) {
   return eventStream(
     request.signal,
     function setup(send, close) {
-      return handleStream({ stream, send, close, user, thread, userMessage, runId, session });
+      return handleStream({
+        stream,
+        send,
+        close,
+        user,
+        thread,
+        userMessage,
+        runId,
+        session,
+      });
     },
     {
       headers: {
@@ -7752,7 +7798,16 @@ function redirectStream(url, session, request) {
   );
 }
 
-async function handleStream({ stream, send, close, user, thread, userMessage, runId, session }) {
+async function handleStream({
+  stream,
+  send,
+  close,
+  user,
+  thread,
+  userMessage,
+  runId,
+  session,
+}) {
   console.log("Streaming started...");
   let fullResponse = "";
 
@@ -7770,12 +7825,22 @@ async function handleStream({ stream, send, close, user, thread, userMessage, ru
     return;
   }
 
-  await save({ user, thread, userMessage, responseText: fullResponse, session });
+  await save({
+    user,
+    thread,
+    userMessage,
+    responseText: fullResponse,
+    session,
+  });
 
   if (runId) {
     const usageData = await getUsage(thread, runId);
     if (usageData) {
-      const { prompt_tokens: input, completion_tokens: output, total_tokens: total } = usageData;
+      const {
+        prompt_tokens: input,
+        completion_tokens: output,
+        total_tokens: total,
+      } = usageData;
       console.log("Updating token usage:", { input, output, total });
       await updateUsage(user, thread, { input, output, total });
     } else {
@@ -7794,7 +7859,7 @@ const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-BKaMPeLn.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js','/assets/use-toast-DPb081JK.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/use-store-BFAQnfD-.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-TO1kS4-n.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/index-DRridQs4.js','/assets/alert-DTTcjJsS.js','/assets/index-Bm4zUeiC.js','/assets/components-Dbuj-jCe.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-FySp-Rtv.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/components-Dbuj-jCe.js','/assets/scroll-area-MU3Ab1D6.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-BxWJknF1.js','/assets/index-fwHVxwM4.js','/assets/input-BA-aycuy.js','/assets/submit-field-DqAfEN8S.js','/assets/use-toast-DPb081JK.js','/assets/separator-DjWL-SG6.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-D-KSlnF1.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/checkbox-kRAsVnok.js','/assets/submit-field-DqAfEN8S.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/index-FAq9z4ls.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-BxWJknF1.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-3s72pyha.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js','/assets/index-Bm4zUeiC.js','/assets/index-Cu60BknP.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CKMEQocB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/alert-Qr8uk1we.js','/assets/index-Bm4zUeiC.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-DS5QrWqx.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/index-Bm4zUeiC.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/dialog-COA1u6GI.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/separator-DjWL-SG6.js','/assets/sheet-B-hyboHM.js','/assets/skeleton-CyQC5eHP.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/index-DMkDirOg.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-Dt0XDl8D.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/dialog-COA1u6GI.js','/assets/input-q0MbOGkw.js','/assets/label-DZUXmkCl.js','/assets/textarea-B9ABGBnz.js','/assets/submit-field-DqAfEN8S.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js','/assets/input-BA-aycuy.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-JiI_zyDs.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/alert-DTTcjJsS.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-tX39jnSe.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/sheet-B-hyboHM.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/components-Dbuj-jCe.js','/assets/arrow-right-huveuXEQ.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-DcWzYqq_.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-TMD5jM7r.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-DXOz2NiG.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/index-Bm4zUeiC.js','/assets/use-toast-DPb081JK.js','/assets/logo-D1cHmNYB.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-C40UsWCC.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/layout-BuN8tbiG.js','/assets/index-FAq9z4ls.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-Cu60BknP.js','/assets/components-Dbuj-jCe.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-DMkDirOg.js','/assets/index-BxWJknF1.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/skeleton-CyQC5eHP.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-DoNDSooH.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/index-DRridQs4.js','/assets/index-Bm4zUeiC.js','/assets/layout-BuN8tbiG.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/use-store-BFAQnfD-.js','/assets/use-toast-DPb081JK.js','/assets/checkbox-kRAsVnok.js','/assets/label-DZUXmkCl.js','/assets/loader-circle-cINCiDbR.js','/assets/separator-DjWL-SG6.js','/assets/textarea-B9ABGBnz.js','/assets/components-Dbuj-jCe.js','/assets/x-BsuXUyX7.js','/assets/submit-field-DqAfEN8S.js','/assets/scroll-area-MU3Ab1D6.js','/assets/input-BA-aycuy.js','/assets/dialog-COA1u6GI.js','/assets/arrow-right-huveuXEQ.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-DMkDirOg.js','/assets/index-BxWJknF1.js','/assets/skeleton-CyQC5eHP.js','/assets/index-BNl-ebS2.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-71ccd37e.js','version':'71ccd37e'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-DmQ5smrm.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js','/assets/use-toast-DPb081JK.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/use-store-BFAQnfD-.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-GC_ZPmK3.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/index-DRridQs4.js','/assets/alert-DTTcjJsS.js','/assets/index-Bm4zUeiC.js','/assets/components-Dbuj-jCe.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-FySp-Rtv.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/components-Dbuj-jCe.js','/assets/scroll-area-MU3Ab1D6.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-BxWJknF1.js','/assets/index-fwHVxwM4.js','/assets/input-BA-aycuy.js','/assets/submit-field-DqAfEN8S.js','/assets/use-toast-DPb081JK.js','/assets/separator-DjWL-SG6.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-D-KSlnF1.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/checkbox-kRAsVnok.js','/assets/submit-field-DqAfEN8S.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/index-FAq9z4ls.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-BxWJknF1.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-3s72pyha.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js','/assets/index-Bm4zUeiC.js','/assets/index-Cu60BknP.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CKMEQocB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/alert-Qr8uk1we.js','/assets/index-Bm4zUeiC.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-DS5QrWqx.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/index-Bm4zUeiC.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/dialog-COA1u6GI.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/separator-DjWL-SG6.js','/assets/sheet-B-hyboHM.js','/assets/skeleton-CyQC5eHP.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/index-DMkDirOg.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-Dt0XDl8D.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/dialog-COA1u6GI.js','/assets/input-q0MbOGkw.js','/assets/label-DZUXmkCl.js','/assets/textarea-B9ABGBnz.js','/assets/submit-field-DqAfEN8S.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js','/assets/input-BA-aycuy.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-JiI_zyDs.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/alert-DTTcjJsS.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-tX39jnSe.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/sheet-B-hyboHM.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/components-Dbuj-jCe.js','/assets/arrow-right-huveuXEQ.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-DcWzYqq_.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-TMD5jM7r.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-DXOz2NiG.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/index-Bm4zUeiC.js','/assets/use-toast-DPb081JK.js','/assets/logo-D1cHmNYB.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-C40UsWCC.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/layout-BuN8tbiG.js','/assets/index-FAq9z4ls.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-Cu60BknP.js','/assets/components-Dbuj-jCe.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-DMkDirOg.js','/assets/index-BxWJknF1.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/skeleton-CyQC5eHP.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-D9MeIY3n.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/index-DRridQs4.js','/assets/index-Bm4zUeiC.js','/assets/layout-BuN8tbiG.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/use-store-BFAQnfD-.js','/assets/use-toast-DPb081JK.js','/assets/checkbox-kRAsVnok.js','/assets/label-DZUXmkCl.js','/assets/loader-circle-cINCiDbR.js','/assets/separator-DjWL-SG6.js','/assets/textarea-B9ABGBnz.js','/assets/components-Dbuj-jCe.js','/assets/x-BsuXUyX7.js','/assets/submit-field-DqAfEN8S.js','/assets/scroll-area-MU3Ab1D6.js','/assets/input-BA-aycuy.js','/assets/dialog-COA1u6GI.js','/assets/arrow-right-huveuXEQ.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-DMkDirOg.js','/assets/index-BxWJknF1.js','/assets/skeleton-CyQC5eHP.js','/assets/index-BNl-ebS2.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-95fc7ae1.js','version':'95fc7ae1'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
