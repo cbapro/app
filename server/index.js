@@ -748,7 +748,7 @@ const {
   APP_SCORE_REQUEST_LIMIT: scoreRequestLimit,
   APP_SCORE_REQUEST_OUTCOME_LIMIT: scoreRequestOutcomeLimit,
 
-  SITE_PRICING_URL: sitePricingUrl$1,
+  SITE_PRICING_URL: sitePricingUrl,
 } = process.env;
 
 const vars = {
@@ -758,7 +758,7 @@ const vars = {
     scoreRequestOutcomeLimit,
   },
   site: {
-    pricingUrl: sitePricingUrl$1,
+    pricingUrl: sitePricingUrl,
   },
   admin: {
     key: process.env.ADMIN_KEY,
@@ -1303,7 +1303,7 @@ async function loader$g({ request }) {
   if (!plan) plan = await check$1(request, false);
   session.unset("plan");
   return Response.json(
-    { plan, sitePricingUrl },
+    { plan, sitePricingUrl: vars.site.pricingUrl },
     {
       headers: {
         "Set-Cookie": await commitSession(session)
