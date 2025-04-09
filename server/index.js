@@ -1299,7 +1299,7 @@ const prices = {
 
 async function loader$g({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
-  plan = session.get("plan");
+  let plan = session.get("plan");
   if (!plan) plan = await check$1(request, false);
   session.unset("plan");
   return Response.json(
