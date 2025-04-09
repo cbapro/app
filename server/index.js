@@ -1124,6 +1124,7 @@ async function createCheckoutSession(user, { customerId, lookup_key }) {
         },
       ],
       mode: "payment",
+      allow_promotion_codes: true,
       success_url: `${domain}/join?success=true&sessionId={CHECKOUT_SESSION_ID}`,
       cancel_url: `${domain}/join?canceled=true&priceKey=${lookup_key}`,
       metadata: {
