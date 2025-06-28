@@ -1,20 +1,20 @@
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { PassThrough } from 'node:stream';
 import { createReadableStreamFromReadable, redirect as redirect$1, createCookieSessionStorage } from '@remix-run/node';
-import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useActionData, useSubmit, useNavigation, Form as Form$1, redirect as redirect$2, Link, useSearchParams, useNavigate, useLocation } from '@remix-run/react';
+import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useActionData, useSubmit, useNavigation, Form as Form$1, redirect as redirect$2, Link, useSearchParams, useNavigate, useRouteLoaderData, useLocation } from '@remix-run/react';
 import * as isbotModule from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import * as React from 'react';
 import { createContext, useState, useContext, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import * as ToastPrimitives from '@radix-ui/react-toast';
 import { cva } from 'class-variance-authority';
-import { clsx } from 'clsx';
+import clsx$1, { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { Cross2Icon, CaretSortIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, ChevronRightIcon, ChevronLeftIcon, ViewVerticalIcon, DotFilledIcon } from '@radix-ui/react-icons';
 import { produce } from 'immer';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { Slot } from '@radix-ui/react-slot';
-import { X, AlertOctagon, LoaderCircle, CalendarIcon, ExternalLink, Info, Telescope, User, Triangle, MenuIcon, ArrowRight, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, Lock, MousePointerClick, ChevronRight, ChevronDown, ArrowUp, Paperclip, Plus, FileText, Youtube, Bell } from 'lucide-react';
+import { X, AlertOctagon, LoaderCircle, CalendarIcon, ExternalLink, Info, TrendingUp, MessageCircle, KeySquare, User2, Users2, Trash, ChevronLeft, ChevronRight, Telescope, User, Plus, MessagesSquare, ScrollText, Notebook, Triangle, MenuIcon, ArrowRight, Gauge, Barcode, Settings as Settings$1, ChevronUp, Loader2, Bell, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, Lock, MousePointerClick, ChevronDown, ArrowUp, Paperclip, FileText, Youtube } from 'lucide-react';
 import Markdown from 'react-markdown';
 import Stripe from 'stripe';
 import 'dotenv/config';
@@ -35,10 +35,16 @@ import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Authenticator } from 'remix-auth';
 import { FormStrategy } from 'remix-auth-form';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import * as RechartsPrimitive from 'recharts';
+import { LineChart, CartesianGrid, XAxis, Line } from 'recharts';
+import * as AvatarPrimitive from '@radix-ui/react-avatar';
+import * as ToggleGroupPrimitive from '@radix-ui/react-toggle-group';
+import * as TogglePrimitive from '@radix-ui/react-toggle';
+import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
+import { MDXEditor, headingsPlugin, listsPlugin, linkPlugin, linkDialogPlugin, thematicBreakPlugin, toolbarPlugin, UndoRedo, BoldItalicUnderlineToggles, BlockTypeSelect } from '@mdxeditor/editor';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import nodemailer from 'nodemailer';
 import OpenAI from 'openai';
-import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as SwitchPrimitives from '@radix-ui/react-switch';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
@@ -158,7 +164,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-DBRru_5b.css";
+const stylesheet = "/assets/tailwind-DZP40Wjb.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -829,7 +835,7 @@ const { appId, jsKey, masterKey, serverURL } = vars.parse;
 Parse.initialize(appId, jsKey, masterKey);
 Parse.serverURL = serverURL;
 
-const getPointer = (className, objectId) => ({
+const pointerObject = (className, objectId) => ({
   __type: "Pointer",
   className,
   objectId,
@@ -849,7 +855,7 @@ const models = {
 
 function handleInvalidSessionToken(error) {
   if (error.code === Parse.Error.INVALID_SESSION_TOKEN)
-    return redirect$1("/logout");
+    throw redirect$1("/logout");
 }
 
 const Class$5 = "License";
@@ -860,13 +866,14 @@ async function create$5(user, args) {
     const license = new License();
     return await license.save(
       {
-        user: getPointer(models.user, user.objectId),
+        user: pointerObject(models.user, user.objectId),
         ...args,
       },
       { useMasterKey: true }
     );
   } catch (error) {
     console.log("license.create", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -894,6 +901,7 @@ async function update$4(args) {
     return await license.save(args, { useMasterKey: true });
   } catch (error) {
     console.log("license.update", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -915,13 +923,14 @@ async function create$4(user, args) {
     const profile = new Profile();
     return await profile.save(
       {
-        user: getPointer(models.user, user.objectId),
+        user: pointerObject(models.user, user.objectId),
         ...args,
       },
       { sessionToken: user.sessionToken }
     );
   } catch (error) {
     console.log("profile.create", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -944,6 +953,7 @@ async function update$3(user, args) {
     return await profile.save(args, { sessionToken: user.sessionToken });
   } catch (error) {
     console.log("profile.update", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -969,6 +979,7 @@ async function create$3(arg, sessionToken) {
     return await outcome.save(arg, { sessionToken });
   } catch (error) {
     console.log("outcome.create", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -979,6 +990,7 @@ async function update$2(arg, sessionToken) {
     return await outcome.save(arg, { sessionToken });
   } catch (error) {
     console.log("outcome.update", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -990,7 +1002,7 @@ const flags$2 = {
 
 const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: "__session",
+    name: "cbapro__session",
     httpOnly: true,
     path: "/",
     sameSite: "lax",
@@ -1076,12 +1088,18 @@ const domain = vars.stripe.domain;
 
 async function strat(user, { priceKey }) {
   console.log("join.start", user?.objectId, priceKey);
-  if (!Object.keys(prices).includes(priceKey)) return null;
+  if (!Object.keys(prices).includes(priceKey))
+    return {
+      message: "The price key not valid!",
+    };
 
   let customerId;
 
   const license = (await read$6(user))?.toJSON();
-  if (license && priceKey === prices.P0.key) return null;
+  if (license && priceKey === prices.P0.key)
+    return {
+      message: "You got a free license before!",
+    };
 
   customerId =
     license?.customerId ??
@@ -1220,6 +1238,8 @@ async function check$1(
     url,
   };
 
+  if (expired) console.warn("join.check.expired", expired);
+
   if (expired && redirected) {
     session.flash("plan", plan);
     return redirect$1(url, {
@@ -1298,7 +1318,7 @@ const prices = {
   },
 };
 
-async function loader$g({ request }) {
+async function loader$k({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let plan = session.get("plan");
   if (!plan) plan = await check$1(request, false);
@@ -1387,7 +1407,7 @@ const trialDescription = `
 const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Overview,
-  loader: loader$g
+  loader: loader$k
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const labelVariants = cva(
@@ -1793,7 +1813,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
 ));
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
-async function loader$f({ request }) {
+async function loader$j({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let profile = session.get("profile");
   if (profile) return { profile };
@@ -1813,7 +1833,7 @@ async function loader$f({ request }) {
   }
   return null;
 }
-async function action$a({ request }) {
+async function action$e({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const formData = await request.formData();
@@ -2092,9 +2112,9 @@ const associations = [
 
 const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$a,
+  action: action$e,
   default: ProfilePage,
-  loader: loader$f
+  loader: loader$j
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function InputField({ ...props }) {
@@ -2166,13 +2186,14 @@ async function create$2(user, args) {
     const setting = new Setting();
     return await setting.save(
       {
-        user: getPointer(models.user, user.objectId),
+        user: pointerObject(models.user, user.objectId),
         ...args,
       },
       { sessionToken: user.sessionToken }
     );
   } catch (error) {
     console.log("setting.create", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -2195,6 +2216,7 @@ async function update$1(user, args) {
     return await setting.save(args, { sessionToken: user.sessionToken });
   } catch (error) {
     console.log("setting.update", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -2214,7 +2236,7 @@ const schema = Joi.object({
   privacyPolicy: Joi.string().required(),
   appRules: Joi.string().required()
 });
-async function loader$e({ request }) {
+async function loader$i({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   const setting = session.get("setting");
@@ -2223,7 +2245,7 @@ async function loader$e({ request }) {
   if (setting?.consent) return redirect$2("/app");
   return null;
 }
-async function action$9({ request }) {
+async function action$d({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   console.log("app.consent.action", user.objectId);
@@ -2330,9 +2352,9 @@ function Consent() {
 
 const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$9,
+  action: action$d,
   default: Consent,
-  loader: loader$e
+  loader: loader$i
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function isMobileServer(request) {
@@ -2458,13 +2480,13 @@ async function logout() {
   await logout$1();
 }
 
-let isHydrating = true;
+let isHydrating$1 = true;
 function Turnstile({ onChange, error }) {
-  const [isHydrated, setIsHydrated] = useState(!isHydrating);
+  const [isHydrated, setIsHydrated] = useState(!isHydrating$1);
   const [token, setToken] = useState(null);
   const ref = useRef();
   useEffect(() => {
-    isHydrating = false;
+    isHydrating$1 = false;
     setIsHydrated(true);
   }, []);
   useEffect(() => {
@@ -2499,7 +2521,7 @@ function Turnstile({ onChange, error }) {
   ] }) : null;
 }
 
-async function loader$d({ request }) {
+async function loader$h({ request }) {
   console.log("auth.login.loader");
   if (isMobileServer(request)) return redirect$1("/mobile");
   const session = await getSession(request.headers.get("cookie"));
@@ -2509,7 +2531,7 @@ async function loader$d({ request }) {
   if (user) throw redirect$1(decodeURIComponent(from) ?? "/app");
   return null;
 }
-async function action$8({ request }) {
+async function action$c({ request }) {
   console.log("auth.login.action");
   const session = await getSession(request.headers.get("cookie"));
   let user;
@@ -2589,9 +2611,9 @@ function Login() {
 
 const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$8,
+  action: action$c,
   default: Login,
-  loader: loader$d
+  loader: loader$h
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function AlertField({ message, variant }) {
@@ -2609,7 +2631,7 @@ const variants = {
 
 const emailSchema = Joi.string().email().required().label("Email");
 const passwordSchema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
-async function loader$c({ request }) {
+async function loader$g({ request }) {
   const url = new URL(request.url);
   const link = url.searchParams.get("link");
   const token = url.searchParams.get("token");
@@ -2617,7 +2639,7 @@ async function loader$c({ request }) {
   if (link) return redirect$1(`/auth/reset?token=${token}&username=${username}`);
   return null;
 }
-async function action$7({ request }) {
+async function action$b({ request }) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   const username = url.searchParams.get("username");
@@ -2716,15 +2738,433 @@ function Reset() {
 
 const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$7,
+  action: action$b,
   default: Reset,
-  loader: loader$c
+  loader: loader$g
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$b({ request }) {
+const Dialog = DialogPrimitive.Root;
+const DialogTrigger = DialogPrimitive.Trigger;
+const DialogPortal = DialogPrimitive.Portal;
+const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DialogPrimitive.Overlay,
+  {
+    ref,
+    className: cn(
+      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className
+    ),
+    ...props
+  }
+));
+DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
+const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(DialogPortal, { children: [
+  /* @__PURE__ */ jsx(DialogOverlay, {}),
+  /* @__PURE__ */ jsxs(
+    DialogPrimitive.Content,
+    {
+      ref,
+      className: cn(
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
+        className
+      ),
+      ...props,
+      children: [
+        children,
+        /* @__PURE__ */ jsxs(
+          DialogPrimitive.Close,
+          {
+            className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground",
+            children: [
+              /* @__PURE__ */ jsx(Cross2Icon, { className: "h-4 w-4" }),
+              /* @__PURE__ */ jsx("span", { className: "sr-only", children: "Close" })
+            ]
+          }
+        )
+      ]
+    }
+  )
+] }));
+DialogContent.displayName = DialogPrimitive.Content.displayName;
+const DialogHeader = ({
+  className,
+  ...props
+}) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    className: cn("flex flex-col space-y-1.5 text-center sm:text-left", className),
+    ...props
+  }
+);
+DialogHeader.displayName = "DialogHeader";
+const DialogFooter = ({
+  className,
+  ...props
+}) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    className: cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
+    ...props
+  }
+);
+DialogFooter.displayName = "DialogFooter";
+const DialogTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DialogPrimitive.Title,
+  {
+    ref,
+    className: cn("text-lg font-semibold leading-none tracking-tight", className),
+    ...props
+  }
+));
+DialogTitle.displayName = DialogPrimitive.Title.displayName;
+const DialogDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DialogPrimitive.Description,
+  {
+    ref,
+    className: cn("text-sm text-muted-foreground", className),
+    ...props
+  }
+));
+DialogDescription.displayName = DialogPrimitive.Description.displayName;
+
+function DialogModule({
+  trigger,
+  title,
+  description,
+  children,
+  content,
+  footer,
+  contentClassName,
+  ...props
+}) {
+  const [open, setOpen] = useState(props?.open ?? false);
+  const navigate = useNavigate();
+  function onOpenChange(open2) {
+    setOpen(open2);
+    if (!open2 && props?.asRoute)
+      navigate(props?.from ?? -1, { preventScrollReset: true });
+  }
+  return /* @__PURE__ */ jsxs(Dialog, { open, onOpenChange, children: [
+    trigger && /* @__PURE__ */ jsx(DialogTrigger, { asChild: true, children: trigger }),
+    /* @__PURE__ */ jsxs(DialogContent, { className: clsx$1("max-w-4xl", contentClassName), children: [
+      /* @__PURE__ */ jsxs(DialogHeader, { children: [
+        /* @__PURE__ */ jsx(DialogTitle, { children: title }),
+        /* @__PURE__ */ jsx(DialogDescription, { children: description })
+      ] }),
+      children ?? content,
+      footer && /* @__PURE__ */ jsx(DialogFooter, {})
+    ] })
+  ] });
+}
+
+async function usersData({ request }) {
+  const url = new URL(request.url);
+  const email = url.searchParams.get("email");
+  const start = url.searchParams.get("start");
+  const end = url.searchParams.get("end");
+  const priceKey = url.searchParams.get("priceKey");
+  const pageIndex = url.searchParams.get("pageIndex")
+    ? Number(url.searchParams.get("pageIndex"))
+    : 1;
+  const pageSize = 50;
+
+  try {
+    const userQuery = new Parse.Query(Parse.User);
+    userQuery.limit(pageSize).skip((pageIndex - 1) * pageSize);
+    if (email) userQuery.equalTo("email", email);
+    if (start) userQuery.greaterThan("updatedAt", new Date(start));
+    if (end) userQuery.lessThan("updatedAt", new Date(end + "-31"));
+    userQuery.descending("updatedAt");
+
+    const sessionQuery = new Parse.Query(Parse.Session);
+    sessionQuery.descending("updatedAt");
+    sessionQuery.matchesQuery("user", userQuery);
+
+    const profileQuery = new Parse.Query("Profile");
+    profileQuery.matchesQuery("user", userQuery);
+
+    const licenseQuery = new Parse.Query("License");
+    if (priceKey) licenseQuery.equalTo("priceKey", priceKey);
+    licenseQuery.matchesQuery("user", userQuery);
+
+    if (priceKey)
+      userQuery.matchesKeyInQuery("objectId", "user.objectId", licenseQuery);
+
+    const users = await userQuery.find({ useMasterKey: true, json: true });
+
+    const sessions = await sessionQuery.find({
+      useMasterKey: true,
+      json: true,
+    });
+
+    const profiles = await profileQuery.find({
+      useMasterKey: true,
+      json: true,
+    });
+
+    const licenses = await licenseQuery.find({
+      useMasterKey: true,
+      json: true,
+    });
+
+    const data = users.map((user) => {
+      let session = sessions.find(
+        (session) => session.user.objectId === user.objectId
+      );
+
+      let profile = profiles.find(
+        (profile) => profile.user.objectId === user.objectId
+      );
+
+      let license = licenses.find(
+        (license) => license.user.objectId === user.objectId
+      );
+      license = { ...license, plan: prices[license?.priceKey] };
+
+      return {
+        ...user,
+        session,
+        profile,
+        license,
+      };
+    });
+
+    let pagination = null;
+    if (!email) {
+      const count = await userQuery.count({ useMasterKey: true });
+      const current = pageIndex * pageSize;
+      const next =
+        count > current ? url.pathname + `?pageIndex=${pageIndex + 1}` : null;
+      const previous =
+        current > pageSize
+          ? url.pathname + `?pageIndex=${pageIndex - 1}`
+          : null;
+
+      pagination = { count, current, pageSize, pageIndex, next, previous };
+    }
+
+    return {
+      data,
+      pagination,
+      priceKeys: Object.keys(prices),
+    };
+  } catch (error) {
+    console.log("dash.sync", error?.message);
+  }
+}
+
+async function userData({ request, resource, userId }) {
+  const className = resources[resource].className;
+  try {
+    const query = new Parse.Query(className)
+      .equalTo("user", pointerObject("_User", userId))
+      .descending("updatedAt");
+
+    if (resource === resources.outcome.name)
+      query.include("competency.competencyGroup");
+
+    const data = await query.find({ useMasterKey: true, json: true });
+
+    if (resource === resources.setting.name) return data?.[0];
+    return data;
+  } catch (error) {
+    console.log("dash.userData", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function userCreate(request, { email, password }) {
+  try {
+    const user = await new Parse.User().signUp(
+      { username: email, password, email },
+      {
+        useMasterKey: true,
+      }
+    );
+
+    if (user) {
+      const role = await new Parse.Query("_Role")
+        .equalTo("name", "user")
+        .first({ useMasterKey: true });
+
+      role.getUsers().add(user);
+      await role.save(null, { useMasterKey: true });
+
+      console.log("dash.userCreate", user.id);
+      return { message: "Account created!" };
+    }
+
+    return { message: "Account creation failed!" };
+  } catch (error) {
+    console.log("dash.userCreate", error.message);
+    return { error: { message: error.message } };
+  }
+}
+
+async function usersReset(request) {
+  try {
+    const user = Parse.User.createWithoutData("KOAYDBcBAa");
+
+    const users = [
+      "Lb4FZsTo2N",
+      "7L5tIKFGHe",
+      "c80gXcKiB8",
+      "QYq9nyjUrG",
+      "Fv7GEMGN8t",
+    ];
+
+    const threads = await new Parse.Query("Thread")
+      .containedIn("user", users)
+      .find({ useMasterKey: true });
+
+    threads.map((t) => t.set("user", user).save(null, { useMasterKey: true }));
+
+    const profiles = await new Parse.Query("Profile")
+      .containedIn("user", users)
+      .find({ useMasterKey: true });
+
+    profiles.map((t) => t.save({ usage: null }, { useMasterKey: true }));
+
+    const settings = await new Parse.Query("Setting")
+      .containedIn("user", users)
+      .find({ useMasterKey: true });
+
+    settings.map((t) => t.save({ consent: null }, { useMasterKey: true }));
+
+    console.log("das.usersReset", "All 5 users reseted!");
+    return { message: "All 5 users reseted!" };
+  } catch (error) {
+    console.log("dash.usersReset", error.message);
+    return { error: { message: error.message } };
+  }
+}
+
+async function actionHandler({ request, resource, userId, args }) {
+  try {
+    if (resource === resources.setting.name)
+      return await new Parse.Object("Setting").save(
+        { ...args, user: pointerObject("_User", userId) },
+        {
+          useMasterKey: true,
+        }
+      );
+
+    return null;
+  } catch (error) {
+    console.log("dash.actionHandler", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function licenseData({ request }) {
+  const url = new URL(request.url);
+  const email = url.searchParams.get("email");
+  const pageIndex = url.searchParams.get("pageIndex")
+    ? Number(url.searchParams.get("pageIndex"))
+    : 1;
+  const pageSize = 50;
+
+  try {
+    const query = new Parse.Query("License")
+      .include("user")
+      .descending("updatedAt");
+
+    if (!email) query.limit(pageSize).skip((pageIndex - 1) * pageSize);
+
+    if (email) {
+      const user = await new Parse.Query(Parse.User)
+        .equalTo("email", email)
+        .first({ useMasterKey: true });
+      query.equalTo("user", user);
+    }
+
+    const data = await query.find({ useMasterKey: true, json: true });
+
+    let pagination = null;
+    if (!email) {
+      const count = await query.count({ useMasterKey: true });
+      const current = pageIndex * pageSize;
+      const next =
+        count > current ? url.pathname + `?pageIndex=${pageIndex + 1}` : null;
+      const previous =
+        current > pageSize
+          ? url.pathname + `?pageIndex=${pageIndex - 1}`
+          : null;
+
+      pagination = { count, current, pageSize, pageIndex, next, previous };
+    }
+
+    return {
+      data,
+      pagination,
+    };
+  } catch (error) {
+    console.log("dash.licenseData", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+const resources = {
+  message: {
+    name: "message",
+    className: "Message",
+  },
+  outcome: {
+    name: "outcome",
+    className: "Outcome",
+  },
+  setting: {
+    name: "setting",
+    className: "Setting",
+  },
+};
+
+async function action$a({ request }) {
+  const formData = await request.formData();
+  const email = formData.get("email");
+  const password = formData.get("password");
+  const data = await userCreate(request, { email, password });
+  return Response.json({ ...data });
+}
+function DashUserCreate() {
+  const { state } = useNavigation();
+  const data = useActionData();
+  return /* @__PURE__ */ jsx(
+    DialogModule,
+    {
+      open: true,
+      asRoute: true,
+      from: "/dash/user",
+      title: "Create new user",
+      contentClassName: "max-w-sm",
+      children: /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "grid gap-4", children: [
+        /* @__PURE__ */ jsxs(Label, { children: [
+          "Email",
+          /* @__PURE__ */ jsx(Input, { type: "email", name: "email", required: true })
+        ] }),
+        /* @__PURE__ */ jsxs(Label, { children: [
+          "Password",
+          /* @__PURE__ */ jsx(Input, { type: "password", name: "password", required: true })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "flex justify-between", children: [
+          /* @__PURE__ */ jsx("span", { className: "text-sm", children: data?.message ?? data?.error?.message }),
+          /* @__PURE__ */ jsx(SubmitField, { label: "Create", loader: state === "submitting" })
+        ] })
+      ] })
+    }
+  );
+}
+
+const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$a,
+  default: DashUserCreate
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$f({ request }) {
   return redirect$1("/app");
 }
-async function action$6({ request, params }) {
+async function action$9({ request, params }) {
   console.log("outcomes.action", params.action);
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
@@ -2757,9 +3197,9 @@ async function action$6({ request, params }) {
     const competency = body.competency;
     result = await create$3(
       {
-        user: getPointer(models.user, user.objectId),
-        thread: getPointer(models.thread, thread.objectId),
-        competency: getPointer(models.competency, competency.objectId),
+        user: pointerObject(models.user, user.objectId),
+        thread: pointerObject(models.thread, thread.objectId),
+        competency: pointerObject(models.competency, competency.objectId),
         flag: flags$2.idle
       },
       user.sessionToken
@@ -2790,11 +3230,1143 @@ const outcomeSchema = {
   flag: "idle"
 };
 
-const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$6,
-  loader: loader$b,
+  action: action$9,
+  loader: loader$f,
   outcomeSchema
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const THEMES = {
+  light: "",
+  dark: ".dark"
+};
+const ChartContext = React.createContext(null);
+function useChart() {
+  const context = React.useContext(ChartContext);
+  if (!context) {
+    throw new Error("useChart must be used within a <ChartContainer />");
+  }
+  return context;
+}
+const ChartContainer = React.forwardRef(
+  ({ id, className, children, config, ...props }, ref) => {
+    const uniqueId = React.useId();
+    const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`;
+    return /* @__PURE__ */ jsx(ChartContext.Provider, { value: { config }, children: /* @__PURE__ */ jsxs(
+      "div",
+      {
+        "data-chart": chartId,
+        ref,
+        className: cn(
+          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
+          className
+        ),
+        ...props,
+        children: [
+          /* @__PURE__ */ jsx(ChartStyle, { id: chartId, config }),
+          /* @__PURE__ */ jsx(RechartsPrimitive.ResponsiveContainer, { children })
+        ]
+      }
+    ) });
+  }
+);
+ChartContainer.displayName = "Chart";
+const ChartStyle = ({ id, config }) => {
+  const colorConfig = Object.entries(config).filter(
+    ([, config2]) => config2.theme || config2.color
+  );
+  if (!colorConfig.length) {
+    return null;
+  }
+  return /* @__PURE__ */ jsx(
+    "style",
+    {
+      dangerouslySetInnerHTML: {
+        __html: Object.entries(THEMES).map(
+          ([theme, prefix]) => `
+${prefix} [data-chart=${id}] {
+${colorConfig.map(([key, itemConfig]) => {
+            const color = itemConfig.theme?.[theme] || itemConfig.color;
+            return color ? `  --color-${key}: ${color};` : null;
+          }).join("\n")}
+}
+`
+        ).join("\n")
+      }
+    }
+  );
+};
+const ChartTooltip = RechartsPrimitive.Tooltip;
+const ChartTooltipContent = React.forwardRef(
+  ({
+    active,
+    payload,
+    className,
+    indicator = "dot",
+    hideLabel = false,
+    hideIndicator = false,
+    label,
+    labelFormatter,
+    labelClassName,
+    formatter,
+    color,
+    nameKey,
+    labelKey
+  }, ref) => {
+    const { config } = useChart();
+    const tooltipLabel = React.useMemo(() => {
+      if (hideLabel || !payload?.length) {
+        return null;
+      }
+      const [item] = payload;
+      const key = `${labelKey || item?.dataKey || item?.name || "value"}`;
+      const itemConfig = getPayloadConfigFromPayload(config, item, key);
+      const value = !labelKey && typeof label === "string" ? config[label]?.label || label : itemConfig?.label;
+      if (labelFormatter) {
+        return /* @__PURE__ */ jsx("div", { className: cn("font-medium", labelClassName), children: labelFormatter(value, payload) });
+      }
+      if (!value) {
+        return null;
+      }
+      return /* @__PURE__ */ jsx("div", { className: cn("font-medium", labelClassName), children: value });
+    }, [
+      label,
+      labelFormatter,
+      payload,
+      hideLabel,
+      labelClassName,
+      config,
+      labelKey
+    ]);
+    if (!active || !payload?.length) {
+      return null;
+    }
+    const nestLabel = payload.length === 1 && indicator !== "dot";
+    return /* @__PURE__ */ jsxs(
+      "div",
+      {
+        ref,
+        className: cn(
+          "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
+          className
+        ),
+        children: [
+          !nestLabel ? tooltipLabel : null,
+          /* @__PURE__ */ jsx("div", { className: "grid gap-1.5", children: payload.map((item, index) => {
+            const key = `${nameKey || item.name || item.dataKey || "value"}`;
+            const itemConfig = getPayloadConfigFromPayload(config, item, key);
+            const indicatorColor = color || item.payload.fill || item.color;
+            return /* @__PURE__ */ jsx(
+              "div",
+              {
+                className: cn(
+                  "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
+                  indicator === "dot" && "items-center"
+                ),
+                children: formatter && item?.value !== void 0 && item.name ? formatter(item.value, item.name, item, index, item.payload) : /* @__PURE__ */ jsxs(Fragment, { children: [
+                  itemConfig?.icon ? /* @__PURE__ */ jsx(itemConfig.icon, {}) : !hideIndicator && /* @__PURE__ */ jsx(
+                    "div",
+                    {
+                      className: cn(
+                        "shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]",
+                        {
+                          "h-2.5 w-2.5": indicator === "dot",
+                          "w-1": indicator === "line",
+                          "w-0 border-[1.5px] border-dashed bg-transparent": indicator === "dashed",
+                          "my-0.5": nestLabel && indicator === "dashed"
+                        }
+                      ),
+                      style: {
+                        "--color-bg": indicatorColor,
+                        "--color-border": indicatorColor
+                      }
+                    }
+                  ),
+                  /* @__PURE__ */ jsxs(
+                    "div",
+                    {
+                      className: cn(
+                        "flex flex-1 justify-between leading-none",
+                        nestLabel ? "items-end" : "items-center"
+                      ),
+                      children: [
+                        /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5", children: [
+                          nestLabel ? tooltipLabel : null,
+                          /* @__PURE__ */ jsx("span", { className: "text-muted-foreground", children: itemConfig?.label || item.name })
+                        ] }),
+                        item.value && /* @__PURE__ */ jsx("span", { className: "font-mono font-medium tabular-nums text-foreground", children: item.value.toLocaleString() })
+                      ]
+                    }
+                  )
+                ] })
+              },
+              item.dataKey
+            );
+          }) })
+        ]
+      }
+    );
+  }
+);
+ChartTooltipContent.displayName = "ChartTooltip";
+const ChartLegendContent = React.forwardRef(
+  ({ className, hideIcon = false, payload, verticalAlign = "bottom", nameKey }, ref) => {
+    const { config } = useChart();
+    if (!payload?.length) {
+      return null;
+    }
+    return /* @__PURE__ */ jsx(
+      "div",
+      {
+        ref,
+        className: cn(
+          "flex items-center justify-center gap-4",
+          verticalAlign === "top" ? "pb-3" : "pt-3",
+          className
+        ),
+        children: payload.map((item) => {
+          const key = `${nameKey || item.dataKey || "value"}`;
+          const itemConfig = getPayloadConfigFromPayload(config, item, key);
+          return /* @__PURE__ */ jsxs(
+            "div",
+            {
+              className: cn(
+                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
+              ),
+              children: [
+                itemConfig?.icon && !hideIcon ? /* @__PURE__ */ jsx(itemConfig.icon, {}) : /* @__PURE__ */ jsx(
+                  "div",
+                  {
+                    className: "h-2 w-2 shrink-0 rounded-[2px]",
+                    style: {
+                      backgroundColor: item.color
+                    }
+                  }
+                ),
+                itemConfig?.label
+              ]
+            },
+            item.value
+          );
+        })
+      }
+    );
+  }
+);
+ChartLegendContent.displayName = "ChartLegend";
+function getPayloadConfigFromPayload(config, payload, key) {
+  if (typeof payload !== "object" || payload === null) {
+    return void 0;
+  }
+  const payloadPayload = "payload" in payload && typeof payload.payload === "object" && payload.payload !== null ? payload.payload : void 0;
+  let configLabelKey = key;
+  if (key in payload && typeof payload[key] === "string") {
+    configLabelKey = payload[key];
+  } else if (payloadPayload && key in payloadPayload && typeof payloadPayload[key] === "string") {
+    configLabelKey = payloadPayload[key];
+  }
+  return configLabelKey in config ? config[configLabelKey] : config[key];
+}
+
+const chartData = [
+  { month: "January", desktop: 186, mobile: 80 },
+  { month: "February", desktop: 305, mobile: 200 },
+  { month: "March", desktop: 237, mobile: 120 },
+  { month: "April", desktop: 73, mobile: 190 },
+  { month: "May", desktop: 209, mobile: 130 },
+  { month: "June", desktop: 214, mobile: 140 }
+];
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--primary))"
+  },
+  mobile: {
+    label: "Mobile",
+    color: "hsl(var(--chart-5))"
+  }
+};
+function DashChart() {
+  return /* @__PURE__ */ jsxs(Card, { className: "h-full flex flex-col shadow-none rounded-lg", children: [
+    /* @__PURE__ */ jsxs(CardHeader, { children: [
+      /* @__PURE__ */ jsx(CardTitle, { children: /* @__PURE__ */ jsxs("div", { className: "flex items-center gap-2 font-medium leading-none", children: [
+        "Trending up by 5.2% this month ",
+        /* @__PURE__ */ jsx(TrendingUp, { className: "h-4 w-4" })
+      ] }) }),
+      /* @__PURE__ */ jsx(CardDescription, { children: "January - June 2024" })
+    ] }),
+    /* @__PURE__ */ jsx(CardContent, { className: "flex-auto", children: /* @__PURE__ */ jsx(ChartContainer, { config: chartConfig, className: "w-full h-0 min-h-full", children: /* @__PURE__ */ jsxs(
+      LineChart,
+      {
+        accessibilityLayer: true,
+        data: chartData,
+        margin: {
+          left: 12,
+          right: 12
+        },
+        children: [
+          /* @__PURE__ */ jsx(CartesianGrid, { vertical: false }),
+          /* @__PURE__ */ jsx(
+            XAxis,
+            {
+              dataKey: "month",
+              tickLine: false,
+              axisLine: false,
+              tickMargin: 8,
+              tickFormatter: (value) => value.slice(0, 3)
+            }
+          ),
+          /* @__PURE__ */ jsx(ChartTooltip, { cursor: false, content: /* @__PURE__ */ jsx(ChartTooltipContent, {}) }),
+          /* @__PURE__ */ jsx(
+            Line,
+            {
+              dataKey: "desktop",
+              type: "monotone",
+              stroke: "var(--color-desktop)",
+              strokeWidth: 2,
+              dot: false
+            }
+          ),
+          /* @__PURE__ */ jsx(
+            Line,
+            {
+              dataKey: "mobile",
+              type: "monotone",
+              stroke: "var(--color-mobile)",
+              strokeWidth: 2,
+              dot: false
+            }
+          )
+        ]
+      }
+    ) }) })
+  ] });
+}
+
+function DashOverview() {
+  return /* @__PURE__ */ jsxs("div", { className: "h-full flex flex-col p-4 gap-4", children: [
+    /* @__PURE__ */ jsx("div", { className: "grid md:grid-cols-4 gap-4", children: Object.values(boxes).map((box) => /* @__PURE__ */ jsx(Box, { box }, box.title)) }),
+    /* @__PURE__ */ jsx("div", { className: "flex-auto", children: /* @__PURE__ */ jsx(DashChart, {}) })
+  ] });
+}
+const Box = ({ box, value = 1248, percent = -12.5 }) => /* @__PURE__ */ jsxs(
+  "div",
+  {
+    className: cn(
+      "p-4 bg-white border rounded-lg flex flex-col gap-2 justify-between relative",
+      box.className
+    ),
+    children: [
+      /* @__PURE__ */ jsx("span", { className: "text-sm text-zinc-500", children: box.title }),
+      /* @__PURE__ */ jsx("span", { className: "text-2xl font-light", children: Number(value).toLocaleString() }),
+      /* @__PURE__ */ jsxs("div", { className: "flex gap-1 text-xs", children: [
+        /* @__PURE__ */ jsxs("span", { className: percent > 0 ? "text-green-500" : "text-red-500", children: [
+          percent,
+          "%"
+        ] }),
+        /* @__PURE__ */ jsx("span", { className: "text-zinc-500", children: box.description })
+      ] }),
+      /* @__PURE__ */ jsx(
+        box.icon,
+        {
+          "aria-hidden": true,
+          size: 24,
+          className: "absolute top-4 right-4 stroke-1"
+        }
+      )
+    ]
+  }
+);
+const boxes = {
+  users: {
+    title: "Total Users",
+    description: "from last month",
+    icon: Users2,
+    className: "text-sky-500"
+  },
+  user: {
+    title: "Active Today",
+    description: "from yesterday",
+    icon: User2,
+    className: "text-green-500"
+  },
+  tokens: {
+    title: "Token Usage",
+    description: "from last week",
+    icon: KeySquare,
+    className: "text-violet-500"
+  },
+  messages: {
+    title: "Messages",
+    description: "from last week",
+    icon: MessageCircle,
+    className: "text-orange-500"
+  }
+};
+
+const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: DashOverview
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function action$8({ request }) {
+  const data = await usersReset();
+  return Response.json({ ...data });
+}
+function DashSettings() {
+  const { state } = useNavigation();
+  const data = useActionData();
+  return /* @__PURE__ */ jsx("div", { className: "h-full flex flex-col p-4 gap-4 text-sm", children: /* @__PURE__ */ jsxs(Card, { className: "shadow-none rounded-lg", children: [
+    /* @__PURE__ */ jsx(CardHeader, { children: /* @__PURE__ */ jsx(CardTitle, { children: "Reset test users (5 users)." }) }),
+    /* @__PURE__ */ jsxs(CardContent, { children: [
+      "After this action, all relational dependencies for 5 demo users in the database will be removed completely! Are you sure?",
+      /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "flex justify-between mt-4", children: [
+        /* @__PURE__ */ jsx("span", { className: "text-sm", children: data?.message ?? data?.error?.message }),
+        /* @__PURE__ */ jsx(
+          SubmitField,
+          {
+            label: "Reset test users",
+            loader: state === "submitting"
+          }
+        )
+      ] })
+    ] })
+  ] }) });
+}
+
+const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$8,
+  default: DashSettings
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const Avatar = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  AvatarPrimitive.Root,
+  {
+    ref,
+    className: cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className),
+    ...props
+  }
+));
+Avatar.displayName = AvatarPrimitive.Root.displayName;
+const AvatarImage = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  AvatarPrimitive.Image,
+  {
+    ref,
+    className: cn("aspect-square h-full w-full", className),
+    ...props
+  }
+));
+AvatarImage.displayName = AvatarPrimitive.Image.displayName;
+const AvatarFallback = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  AvatarPrimitive.Fallback,
+  {
+    ref,
+    className: cn(
+      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      className
+    ),
+    ...props
+  }
+));
+AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
+
+const Sheet = DialogPrimitive.Root;
+const SheetTrigger = DialogPrimitive.Trigger;
+const SheetClose = DialogPrimitive.Close;
+const SheetPortal = DialogPrimitive.Portal;
+const SheetOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DialogPrimitive.Overlay,
+  {
+    className: cn(
+      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className
+    ),
+    ...props,
+    ref
+  }
+));
+SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
+const sheetVariants = cva(
+  "fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out",
+  {
+    variants: {
+      side: {
+        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+        bottom: "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+        left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
+        right: "inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm"
+      }
+    },
+    defaultVariants: {
+      side: "right"
+    }
+  }
+);
+const SheetContent = React.forwardRef(({ side = "right", className, children, ...props }, ref) => /* @__PURE__ */ jsxs(SheetPortal, { children: [
+  /* @__PURE__ */ jsx(SheetOverlay, {}),
+  /* @__PURE__ */ jsxs(DialogPrimitive.Content, { ref, className: cn(sheetVariants({ side }), className), ...props, children: [
+    /* @__PURE__ */ jsxs(
+      DialogPrimitive.Close,
+      {
+        className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary",
+        children: [
+          /* @__PURE__ */ jsx(Cross2Icon, { className: "h-4 w-4" }),
+          /* @__PURE__ */ jsx("span", { className: "sr-only", children: "Close" })
+        ]
+      }
+    ),
+    children
+  ] })
+] }));
+SheetContent.displayName = DialogPrimitive.Content.displayName;
+const SheetHeader = ({
+  className,
+  ...props
+}) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    className: cn("flex flex-col space-y-2 text-center sm:text-left", className),
+    ...props
+  }
+);
+SheetHeader.displayName = "SheetHeader";
+const SheetFooter = ({
+  className,
+  ...props
+}) => /* @__PURE__ */ jsx(
+  "div",
+  {
+    className: cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
+    ...props
+  }
+);
+SheetFooter.displayName = "SheetFooter";
+const SheetTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DialogPrimitive.Title,
+  {
+    ref,
+    className: cn("text-lg font-semibold text-foreground", className),
+    ...props
+  }
+));
+SheetTitle.displayName = DialogPrimitive.Title.displayName;
+const SheetDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DialogPrimitive.Description,
+  {
+    ref,
+    className: cn("text-sm text-muted-foreground", className),
+    ...props
+  }
+));
+SheetDescription.displayName = DialogPrimitive.Description.displayName;
+
+function SheetModule({ ...props }) {
+  const [open, setOpen] = useState(props?.open);
+  const navigate = useNavigate();
+  function onOpenChange(open2) {
+    setOpen(open2);
+    if (!open2 && props?.asRoute)
+      navigate(props?.from ?? -1, { preventScrollReset: true });
+  }
+  return /* @__PURE__ */ jsxs(Sheet, { open, onOpenChange, children: [
+    props?.trigger && /* @__PURE__ */ jsx(SheetTrigger, { asChild: true, children: /* @__PURE__ */ jsx(Button, { variant: "outline", children: props.trigger }) }),
+    /* @__PURE__ */ jsxs(SheetContent, { className: props?.contentClassName, children: [
+      /* @__PURE__ */ jsxs(SheetHeader, { children: [
+        /* @__PURE__ */ jsx(SheetTitle, { children: props.title }),
+        /* @__PURE__ */ jsx(SheetDescription, { children: props.description })
+      ] }),
+      /* @__PURE__ */ jsx(ScrollArea, { className: "h-full", children: props?.children }),
+      props?.footer && /* @__PURE__ */ jsxs(SheetFooter, { children: [
+        props?.footer?.close && /* @__PURE__ */ jsx(SheetClose, { asChild: true, children: /* @__PURE__ */ jsx(Button, { type: "submit", children: props.footer.close }) }),
+        props.footer
+      ] })
+    ] })
+  ] });
+}
+
+const toggleVariants = cva(
+  "inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "bg-transparent",
+        outline: "border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground"
+      },
+      size: {
+        default: "h-9 px-2 min-w-9",
+        sm: "h-8 px-1.5 min-w-8",
+        lg: "h-10 px-2.5 min-w-10"
+      }
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default"
+    }
+  }
+);
+const Toggle = React.forwardRef(
+  ({ className, variant, size, ...props }, ref) => /* @__PURE__ */ jsx(
+    TogglePrimitive.Root,
+    {
+      ref,
+      className: cn(toggleVariants({ variant, size, className })),
+      ...props
+    }
+  )
+);
+Toggle.displayName = TogglePrimitive.Root.displayName;
+
+const ToggleGroupContext = React.createContext({
+  size: "default",
+  variant: "default"
+});
+const ToggleGroup = React.forwardRef(
+  ({ className, variant, size, children, ...props }, ref) => /* @__PURE__ */ jsx(
+    ToggleGroupPrimitive.Root,
+    {
+      ref,
+      className: cn("flex items-center justify-center gap-1", className),
+      ...props,
+      children: /* @__PURE__ */ jsx(ToggleGroupContext.Provider, { value: { variant, size }, children })
+    }
+  )
+);
+ToggleGroup.displayName = ToggleGroupPrimitive.Root.displayName;
+const ToggleGroupItem = React.forwardRef(
+  ({ className, children, variant, size, ...props }, ref) => {
+    const context = React.useContext(ToggleGroupContext);
+    return /* @__PURE__ */ jsx(
+      ToggleGroupPrimitive.Item,
+      {
+        ref,
+        className: cn(
+          toggleVariants({
+            variant: context.variant || variant,
+            size: context.size || size
+          }),
+          className
+        ),
+        ...props,
+        children
+      }
+    );
+  }
+);
+ToggleGroupItem.displayName = ToggleGroupPrimitive.Item.displayName;
+
+function Message$1({ data, resource }) {
+  return /* @__PURE__ */ jsx("div", { className: "grid gap-2 text-sm", children: data?.map((item, index) => /* @__PURE__ */ jsxs("div", { className: "grid gap-2 rounded-xl odd:bg-zinc-100 p-4", children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex justify-between gap-2", children: [
+      /* @__PURE__ */ jsx("span", { children: Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+        hour: "numeric",
+        minute: "numeric"
+      }).format(new Date(item.updatedAt)) }),
+      /* @__PURE__ */ jsx("span", { children: item.role })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "", children: /* @__PURE__ */ jsx(
+      Markdown,
+      {
+        children: item.content,
+        className: "text-zinc-600 [&_p]:mb-4 last:[&_p]:m-0 [&_li]:mb-4 [&_hr]:mb-4"
+      }
+    ) })
+  ] }, index)) });
+}
+
+const Table = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("div", { className: "relative w-full overflow-auto", children: /* @__PURE__ */ jsx(
+  "table",
+  {
+    ref,
+    className: cn("w-full caption-bottom text-sm", className),
+    ...props
+  }
+) }));
+Table.displayName = "Table";
+const TableHeader = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("thead", { ref, className: cn("[&_tr]:border-b", className), ...props }));
+TableHeader.displayName = "TableHeader";
+const TableBody = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "tbody",
+  {
+    ref,
+    className: cn("[&_tr:last-child]:border-0", className),
+    ...props
+  }
+));
+TableBody.displayName = "TableBody";
+const TableFooter = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "tfoot",
+  {
+    ref,
+    className: cn("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className),
+    ...props
+  }
+));
+TableFooter.displayName = "TableFooter";
+const TableRow = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "tr",
+  {
+    ref,
+    className: cn(
+      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      className
+    ),
+    ...props
+  }
+));
+TableRow.displayName = "TableRow";
+const TableHead = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "th",
+  {
+    ref,
+    className: cn(
+      "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      className
+    ),
+    ...props
+  }
+));
+TableHead.displayName = "TableHead";
+const TableCell = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "td",
+  {
+    ref,
+    className: cn(
+      "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      className
+    ),
+    ...props
+  }
+));
+TableCell.displayName = "TableCell";
+const TableCaption = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  "caption",
+  {
+    ref,
+    className: cn("mt-4 text-sm text-muted-foreground", className),
+    ...props
+  }
+));
+TableCaption.displayName = "TableCaption";
+
+function TableModule({
+  columns,
+  data,
+  pagination,
+  fullHeight,
+  ...props
+}) {
+  const navigate = useNavigate();
+  const navigation = useNavigation();
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    manualPagination: true
+  });
+  return /* @__PURE__ */ jsxs(
+    "div",
+    {
+      className: cn(
+        "rounded-lg border overflow-hidden",
+        fullHeight && "h-full flex flex-col",
+        props?.className
+      ),
+      children: [
+        /* @__PURE__ */ jsxs("header", { className: "flex justify-between items-center bg-white border-b p-2 text-sm", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex-1 flex gap-2 justify-start items-center", children: [
+            props?.selection && /* @__PURE__ */ jsxs("span", { className: "flex gap-2 items-center text-xs", children: [
+              table.getFilteredSelectedRowModel().rows.length > 0 && /* @__PURE__ */ jsx(
+                Button,
+                {
+                  size: "sm",
+                  variant: "ghost",
+                  className: "aspect-square px-0 bg-zinc-100 hover:text-orange-500",
+                  onClick: (e) => props.selection.onClick(
+                    table.getFilteredSelectedRowModel().rows
+                  ),
+                  children: /* @__PURE__ */ jsx(Trash, {})
+                }
+              ),
+              `${table.getFilteredSelectedRowModel().rows.length} of ${table.getFilteredRowModel().rows.length} Items.`
+            ] }),
+            props?.header?.start
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "flex-1 flex gap-2 justify-center items-center", children: props?.header?.center }),
+          /* @__PURE__ */ jsx("div", { className: "flex-1 flex gap-2 justify-end items-center", children: props?.header?.end })
+        ] }),
+        /* @__PURE__ */ jsx(
+          ScrollArea,
+          {
+            className: cn(
+              // "whitespace-nowrap",
+              fullHeight && "flex-auto [&>div>div:first-child]:h-full [&>div>div>div:first-child]:h-full"
+            ),
+            children: /* @__PURE__ */ jsxs(Table, { className: cn("", props?.tableClassName), children: [
+              /* @__PURE__ */ jsx(TableHeader, { className: "sticky z-10 top-0 bg-white", children: table.getHeaderGroups().map((headerGroup) => /* @__PURE__ */ jsx(TableRow, { children: headerGroup.headers.map((header) => {
+                return /* @__PURE__ */ jsx(TableHead, { children: header.isPlaceholder ? null : flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                ) }, header.id);
+              }) }, headerGroup.id)) }),
+              /* @__PURE__ */ jsx(TableBody, { children: table.getRowModel().rows?.length ? table.getRowModel().rows.map((row) => /* @__PURE__ */ jsx(
+                TableRow,
+                {
+                  "data-state": row.getIsSelected() && "selected",
+                  children: row.getVisibleCells().map((cell) => /* @__PURE__ */ jsx(TableCell, { children: flexRender(
+                    cell.column.columnDef.cell,
+                    cell.getContext()
+                  ) }, cell.id))
+                },
+                row.id
+              )) : /* @__PURE__ */ jsx(TableRow, { children: /* @__PURE__ */ jsx(
+                TableCell,
+                {
+                  colSpan: columns.length,
+                  className: "h-24 text-center",
+                  children: "No results."
+                }
+              ) }) })
+            ] })
+          }
+        ),
+        pagination?.count > pagination?.pageSize && /* @__PURE__ */ jsxs("footer", { className: "flex justify-between items-center bg-white border-t p-2 text-sm", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex-1 flex gap-2 justify-start items-center", children: [
+            /* @__PURE__ */ jsxs("div", { className: "flex-1 text-sm text-muted-foreground", children: [
+              pagination.current - pagination.pageSize + 1,
+              " ~",
+              " ",
+              pagination.current < pagination.count ? pagination.current : pagination.count,
+              " ",
+              "of ",
+              pagination.count
+            ] }),
+            props?.footer?.start
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "flex-1 flex gap-2 justify-center items-center", children: props?.footer?.center }),
+          /* @__PURE__ */ jsxs("div", { className: "flex-1 flex gap-2 justify-end items-center", children: [
+            /* @__PURE__ */ jsxs("div", { className: "space-x-2", children: [
+              /* @__PURE__ */ jsx(
+                Button,
+                {
+                  variant: "outline",
+                  size: "sm",
+                  onClick: () => navigate(pagination.previous),
+                  disabled: !pagination.previous || navigation.state === "loading",
+                  children: /* @__PURE__ */ jsx(ChevronLeft, { "aria-hidden": true })
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                Button,
+                {
+                  variant: "outline",
+                  size: "sm",
+                  onClick: () => navigate(pagination.next),
+                  disabled: !pagination.next || navigation.state === "loading",
+                  children: /* @__PURE__ */ jsx(ChevronRight, { "aria-hidden": true })
+                }
+              )
+            ] }),
+            props?.footer?.end
+          ] })
+        ] })
+      ]
+    }
+  );
+}
+
+function Outcome$1({ data: data2, resource }) {
+  return /* @__PURE__ */ jsx(
+    TableModule,
+    {
+      data: data2,
+      columns: columns$2({ resource }),
+      className: "bg-white text-xs md:text-sm",
+      tableClassName: "[&_thead>tr]:bg-primary/5 [&_thead>tr>th]:text-primary [&_tbody>tr>td]:align-baseline"
+    }
+  );
+}
+const columns$2 = ({ resource }) => [
+  {
+    accessorKey: "updatedAt",
+    header: "Updated At",
+    cell: ({ row }) => /* @__PURE__ */ jsx("div", { className: "min-w-40", children: Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "numeric",
+      minute: "numeric"
+    }).format(new Date(row.getValue("updatedAt"))) })
+  },
+  {
+    accessorKey: "competency",
+    header: "CC",
+    cell: ({ row }) => {
+      const competency = row.getValue("competency");
+      const competencyGroup = competency.competencyGroup;
+      return /* @__PURE__ */ jsxs("span", { title: competency.title, children: [
+        competencyGroup.order,
+        ".",
+        competency.order
+      ] });
+    }
+  },
+  {
+    accessorKey: "situation",
+    header: "Situation",
+    cell: ({ row }) => {
+      const value = row.getValue("situation");
+      return /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "max-w-64 max-h-12 overflow-auto",
+          onClick: (e) => e.target.classList.toggle("max-h-64"),
+          children: value
+        }
+      );
+    }
+  },
+  {
+    accessorKey: "action",
+    header: "Action",
+    cell: ({ row }) => {
+      const value = row.getValue("action");
+      return /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "max-w-64 max-h-12 overflow-auto",
+          onClick: (e) => e.target.classList.toggle("max-h-64"),
+          children: value
+        }
+      );
+    }
+  },
+  {
+    accessorKey: "outcome",
+    header: "Outcome",
+    cell: ({ row }) => {
+      const value = row.getValue("outcome");
+      return /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: "max-w-64 max-h-12 overflow-auto",
+          onClick: (e) => e.target.classList.toggle("max-h-64"),
+          children: value
+        }
+      );
+    }
+  },
+  {
+    accessorKey: "score",
+    header: "Score",
+    cell: ({ row }) => {
+      const score = row.getValue("score");
+      return /* @__PURE__ */ jsx("span", { children: score?.result });
+    }
+  }
+];
+
+let isHydrating = true;
+function ClientOnly({ children }) {
+  const [isHydrated, setIsHydrated] = useState(!isHydrating);
+  useEffect(() => {
+    isHydrating = false;
+    setIsHydrated(true);
+  }, []);
+  if (isHydrated) {
+    return /* @__PURE__ */ jsx(Fragment, { children });
+  } else {
+    return null;
+  }
+}
+
+function MDX({ ...props }) {
+  const inputRef = useRef();
+  return /* @__PURE__ */ jsxs(ClientOnly, { children: [
+    /* @__PURE__ */ jsx(
+      "input",
+      {
+        type: "hidden",
+        ref: inputRef,
+        name: props?.name,
+        value: props?.value
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      MDXEditor,
+      {
+        className: "bg-white border rounded-md [&_h1]:text-4xl [&_h2]:text-3xl [&_h3]:text-2xl [&_h4]:text-xl [&_h5]:text-lg [&_h6]:text-base",
+        markdown: props?.value ?? "",
+        onChange: (markdown) => {
+          console.log();
+          inputRef.current.value = markdown;
+          props?.setValue?.(markdown);
+        },
+        plugins: [
+          headingsPlugin(),
+          listsPlugin(),
+          linkPlugin(),
+          linkDialogPlugin(),
+          thematicBreakPlugin(),
+          toolbarPlugin({
+            toolbarClassName: "!bg-transparent !border-b",
+            toolbarContents: () => /* @__PURE__ */ jsxs(Fragment, { children: [
+              /* @__PURE__ */ jsx(UndoRedo, {}),
+              /* @__PURE__ */ jsx(BoldItalicUnderlineToggles, {}),
+              /* @__PURE__ */ jsx(BlockTypeSelect, {})
+            ] })
+          })
+        ]
+      }
+    )
+  ] });
+}
+
+function Notes({ data, resource }) {
+  const { state } = useNavigation();
+  return /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx("input", { type: "hidden", name: "objectId", value: data?.objectId }),
+    /* @__PURE__ */ jsx(MDX, { name: "note", value: data?.note }),
+    /* @__PURE__ */ jsx(SubmitField, { label: "Update", loader: state === "submitting" })
+  ] });
+}
+
+async function loader$e({ request, params }) {
+  const resource = new URL(request.url).searchParams.get("resource");
+  const userId = params.id;
+  if (!resource) return redirect$1("/dash/user");
+  const data = await userData({ request, resource, userId });
+  return Response.json({ resource, userId, data });
+}
+async function action$7({ request, params }) {
+  const resource = new URL(request.url).searchParams.get("resource");
+  const userId = params.id;
+  const form = await request.formData();
+  const { objectId, user, note } = Object.fromEntries(form);
+  const data = await actionHandler({
+    request,
+    resource,
+    userId,
+    args: { objectId, user, note }
+  });
+  return Response.json(data);
+}
+function DashUserId() {
+  const navigation = useNavigation();
+  const ldata = useLoaderData();
+  const rldata = useRouteLoaderData("routes/dash.user");
+  const user = rldata?.data?.find((item) => item.objectId === ldata?.userId);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const resource = searchParams.get("resource");
+  return /* @__PURE__ */ jsx(
+    SheetModule,
+    {
+      open: true,
+      asRoute: true,
+      from: "/dash/user",
+      contentClassName: "!max-w-screen-2xl",
+      children: /* @__PURE__ */ jsxs("div", { className: "p-4", children: [
+        /* @__PURE__ */ jsxs("header", { className: "space-y-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex gap-4 items-center", children: [
+            /* @__PURE__ */ jsxs(Avatar, { className: "rounded-xl cursor-pointer", children: [
+              /* @__PURE__ */ jsx(AvatarImage, { src: user?.profile?.avatar ?? "/avatar.jpg" }),
+              /* @__PURE__ */ jsx(AvatarFallback, { className: "rounded-lg", children: "RK" })
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "grid", children: [
+              /* @__PURE__ */ jsxs("strong", { children: [
+                user?.profile?.firstName,
+                " ",
+                user?.profile?.lastName
+              ] }),
+              /* @__PURE__ */ jsx("small", { children: user?.email })
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx(TokenUsage, { user }),
+          resource === "outcome" && ldata?.data?.length && /* @__PURE__ */ jsx(CbaCompletion, { data: ldata.data })
+        ] }),
+        /* @__PURE__ */ jsxs("main", { className: "mt-8 space-y-4", children: [
+          /* @__PURE__ */ jsxs("div", { className: "flex justify-between", children: [
+            /* @__PURE__ */ jsxs(
+              ToggleGroup,
+              {
+                type: "single",
+                variant: "outline",
+                size: "sm",
+                className: "[&_button[data-state=on]]:text-primary [&_button[data-state=on]]:border-primary [&_button[data-state=on]]:pointer-events-none",
+                defaultValue: ldata?.resource,
+                onValueChange: (value) => setSearchParams((prev) => {
+                  prev.set("resource", value);
+                  return prev;
+                }),
+                disabled: navigation.state === "loading",
+                children: [
+                  /* @__PURE__ */ jsx(ToggleGroupItem, { value: "message", children: "Messages" }),
+                  /* @__PURE__ */ jsx(ToggleGroupItem, { value: "outcome", children: "Outcome" }),
+                  /* @__PURE__ */ jsx(ToggleGroupItem, { value: "setting", children: "Notes" })
+                ]
+              }
+            ),
+            /* @__PURE__ */ jsx("span", { children: "Activity" })
+          ] }),
+          ldata?.resource === "message" && /* @__PURE__ */ jsx(Message$1, { data: ldata?.data, resource: ldata?.resource }),
+          ldata?.resource === "outcome" && /* @__PURE__ */ jsx(Outcome$1, { data: ldata?.data, resource: ldata?.resource }),
+          ldata?.resource === "setting" && /* @__PURE__ */ jsx(Notes, { data: ldata?.data, resource: ldata?.resource })
+        ] })
+      ] })
+    }
+  );
+}
+function TokenUsage({ user }) {
+  const total = user?.profile?.usage?.total;
+  const tokens = user?.license?.plan?.limit?.tokens;
+  const label = `${Number(total).toLocaleString()} / ${Number(
+    tokens
+  ).toLocaleString()}`;
+  const value = Math.round(total / tokens * 100);
+  return /* @__PURE__ */ jsx(
+    ProgressModule,
+    {
+      start: `Token Usage ${value}%`,
+      end: label,
+      value,
+      progressClassName: "bg-green-500/20 [&_div]:bg-green-500"
+    }
+  );
+}
+function CbaCompletion({ data }) {
+  const total = data?.filter((item) => item.flag === "approved")?.length;
+  const tokens = 34;
+  const label = `${total} / ${tokens}`;
+  const value = Math.round(total / tokens * 100);
+  return /* @__PURE__ */ jsx(
+    ProgressModule,
+    {
+      start: `CBA Completion ${value}%`,
+      end: label,
+      value
+    }
+  );
+}
+function ProgressModule({ start, end, value, ...props }) {
+  return /* @__PURE__ */ jsxs("div", { className: props?.className, children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex justify-between text-sm", children: [
+      /* @__PURE__ */ jsx("span", { children: start }),
+      /* @__PURE__ */ jsx("span", { children: end })
+    ] }),
+    /* @__PURE__ */ jsx(Progress, { value, className: props?.progressClassName })
+  ] });
+}
+
+const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  ProgressModule,
+  action: action$7,
+  default: DashUserId,
+  loader: loader$e
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Breadcrumb = React.forwardRef(
@@ -2862,79 +4434,6 @@ const BreadcrumbSeparator = ({
 );
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator";
 
-const Dialog = DialogPrimitive.Root;
-const DialogTrigger = DialogPrimitive.Trigger;
-const DialogPortal = DialogPrimitive.Portal;
-const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DialogPrimitive.Overlay,
-  {
-    ref,
-    className: cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
-    ),
-    ...props
-  }
-));
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
-const DialogContent = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(DialogPortal, { children: [
-  /* @__PURE__ */ jsx(DialogOverlay, {}),
-  /* @__PURE__ */ jsxs(
-    DialogPrimitive.Content,
-    {
-      ref,
-      className: cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
-        className
-      ),
-      ...props,
-      children: [
-        children,
-        /* @__PURE__ */ jsxs(
-          DialogPrimitive.Close,
-          {
-            className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground",
-            children: [
-              /* @__PURE__ */ jsx(Cross2Icon, { className: "h-4 w-4" }),
-              /* @__PURE__ */ jsx("span", { className: "sr-only", children: "Close" })
-            ]
-          }
-        )
-      ]
-    }
-  )
-] }));
-DialogContent.displayName = DialogPrimitive.Content.displayName;
-const DialogHeader = ({
-  className,
-  ...props
-}) => /* @__PURE__ */ jsx(
-  "div",
-  {
-    className: cn("flex flex-col space-y-1.5 text-center sm:text-left", className),
-    ...props
-  }
-);
-DialogHeader.displayName = "DialogHeader";
-const DialogTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DialogPrimitive.Title,
-  {
-    ref,
-    className: cn("text-lg font-semibold leading-none tracking-tight", className),
-    ...props
-  }
-));
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
-const DialogDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DialogPrimitive.Description,
-  {
-    ref,
-    className: cn("text-sm text-muted-foreground", className),
-    ...props
-  }
-));
-DialogDescription.displayName = DialogPrimitive.Description.displayName;
-
 const MOBILE_BREAKPOINT = 768;
 function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState(void 0);
@@ -2949,73 +4448,6 @@ function useIsMobile() {
   }, []);
   return !!isMobile;
 }
-
-const Sheet = DialogPrimitive.Root;
-const SheetTrigger = DialogPrimitive.Trigger;
-const SheetPortal = DialogPrimitive.Portal;
-const SheetOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DialogPrimitive.Overlay,
-  {
-    className: cn(
-      "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className
-    ),
-    ...props,
-    ref
-  }
-));
-SheetOverlay.displayName = DialogPrimitive.Overlay.displayName;
-const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-background p-6 shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500 data-[state=open]:animate-in data-[state=closed]:animate-out",
-  {
-    variants: {
-      side: {
-        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
-        bottom: "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
-        right: "inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm"
-      }
-    },
-    defaultVariants: {
-      side: "right"
-    }
-  }
-);
-const SheetContent = React.forwardRef(({ side = "right", className, children, ...props }, ref) => /* @__PURE__ */ jsxs(SheetPortal, { children: [
-  /* @__PURE__ */ jsx(SheetOverlay, {}),
-  /* @__PURE__ */ jsxs(DialogPrimitive.Content, { ref, className: cn(sheetVariants({ side }), className), ...props, children: [
-    /* @__PURE__ */ jsxs(
-      DialogPrimitive.Close,
-      {
-        className: "absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary",
-        children: [
-          /* @__PURE__ */ jsx(Cross2Icon, { className: "h-4 w-4" }),
-          /* @__PURE__ */ jsx("span", { className: "sr-only", children: "Close" })
-        ]
-      }
-    ),
-    children
-  ] })
-] }));
-SheetContent.displayName = DialogPrimitive.Content.displayName;
-const SheetTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DialogPrimitive.Title,
-  {
-    ref,
-    className: cn("text-lg font-semibold text-foreground", className),
-    ...props
-  }
-));
-SheetTitle.displayName = DialogPrimitive.Title.displayName;
-const SheetDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DialogPrimitive.Description,
-  {
-    ref,
-    className: cn("text-sm text-muted-foreground", className),
-    ...props
-  }
-));
-SheetDescription.displayName = DialogPrimitive.Description.displayName;
 
 function Skeleton({
   className,
@@ -3039,7 +4471,7 @@ const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }
     ref,
     sideOffset,
     className: cn(
-      "z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      "z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-tooltip-content-transform-origin]",
       className
     ),
     ...props
@@ -3047,7 +4479,7 @@ const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }
 ) }));
 TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
-const SIDEBAR_COOKIE_NAME = "sidebar:state";
+const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
@@ -3158,7 +4590,7 @@ const Sidebar = React.forwardRef(
       );
     }
     if (isMobile) {
-      return /* @__PURE__ */ jsx(Sheet, { open: openMobile, onOpenChange: setOpenMobile, ...props, children: /* @__PURE__ */ jsx(
+      return /* @__PURE__ */ jsx(Sheet, { open: openMobile, onOpenChange: setOpenMobile, ...props, children: /* @__PURE__ */ jsxs(
         SheetContent,
         {
           "data-sidebar": "sidebar",
@@ -3168,7 +4600,13 @@ const Sidebar = React.forwardRef(
             "--sidebar-width": SIDEBAR_WIDTH_MOBILE
           },
           side,
-          children: /* @__PURE__ */ jsx("div", { className: "flex h-full w-full flex-col", children })
+          children: [
+            /* @__PURE__ */ jsxs(SheetHeader, { className: "sr-only", children: [
+              /* @__PURE__ */ jsx(SheetTitle, { children: "Sidebar" }),
+              /* @__PURE__ */ jsx(SheetDescription, { children: "Displays the mobile sidebar." })
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "flex h-full w-full flex-col", children })
+          ]
         }
       ) });
     }
@@ -3176,7 +4614,7 @@ const Sidebar = React.forwardRef(
       "div",
       {
         ref,
-        className: "group peer hidden md:block text-sidebar-foreground",
+        className: "group peer hidden text-sidebar-foreground md:block",
         "data-state": state,
         "data-collapsible": state === "collapsed" ? collapsible : "",
         "data-variant": variant,
@@ -3186,7 +4624,7 @@ const Sidebar = React.forwardRef(
             "div",
             {
               className: cn(
-                "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
+                "relative w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear",
                 "group-data-[collapsible=offcanvas]:w-0",
                 "group-data-[side=right]:rotate-180",
                 variant === "floating" || variant === "inset" ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]" : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
@@ -3197,7 +4635,7 @@ const Sidebar = React.forwardRef(
             "div",
             {
               className: cn(
-                "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
+                "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
                 side === "left" ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]" : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
                 // Adjust the padding for floating and inset variants.
                 variant === "floating" || variant === "inset" ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]" : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
@@ -3276,8 +4714,8 @@ const SidebarInset = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       className: cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background",
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
+        "relative flex w-full flex-1 flex-col bg-background",
+        "md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
       ),
       ...props
@@ -3372,7 +4810,7 @@ const SidebarGroupLabel = React.forwardRef(
         ref,
         "data-sidebar": "group-label",
         className: cn(
-          "duration-200 flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 outline-none ring-sidebar-ring transition-[margin,opa] ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
+          "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 outline-none ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
           "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
           className
         ),
@@ -3530,7 +4968,7 @@ const SidebarMenuBadge = React.forwardRef(({ className, ...props }, ref) => /* @
     ref,
     "data-sidebar": "menu-badge",
     className: cn(
-      "absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground select-none pointer-events-none",
+      "pointer-events-none absolute right-1 flex h-5 min-w-5 select-none items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground",
       "peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground",
       "peer-data-[size=sm]/menu-button:top-1",
       "peer-data-[size=default]/menu-button:top-1.5",
@@ -3552,7 +4990,7 @@ const SidebarMenuSkeleton = React.forwardRef(
       {
         ref,
         "data-sidebar": "menu-skeleton",
-        className: cn("rounded-md h-8 flex gap-2 px-2 items-center", className),
+        className: cn("flex h-8 items-center gap-2 rounded-md px-2", className),
         ...props,
         children: [
           showIcon && /* @__PURE__ */ jsx(
@@ -3565,7 +5003,7 @@ const SidebarMenuSkeleton = React.forwardRef(
           /* @__PURE__ */ jsx(
             Skeleton,
             {
-              className: "h-4 flex-1 max-w-[--skeleton-width]",
+              className: "h-4 max-w-[--skeleton-width] flex-1",
               "data-sidebar": "menu-skeleton-text",
               style: {
                 "--skeleton-width": width
@@ -3695,9 +5133,99 @@ function Settings() {
   ] });
 }
 
-const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Settings
+}, Symbol.toStringTag, { value: 'Module' }));
+
+function shouldRevalidate$2({ currentUrl, nextUrl }) {
+  console.log(currentUrl.search, nextUrl.search);
+  if (nextUrl.search.includes("email")) return true;
+  if (nextUrl.search.includes("pageIndex") && currentUrl.search !== nextUrl.search)
+    return true;
+  return false;
+}
+async function loader$d({ request }) {
+  const data = await licenseData({ request });
+  return Response.json({ ...data });
+}
+function DashLicense() {
+  const ldata = useLoaderData();
+  const { data, pagination } = ldata;
+  const emailRef = useRef();
+  return /* @__PURE__ */ jsx("div", { className: "p-4 h-full", children: /* @__PURE__ */ jsx(
+    TableModule,
+    {
+      data,
+      pagination,
+      columns: columns$1(),
+      className: "bg-white text-xs md:text-sm",
+      tableClassName: "[&_thead>tr]:bg-primary/5 [&_thead>tr>th]:text-primary",
+      fullHeight: true,
+      header: {
+        start: /* @__PURE__ */ jsxs(Form$1, { method: "get", className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx(
+            Input,
+            {
+              ref: emailRef,
+              name: "email",
+              placeholder: "Search by Email...",
+              type: "email",
+              className: "bg-zinc-50 max-w-64",
+              required: true
+            }
+          ),
+          emailRef?.current?.value && /* @__PURE__ */ jsx(
+            Link,
+            {
+              to: "/dash/license",
+              onClick: () => emailRef?.current?.reset(),
+              className: "text-primary",
+              children: "Clear"
+            }
+          )
+        ] })
+      }
+    }
+  ) });
+}
+const columns$1 = () => [
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ row }) => row.original.user?.email
+  },
+  {
+    accessorKey: "updatedAt",
+    header: "Updated At",
+    cell: ({ row }) => Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit"
+    }).format(new Date(row.getValue("updatedAt")))
+  },
+  {
+    accessorKey: "customerId",
+    header: "Customer Id",
+    cell: ({ row }) => row.original.customerId
+  },
+  {
+    accessorKey: "priceKey",
+    header: "Price Key",
+    cell: ({ row }) => row.original.priceKey
+  },
+  {
+    accessorKey: "amount",
+    header: "Amount",
+    cell: ({ row }) => row.original.amount
+  }
+];
+
+const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: DashLicense,
+  loader: loader$d,
+  shouldRevalidate: shouldRevalidate$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Textarea = React.forwardRef(({ className, ...props }, ref) => {
@@ -3787,10 +5315,10 @@ const Email = async ({ payload }) =>
     ...payload,
   });
 
-async function loader$a() {
+async function loader$c() {
   return null;
 }
-async function action$5({ request }) {
+async function action$6({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   if (!user) redirect$1("/app");
@@ -3912,14 +5440,14 @@ function Reviewer() {
   ] });
 }
 
-const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$5,
+  action: action$6,
   default: Contact,
-  loader: loader$a
+  loader: loader$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$9({ request }) {
+async function loader$b({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const plan = session.get("plan");
   return { plan };
@@ -3958,13 +5486,222 @@ function AppAlert() {
   );
 }
 
-const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: AppAlert,
-  loader: loader$9
+  loader: loader$b
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$8({ request }) {
+function shouldRevalidate$1({ currentUrl, nextUrl }) {
+  if (currentUrl.search.includes("filter") || nextUrl.search.includes("filter"))
+    return true;
+  if (nextUrl.search.includes("pageIndex") && currentUrl.search !== nextUrl.search)
+    return true;
+  return false;
+}
+async function loader$a({ request }) {
+  const url = new URL(request.url);
+  const resource = url.pathname.replace("/dash/", "");
+  const data = await usersData({ request });
+  return Response.json({ ...data, resource });
+}
+async function action$5({ request }) {
+  const formData = await request.formData();
+  const email = formData.get("email");
+  console.log("dash.action", email);
+  return Response.json({ data: null });
+}
+function DashUser() {
+  const ldata = useLoaderData();
+  const { data, pagination, admin, resource, priceKeys } = ldata;
+  const formRef = useRef();
+  const [searchParams] = useSearchParams();
+  return /* @__PURE__ */ jsxs("div", { className: "p-4 h-full", children: [
+    /* @__PURE__ */ jsx(
+      TableModule,
+      {
+        data,
+        pagination,
+        columns: columns({ resource, admin }),
+        className: "bg-white text-xs md:text-sm",
+        tableClassName: "[&_thead>tr]:bg-primary/5 [&_thead>tr>th]:text-primary",
+        fullHeight: true,
+        header: {
+          start: /* @__PURE__ */ jsxs(
+            Form$1,
+            {
+              method: "get",
+              ref: formRef,
+              className: "flex items-center gap-4",
+              children: [
+                /* @__PURE__ */ jsx("input", { type: "hidden", name: "filter" }),
+                /* @__PURE__ */ jsx(
+                  "input",
+                  {
+                    type: "email",
+                    name: "email",
+                    placeholder: "Email...",
+                    defaultValue: searchParams?.get("email") ?? "",
+                    className: "form-input border-zinc-300 rounded-md p-1 text-sm"
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  "input",
+                  {
+                    type: "month",
+                    name: "start",
+                    title: "Start",
+                    placeholder: "Start...",
+                    value: searchParams?.get("start") ?? "",
+                    onChange: () => formRef.current.submit(),
+                    className: "form-input border-zinc-300 rounded-md py-1 text-sm"
+                  }
+                ),
+                /* @__PURE__ */ jsx(
+                  "input",
+                  {
+                    type: "month",
+                    name: "end",
+                    title: "End",
+                    placeholder: "End...",
+                    value: searchParams?.get("end") ?? "",
+                    onChange: () => formRef.current.submit(),
+                    className: "form-input border-zinc-300 rounded-md py-1 text-sm"
+                  }
+                ),
+                /* @__PURE__ */ jsxs(
+                  "select",
+                  {
+                    name: "priceKey",
+                    placeholder: "License...",
+                    value: searchParams?.get("priceKey") ?? "",
+                    onChange: () => formRef.current.submit(),
+                    className: "form-input border-zinc-300 rounded-md py-1 pr-8 text-sm",
+                    children: [
+                      /* @__PURE__ */ jsx("option", { value: "", children: "License..." }),
+                      priceKeys.map((key, index) => /* @__PURE__ */ jsx("option", { value: key, children: key }, index))
+                    ]
+                  }
+                ),
+                searchParams.size > 0 && /* @__PURE__ */ jsx(Link, { to: "/dash/user", children: /* @__PURE__ */ jsx(
+                  Button,
+                  {
+                    variant: "ghost",
+                    onClick: () => formRef.current.reset(),
+                    className: "text-primary",
+                    children: "Clear"
+                  }
+                ) })
+              ]
+            }
+          ),
+          end: /* @__PURE__ */ jsx(Link, { to: "/dash/user/create", children: /* @__PURE__ */ jsxs(Button, { size: "sm", children: [
+            /* @__PURE__ */ jsx(Plus, { "aria-hidden": true }),
+            "USER"
+          ] }) })
+        }
+      }
+    ),
+    /* @__PURE__ */ jsx(Outlet, {})
+  ] });
+}
+const columns = ({ resource, admin }) => [
+  {
+    accessorKey: "email",
+    header: "Email",
+    cell: ({ row }) => row.original.email
+  },
+  {
+    accessorKey: "updatedAt",
+    header: "Updated At",
+    cell: ({ row }) => Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit"
+    }).format(new Date(row.getValue("updatedAt")))
+  },
+  {
+    accessorKey: "lastLogin",
+    header: "Last	login",
+    cell: ({ row }) => {
+      const updatedAt = row.original?.session?.updatedAt;
+      return updatedAt ? Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit"
+      }).format(new Date(updatedAt)) : "";
+    }
+  },
+  {
+    accessorKey: "fullname",
+    header: "Full	Name",
+    cell: ({ row }) => (row.original?.profile?.firstName ?? "") + " " + (row.original?.profile?.lastName ?? "")
+  },
+  {
+    accessorKey: "license",
+    header: "License",
+    cell: ({ row }) => row.original?.license?.priceKey
+  },
+  {
+    accessorKey: "usage",
+    header: "Usage",
+    cell: ({ row }) => {
+      const total = row.original?.profile?.usage?.total;
+      const tokens = row.original?.license?.plan?.limit?.tokens;
+      Number(total).toLocaleString() + " / " + Number(tokens).toLocaleString();
+      const value = Math.round(total / tokens * 100);
+      return value ? /* @__PURE__ */ jsx("div", { className: "grid ga-1", children: /* @__PURE__ */ jsx(Progress, { value, className: "w-20 h-2" }) }) : "";
+    }
+  },
+  {
+    id: "activities",
+    header: "Activities",
+    cell: ({ row }) => {
+      return /* @__PURE__ */ jsxs("div", { children: [
+        /* @__PURE__ */ jsx(
+          Link,
+          {
+            to: `/dash/user/${row.original.objectId}?resource=message`,
+            title: "Messages",
+            children: /* @__PURE__ */ jsx(Button, { variant: "ghost", className: "w-6 h-6 hover:text-primary", children: /* @__PURE__ */ jsx(MessagesSquare, { "aria-hidden": true }) })
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          Link,
+          {
+            to: `/dash/user/${row.original.objectId}?resource=outcome`,
+            title: "Outcomes",
+            children: /* @__PURE__ */ jsx(Button, { variant: "ghost", className: "w-6 h-6 hover:text-primary", children: /* @__PURE__ */ jsx(ScrollText, { "aria-hidden": true }) })
+          }
+        )
+      ] });
+    }
+  },
+  {
+    id: "notes",
+    header: "Notes",
+    cell: ({ row }) => {
+      return /* @__PURE__ */ jsx(
+        Link,
+        {
+          to: `/dash/user/${row.original.objectId}?resource=setting`,
+          title: "Notes",
+          children: /* @__PURE__ */ jsx(Button, { variant: "ghost", className: "w-6 h-6 hover:text-primary", children: /* @__PURE__ */ jsx(Notebook, { "aria-hidden": true }) })
+        }
+      );
+    }
+  }
+];
+
+const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$5,
+  default: DashUser,
+  loader: loader$a,
+  shouldRevalidate: shouldRevalidate$1
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$9({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
 
@@ -3990,9 +5727,9 @@ async function loader$8({ request }) {
   return Response.json({ profile, license });
 }
 
-const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  loader: loader$8
+  loader: loader$9
 }, Symbol.toStringTag, { value: 'Module' }));
 
 // billing_portal.session.created
@@ -4036,7 +5773,7 @@ async function getStripeEvent(request) {
   }
 }
 
-const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$4
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -4047,7 +5784,7 @@ const navigation = [
   { name: "Support", href: "#" },
   { name: "Company", href: "#" }
 ];
-async function loader$7({ request }) {
+async function loader$8({ request }) {
   return redirect$1("/app");
 }
 function Index() {
@@ -4170,13 +5907,13 @@ function Index() {
   ] });
 }
 
-const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Index,
-  loader: loader$7
+  loader: loader$8
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const loader$6 = async ({ request }) => {
+const loader$7 = async ({ request }) => {
   const session = await getSession(request.headers.get("Cookie"));
   await logout();
   return redirect$1("/auth/login", {
@@ -4186,9 +5923,9 @@ const loader$6 = async ({ request }) => {
   });
 };
 
-const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  loader: loader$6
+  loader: loader$7
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Logo({
@@ -4196,8 +5933,8 @@ function Logo({
   subtitle = false,
   className,
   animate = false,
-  title = "CBA",
-  text = "AI Dashboard"
+  title = "CBA Pro",
+  text = "Productivity Tool"
 }) {
   return /* @__PURE__ */ jsxs(
     "div",
@@ -4223,7 +5960,7 @@ function Mobile() {
   ] });
 }
 
-const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Mobile
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -4244,7 +5981,7 @@ function Auth() {
   ] });
 }
 
-const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Auth
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -4522,7 +6259,7 @@ const purposes = {
   score: "score",
 };
 
-async function loader$5() {
+async function loader$6() {
   console.log("files.loader");
   return redirect$1("/app");
 }
@@ -4553,10 +6290,10 @@ async function action$3({ request }) {
   });
 }
 
-const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route22 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$3,
-  loader: loader$5
+  loader: loader$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Class$1 = "Message";
@@ -4582,6 +6319,7 @@ async function create(arg, sessionToken) {
     return await message.save(arg, { sessionToken });
   } catch (error) {
     console.log("outcome.create", error.message);
+    handleInvalidSessionToken(error);
   }
 }
 
@@ -4622,10 +6360,9 @@ async function updateUsage(user, thread, usage) {
   });
 }
 
-async function sync(request, body) {
+async function sync$1(request, body) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
-  // const scoreThread = session.get("scoreThread");
   const { competencyItem, outcome } = body;
 
   if (!outcome) return null;
@@ -4638,12 +6375,7 @@ async function sync(request, body) {
       },
     });
 
-  // const ScoreThread = scoreThread ?? (await getScoreThread(user));
   const scoreThread = await getScoreThread(user);
-
-  // console.log("score.sync.scoreThread", scoreThread, ScoreThread);
-  // if (!ScoreThread) return null;
-  // if (!scoreThread) session.set("scoreThread", ScoreThread);
 
   const scoreCount = scoreThread?.usage?.count;
   if (scoreCount && scoreCount >= Number(vars.app.scoreRequestLimit))
@@ -4689,19 +6421,18 @@ async function getScore({ user, competencyItem, outcome, scoreThread }) {
   });
 
   for await (const r of run) {
-    console.log("score.getScore.run", r.event);
+    // console.log("score.getScore.run", r.event);
     if (r.event === "thread.message.completed")
       score = {
         count: outcome?.score?.count ? outcome.score.count + 1 : 1,
         result:
           Number(
             r.data.content[0].text.value
-              .split("\nRealistic Rationale: ")[0]
-              .split(" = ")[1]
+              .split("CRITERIA")[0]
+              .split("\n")[1]
+              .trim()
           ) || 0,
-        reason: r.data.content[0].text.value.split(
-          "\nRealistic Rationale: "
-        )[1],
+        reason: r.data.content[0].text.value.split("RATIONALE")[1].trim(),
       };
 
     if (r.event === "thread.run.completed") {
@@ -4732,8 +6463,8 @@ async function getScoreThread(user) {
   const purpose = purposes.score;
   const threads = await read$2({ user, purpose });
 
-  console.log("score.getScoreThread.threads", threads.length);
-  if (threads?.length)
+  console.log("score.getScoreThread.read", threads.length);
+  if (threads?.length > 0)
     return {
       objectId: threads[0].id,
       threadId: threads[0].get("threadId"),
@@ -4751,7 +6482,7 @@ async function getScoreThread(user) {
   if (thread?.id) {
     const thread_ = await create$1(
       {
-        user: getPointer(models.user, user.objectId),
+        user: pointerObject(models.user, user.objectId),
         name: "Score thread",
         threadId: thread.id,
         thread,
@@ -4770,7 +6501,7 @@ async function getScoreThread(user) {
   return null;
 }
 
-async function loader$4() {
+async function loader$5() {
   return redirect$1("/app");
 }
 
@@ -4801,12 +6532,276 @@ async function action$2({ request }) {
     );
   }
 
-  return await sync(request, body);
+  return await sync$1(request, body);
 }
 
-const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route23 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$2,
+  loader: loader$5
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function sync(user) {
+  const { serverURL, appId, restAPIKey } = vars.parse;
+
+  try {
+    const res = await fetch(`${serverURL}/users/me`, {
+      headers: {
+        "X-Parse-Application-Id": appId,
+        "X-Parse-REST-API-Key": restAPIKey,
+        "X-Parse-Session-Token": user.sessionToken,
+      },
+    });
+    const $user = await res.json();
+    console.log("user.sync", $user?.sessionToken, user?.sessionToken);
+
+    return $user.error ? false : true;
+  } catch (error) {
+    console.log("user.sync", error.message);
+    return false;
+  }
+}
+
+async function isAdmin(request) {
+  const session = await getSession(request.headers.get("cookie"));
+  const user = session.get("user");
+  if (!user || !user.objectId) throw redirect$1("/auth/login?from=/dash");
+
+  try {
+    const roles = await new Parse.Query(Parse.Role)
+      .equalTo("users", pointerObject("_User", user.objectId))
+      .find({ useMasterKey: true });
+
+    if (roles && roles.length)
+      return roles.find((role) => role.get("name") === "admin") ? true : false;
+
+    return false;
+  } catch (error) {
+    console.log("app.isAdmin", error?.message);
+  }
+}
+
+const DropdownMenu = DropdownMenuPrimitive.Root;
+const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+const DropdownMenuSubTrigger = React.forwardRef(({ className, inset, children, ...props }, ref) => /* @__PURE__ */ jsxs(
+  DropdownMenuPrimitive.SubTrigger,
+  {
+    ref,
+    className: cn(
+      "flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+      inset && "pl-8",
+      className
+    ),
+    ...props,
+    children: [
+      children,
+      /* @__PURE__ */ jsx(ChevronRightIcon, { className: "ml-auto" })
+    ]
+  }
+));
+DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
+const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.SubContent,
+  {
+    ref,
+    className: cn(
+      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    ),
+    ...props
+  }
+));
+DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
+const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsx(DropdownMenuPrimitive.Portal, { children: /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.Content,
+  {
+    ref,
+    sideOffset,
+    className: cn(
+      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    ),
+    ...props
+  }
+) }));
+DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
+const DropdownMenuItem = React.forwardRef(({ className, inset, ...props }, ref) => /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.Item,
+  {
+    ref,
+    className: cn(
+      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
+      inset && "pl-8",
+      className
+    ),
+    ...props
+  }
+));
+DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
+const DropdownMenuCheckboxItem = React.forwardRef(({ className, children, checked, ...props }, ref) => /* @__PURE__ */ jsxs(
+  DropdownMenuPrimitive.CheckboxItem,
+  {
+    ref,
+    className: cn(
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className
+    ),
+    checked,
+    ...props,
+    children: [
+      /* @__PURE__ */ jsx("span", { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center", children: /* @__PURE__ */ jsx(DropdownMenuPrimitive.ItemIndicator, { children: /* @__PURE__ */ jsx(CheckIcon, { className: "h-4 w-4" }) }) }),
+      children
+    ]
+  }
+));
+DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName;
+const DropdownMenuRadioItem = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(
+  DropdownMenuPrimitive.RadioItem,
+  {
+    ref,
+    className: cn(
+      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className
+    ),
+    ...props,
+    children: [
+      /* @__PURE__ */ jsx("span", { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center", children: /* @__PURE__ */ jsx(DropdownMenuPrimitive.ItemIndicator, { children: /* @__PURE__ */ jsx(DotFilledIcon, { className: "h-2 w-2 fill-current" }) }) }),
+      children
+    ]
+  }
+));
+DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
+const DropdownMenuLabel = React.forwardRef(({ className, inset, ...props }, ref) => /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.Label,
+  {
+    ref,
+    className: cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className),
+    ...props
+  }
+));
+DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
+const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  DropdownMenuPrimitive.Separator,
+  {
+    ref,
+    className: cn("-mx-1 my-1 h-px bg-muted", className),
+    ...props
+  }
+));
+DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
+
+function AdminSidebar({ nav }) {
+  return /* @__PURE__ */ jsxs(Sidebar, { variant: "", children: [
+    /* @__PURE__ */ jsx(SidebarHeader, {}),
+    /* @__PURE__ */ jsx(SidebarContent, { children: /* @__PURE__ */ jsxs(SidebarGroup, { children: [
+      /* @__PURE__ */ jsx(Link, { to: "/dash/", className: "mx-auto mb-8", children: /* @__PURE__ */ jsx(Logo, { subtitle: true }) }),
+      /* @__PURE__ */ jsx(SidebarGroupLabel, { children: "Admin" }),
+      /* @__PURE__ */ jsx(SidebarGroupContent, { children: /* @__PURE__ */ jsx(SidebarMenu, { children: navs.map((item) => /* @__PURE__ */ jsx(SidebarMenuItem, { children: /* @__PURE__ */ jsx(SidebarMenuButton, { asChild: true, isActive: item.name === nav.name, children: /* @__PURE__ */ jsxs(
+        Link,
+        {
+          to: item.path,
+          className: "data-[active=true]:!text-primary",
+          children: [
+            item?.icon && /* @__PURE__ */ jsx(item.icon, { "aria-hidden": true }),
+            /* @__PURE__ */ jsx("span", { children: item.title })
+          ]
+        }
+      ) }) }, item.title)) }) })
+    ] }) }),
+    /* @__PURE__ */ jsx(SidebarFooter, { children: /* @__PURE__ */ jsx(SidebarMenu, { children: /* @__PURE__ */ jsx(SidebarMenuItem, { children: /* @__PURE__ */ jsxs(DropdownMenu, { children: [
+      /* @__PURE__ */ jsx(DropdownMenuTrigger, { asChild: true, children: /* @__PURE__ */ jsxs(SidebarMenuButton, { children: [
+        /* @__PURE__ */ jsx(User2, { "aria-hidden": true }),
+        " Account",
+        /* @__PURE__ */ jsx(ChevronUp, { "aria-hidden": true, className: "ml-auto" })
+      ] }) }),
+      /* @__PURE__ */ jsxs(
+        DropdownMenuContent,
+        {
+          side: "top",
+          className: "w-[--radix-popper-anchor-width]",
+          children: [
+            /* @__PURE__ */ jsx(DropdownMenuItem, { children: /* @__PURE__ */ jsx(Link, { to: "/app", className: "w-full hover:text-primary", children: "Back to App" }) }),
+            /* @__PURE__ */ jsx(DropdownMenuItem, { children: /* @__PURE__ */ jsx(Link, { to: "/logout", className: "w-full hover:text-primary", children: "Sign out" }) })
+          ]
+        }
+      )
+    ] }) }) }) })
+  ] });
+}
+const navs = [
+  {
+    name: "overview",
+    title: "Overview",
+    path: "/dash/overview",
+    icon: Gauge
+  },
+  {
+    name: "user",
+    title: "Users",
+    path: "/dash/user",
+    icon: Users2
+  },
+  {
+    name: "license",
+    title: "Licenses",
+    path: "/dash/license",
+    icon: Barcode
+  },
+  {
+    name: "settings",
+    title: "Settings",
+    path: "/dash/settings",
+    icon: Settings$1
+  }
+];
+
+function Layout$1({ nav, children, ...props }) {
+  const navigation = useNavigation();
+  return /* @__PURE__ */ jsxs(SidebarProvider, { className: "bg-[#F7F7F7]", children: [
+    /* @__PURE__ */ jsx(AdminSidebar, { nav }),
+    /* @__PURE__ */ jsxs("main", { className: "flex-auto flex flex-col", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex justify-between p-4 pb-0", children: [
+        /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
+          /* @__PURE__ */ jsx(SidebarTrigger, {}),
+          /* @__PURE__ */ jsx("small", { children: nav.title })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
+          navigation.state === "loading" && /* @__PURE__ */ jsx(Loader2, { "aria-hidden": true, size: 16, className: "animate-spin" }),
+          /* @__PURE__ */ jsx(Button, { variant: "ghost", size: "icon", children: /* @__PURE__ */ jsx(Bell, { "aria-hidden": true }) })
+        ] })
+      ] }),
+      children
+    ] })
+  ] });
+}
+
+async function loader$4({ request, params }) {
+  const url = new URL(request.url);
+  let resource = url.pathname.replace("/dash/", "");
+  if (resource.indexOf("/") > 0)
+    resource = resource.slice(resource, resource.indexOf("/"));
+  const isAdmin$1 = await isAdmin(request);
+  if (!isAdmin$1)
+    throw new Response("Access denied!", {
+      status: 500
+    });
+  if (url.pathname === "/dash") return redirect$2("/dash/overview");
+  return { resource };
+}
+function Dash() {
+  const { resource } = useLoaderData();
+  const [nav, setNav] = useState(navs[0]);
+  useEffect(() => {
+    const nav2 = navs.find((nav3) => nav3.name === resource);
+    setNav(nav2);
+  }, [resource]);
+  return /* @__PURE__ */ jsx(Layout$1, { nav, children: /* @__PURE__ */ jsx(Outlet, {}) });
+}
+
+const route24 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: Dash,
   loader: loader$4
 }, Symbol.toStringTag, { value: 'Module' }));
 
@@ -4833,8 +6828,13 @@ async function loader$3({ request }) {
     to = vars.site.pricingUrl;
     return Response.json({ type, message, caption, to });
   }
-  if (type === "create" && priceKey)
-    return await strat(user, { priceKey });
+  if (type === "create" && priceKey) {
+    const cflow = await strat(user, { priceKey });
+    if (!cflow?.message) return cflow;
+    caption = "Try again";
+    message = cflow.message;
+    to = "/app/settings/overview";
+  }
   if (success) {
     caption = "Back to App";
     message = "The checkout was successful.";
@@ -4979,153 +6979,12 @@ function join() {
   ] });
 }
 
-const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$1,
   default: join,
   loader: loader$3
 }, Symbol.toStringTag, { value: 'Module' }));
-
-const Avatar = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  AvatarPrimitive.Root,
-  {
-    ref,
-    className: cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className),
-    ...props
-  }
-));
-Avatar.displayName = AvatarPrimitive.Root.displayName;
-const AvatarImage = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  AvatarPrimitive.Image,
-  {
-    ref,
-    className: cn("aspect-square h-full w-full", className),
-    ...props
-  }
-));
-AvatarImage.displayName = AvatarPrimitive.Image.displayName;
-const AvatarFallback = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  AvatarPrimitive.Fallback,
-  {
-    ref,
-    className: cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
-      className
-    ),
-    ...props
-  }
-));
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
-
-const DropdownMenu = DropdownMenuPrimitive.Root;
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
-const DropdownMenuSubTrigger = React.forwardRef(({ className, inset, children, ...props }, ref) => /* @__PURE__ */ jsxs(
-  DropdownMenuPrimitive.SubTrigger,
-  {
-    ref,
-    className: cn(
-      "flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-      inset && "pl-8",
-      className
-    ),
-    ...props,
-    children: [
-      children,
-      /* @__PURE__ */ jsx(ChevronRightIcon, { className: "ml-auto" })
-    ]
-  }
-));
-DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName;
-const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.SubContent,
-  {
-    ref,
-    className: cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
-    ),
-    ...props
-  }
-));
-DropdownMenuSubContent.displayName = DropdownMenuPrimitive.SubContent.displayName;
-const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...props }, ref) => /* @__PURE__ */ jsx(DropdownMenuPrimitive.Portal, { children: /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.Content,
-  {
-    ref,
-    sideOffset,
-    className: cn(
-      "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
-      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className
-    ),
-    ...props
-  }
-) }));
-DropdownMenuContent.displayName = DropdownMenuPrimitive.Content.displayName;
-const DropdownMenuItem = React.forwardRef(({ className, inset, ...props }, ref) => /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.Item,
-  {
-    ref,
-    className: cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
-      inset && "pl-8",
-      className
-    ),
-    ...props
-  }
-));
-DropdownMenuItem.displayName = DropdownMenuPrimitive.Item.displayName;
-const DropdownMenuCheckboxItem = React.forwardRef(({ className, children, checked, ...props }, ref) => /* @__PURE__ */ jsxs(
-  DropdownMenuPrimitive.CheckboxItem,
-  {
-    ref,
-    className: cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
-    ),
-    checked,
-    ...props,
-    children: [
-      /* @__PURE__ */ jsx("span", { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center", children: /* @__PURE__ */ jsx(DropdownMenuPrimitive.ItemIndicator, { children: /* @__PURE__ */ jsx(CheckIcon, { className: "h-4 w-4" }) }) }),
-      children
-    ]
-  }
-));
-DropdownMenuCheckboxItem.displayName = DropdownMenuPrimitive.CheckboxItem.displayName;
-const DropdownMenuRadioItem = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(
-  DropdownMenuPrimitive.RadioItem,
-  {
-    ref,
-    className: cn(
-      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
-    ),
-    ...props,
-    children: [
-      /* @__PURE__ */ jsx("span", { className: "absolute left-2 flex h-3.5 w-3.5 items-center justify-center", children: /* @__PURE__ */ jsx(DropdownMenuPrimitive.ItemIndicator, { children: /* @__PURE__ */ jsx(DotFilledIcon, { className: "h-2 w-2 fill-current" }) }) }),
-      children
-    ]
-  }
-));
-DropdownMenuRadioItem.displayName = DropdownMenuPrimitive.RadioItem.displayName;
-const DropdownMenuLabel = React.forwardRef(({ className, inset, ...props }, ref) => /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.Label,
-  {
-    ref,
-    className: cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className),
-    ...props
-  }
-));
-DropdownMenuLabel.displayName = DropdownMenuPrimitive.Label.displayName;
-const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  DropdownMenuPrimitive.Separator,
-  {
-    ref,
-    className: cn("-mx-1 my-1 h-px bg-muted", className),
-    ...props
-  }
-));
-DropdownMenuSeparator.displayName = DropdownMenuPrimitive.Separator.displayName;
 
 const Switch = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   SwitchPrimitives.Root,
@@ -5553,7 +7412,7 @@ function Test() {
   return /* @__PURE__ */ jsx(Layout, { children: /* @__PURE__ */ jsx("div", { className: "w-[400px] p-8 grid gap-16", children: /* @__PURE__ */ jsx(NavUser, {}) }) });
 }
 
-const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route26 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action,
   default: Test,
@@ -6085,7 +7944,6 @@ function Score({
   const { state } = useStore();
   const { syncSteps } = useOutcome();
   const navigate = useNavigate();
-  const { ongoing, setOngoing } = useOngoing();
   useEffect(() => {
     if (outcome?.score) syncSteps(outcome.score !== null, props?.step);
   }, [props?.outcome]);
@@ -6100,13 +7958,11 @@ function Score({
   }, [outcome]);
   async function onClick() {
     setLoading(true);
-    setOngoing(true);
     const res = await fetch("/score", {
       method: "POST",
       body: JSON.stringify({ competencyItem, outcome })
     });
     const data = await res.json();
-    setOngoing(false);
     if (data?.redirected) {
       setLoading(false);
       return navigate(data.url);
@@ -6136,10 +7992,10 @@ function Score({
           className: "px-2 py-1",
           disabled: loading ? true : outcome?.flag !== "approved",
           loader: loading,
-          onClick: () => !ongoing && onClick()
+          onClick
         }
       ),
-      /* @__PURE__ */ jsxs("span", { children: [
+      score?.result !== 0 && /* @__PURE__ */ jsxs("span", { children: [
         "Result:",
         /* @__PURE__ */ jsxs("b", { className: "text-lg text-primary", children: [
           " ",
@@ -6150,8 +8006,8 @@ function Score({
     score?.reason && /* @__PURE__ */ jsx("div", { className: "text-xs", children: /* @__PURE__ */ jsx(
       Markdown,
       {
-        children: score.reason?.replace(/\\n/gi, "\n"),
-        className: "text-zinc-600 [&_p]:mb-4 last:[&_p]:m-0 [&_li]:mb-4 [&_hr]:mb-4"
+        children: score.reason,
+        className: "text-zinc-600 space-y-4 [&>p>br]:!content-[''] [&>p>br]:!block [&>p>br]:!my-2"
       }
     ) })
   ] }) });
@@ -6641,7 +8497,7 @@ const steps = {
   score: {
     id: "score",
     label: "Score",
-    title: "Recommended Self-Assessment Score"
+    title: "Competency Assessment Score"
   },
   sample: {
     id: "sample",
@@ -7022,7 +8878,6 @@ function ChatOutput({
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef();
   const navigate = useNavigate();
-  const { setOngoing } = useOngoing();
   useEffect(() => {
     if (run.status) {
       handleStream(run.req);
@@ -7052,7 +8907,6 @@ function ChatOutput({
     scrollTo(true);
   }, []);
   function handleStream(q) {
-    setOngoing(true);
     const c = `${competencyGroup?.order}.${competencyItem?.order}`;
     const eventSource = new EventSource(`/sse?q=${q}&c=${c}`);
     eventSource.addEventListener("redirected", (event) => {
@@ -7063,7 +8917,6 @@ function ChatOutput({
       const data = JSON.parse(event.data);
       const url = data.url;
       eventSource.close();
-      setOngoing(false);
       navigate(url);
     });
     eventSource.addEventListener("thread.message.delta", (event) => {
@@ -7072,13 +8925,11 @@ function ChatOutput({
     });
     eventSource.addEventListener("thread.message.completed", (event) => {
       eventSource.close();
-      setOngoing(false);
     });
     eventSource.addEventListener("error", (event) => {
       setLoading(false);
       console.log({ event });
       eventSource.close();
-      setOngoing(false);
     });
   }
   function scrollTo(last = false) {
@@ -7262,7 +9113,7 @@ async function init$1(session) {
       {
         name: "Thread 1",
         threadId: _thread.id,
-        user: getPointer(models.user, user.objectId),
+        user: pointerObject(models.user, user.objectId),
         thread: _thread,
         purpose: purposes.chat,
       },
@@ -7317,11 +9168,12 @@ async function send({ user, thread, content, session }) {
 
       case 3:
         console.log("Step 3: Checking for selected competency...");
-        const competencies = await undefined();
+        threadInstruction += getProjectMatchInstruction();
+        const competencies = await read();
 
         const found = competencies
-          .flatMap(group => group.items)
-          .find(item => item.get("title") === content);
+          .flatMap((group) => group.items)
+          .find((item) => item.get("title") === content);
 
         if (found) {
           console.log("Competency found:", found.get("title"));
@@ -7347,10 +9199,13 @@ async function send({ user, thread, content, session }) {
     }
 
     // Create message
-    const userMessage = await openai.beta.threads.messages.create(thread.threadId, {
-      role: "user",
-      content: threadInstruction + content,
-    });
+    const userMessage = await openai.beta.threads.messages.create(
+      thread.threadId,
+      {
+        role: "user",
+        content: threadInstruction + content,
+      }
+    );
 
     console.log("Assistant ID:", vars.openai.assistantId);
 
@@ -7378,6 +9233,48 @@ function getMarkdownInstruction() {
   return "Please format your response in Markdown. Use **headers**, **bold**, and **bullet points** as needed.\n";
 }
 
+function getProjectMatchInstruction() {
+  return `
+    You are now in **Step 2 and 3** of the workflow:
+    **Explain the Competency** and **Match Projects from the User's CV**.
+
+    ---
+
+    ## Competency Explanation (Intent + Indicators)
+
+    - Retrieve the selected competency’s **full title**, **intent**, and **explicit indicators** from your knowledge base.
+    - For each **indicator**, explain what it means **in the context of the user's background** (e.g., if they work in transportation infrastructure, reference TAC guidelines, CSA codes, etc.).
+    - Use **industry-relevant examples** that would be familiar to someone with the user’s expertise.
+    - Then, write a short **scenario story** as if you were an engineer in a similar role:
+      - Use **first-person perspective** (“I”)
+      - Describe a real engineering situation that demonstrates this competency
+      - Include:
+        - An **engineering challenge**
+        - The **action(s)** taken
+        - A **quantifiable outcome**
+
+    > This helps the user empathize with how the competency should be demonstrated.
+
+    ---
+
+    ## Match Projects from CV
+
+    - Analyze the user’s uploaded CV using **Named Entity Recognition (NER)**.
+    - Identify **all explicit projects** that match the selected competency.
+    - List them using this format:
+
+    **Project Name**
+    **Position Title**
+    **Relevant activities/duties that demonstrate competency**
+
+
+    - **Do NOT** ask the user to select a project until all matches are listed.
+    - End your message with:
+      _"Please select one of the explicit matches to focus on for this competency before we continue."_
+    - **Do NOT** continue to gap analysis or follow-up questions until the user selects a project.
+    `;
+}
+
 function getGapAnalysisInstruction() {
   return `
     Before drafting a STAR-format response, perform a **Gap Analysis**:
@@ -7393,7 +9290,9 @@ function getGapAnalysisInstruction() {
 async function fetchRunId(threadId) {
   let latestRun = null;
   while (!latestRun) {
-    const runsList = await openai.beta.threads.runs.list(threadId, { limit: 1 });
+    const runsList = await openai.beta.threads.runs.list(threadId, {
+      limit: 1,
+    });
     if (runsList?.data?.length > 0) {
       latestRun = runsList.data[0].id;
       break;
@@ -7406,7 +9305,10 @@ async function fetchRunId(threadId) {
 async function* streamAssistantResponse(run) {
   let responseText = "";
   for await (const chunk of run) {
-    if (chunk.event === "thread.message.delta" && chunk.data?.delta?.content?.length > 0) {
+    if (
+      chunk.event === "thread.message.delta" &&
+      chunk.data?.delta?.content?.length > 0
+    ) {
       for (const contentItem of chunk.data.delta.content) {
         if (contentItem.type === "text" && contentItem.text?.value) {
           const token = contentItem.text.value;
@@ -7420,37 +9322,54 @@ async function* streamAssistantResponse(run) {
 }
 
 async function getUsage(thread, runId) {
-  const runStatus = await openai.beta.threads.runs.retrieve(thread.threadId, runId);
+  const runStatus = await openai.beta.threads.runs.retrieve(
+    thread.threadId,
+    runId
+  );
   return runStatus.usage;
 }
 
-async function save({ user, thread, userMessage, responseText, session }) {
-  if (userMessage?.id ) {
+async function save({
+  user,
+  thread,
+  userMessage,
+  responseText,
+  session,
+}) {
+  if (userMessage?.id) {
     const fullText = userMessage.content[0].text.value;
-    const content =
-      fullText
+    const content = fullText
       .replace(getMarkdownInstruction(), "")
+      .replace(getProjectMatchInstruction(), "")
       .replace(getGapAnalysisInstruction(), "")
       .trim();
 
-    await create({
-      user: getPointer(models.user, user.objectId),
-      thread: getPointer(models.thread, thread.objectId),
-      message: userMessage,
-      role: roles.user,
-      content: content,
-    }, user.sessionToken);
+    await create(
+      {
+        user: pointerObject(models.user, user.objectId),
+        thread: pointerObject(models.thread, thread.objectId),
+        message: userMessage,
+        role: roles.user,
+        content: content,
+      },
+      user.sessionToken
+    );
 
-    const messages = await openai.beta.threads.messages.list(thread.threadId, { limit: 1 });
-    const assistantMessage = messages.data.find(m => m.role === "assistant");
+    const messages = await openai.beta.threads.messages.list(thread.threadId, {
+      limit: 1,
+    });
+    const assistantMessage = messages.data.find((m) => m.role === "assistant");
 
-    await create({
-      user: getPointer(models.user, user.objectId),
-      thread: getPointer(models.thread, thread.objectId),
-      message: assistantMessage,
-      role: roles.assistant,
-      content: responseText,
-    }, user.sessionToken);
+    await create(
+      {
+        user: pointerObject(models.user, user.objectId),
+        thread: pointerObject(models.thread, thread.objectId),
+        message: assistantMessage,
+        role: roles.assistant,
+        content: responseText,
+      },
+      user.sessionToken
+    );
 
     return responseText;
   }
@@ -7461,6 +9380,10 @@ async function start(request) {
   const user = session.get("user");
 
   if (!user) return redirect$1("/auth/login");
+
+  const userSync = await sync(user);
+  if (!userSync) return redirect$1("/logout");
+
   console.log("app.start", user.objectId);
 
   const { profile, setting, license } = await check(user, session);
@@ -7570,7 +9493,6 @@ function App() {
   const [run, setRun] = useState({ status: false, req: null });
   const inputRef = useRef(null);
   const navigate = useNavigate();
-  const { ongoing, setOngoing } = useOngoing();
   async function getCompetency(...income) {
     const [type, cg, ci] = income;
     if (type === "run") inputRef.current?.refresh(ci?.title);
@@ -7579,9 +9501,8 @@ function App() {
     let outcome2 = outcomes?.find(
       (item) => item.competency.objectId === ci.objectId
     );
-    if (!outcome2 && !ongoing) {
+    if (!outcome2) {
       console.log("!outcome");
-      setOngoing(true);
       const res = await fetch("/outcomes/create", {
         method: "POST",
         body: JSON.stringify({
@@ -7589,14 +9510,13 @@ function App() {
         })
       });
       outcome2 = await res.json();
-      setOngoing(false);
       if (outcome2?.redirected) return navigate(outcome2.url);
       await getOutcomes();
     }
     setOutcome(outcome2);
   }
   async function getInput({ status, req }) {
-    if (!ongoing) setRun({ status, req });
+    setRun({ status, req });
   }
   async function getOutcomes() {
     const res = await fetch("/outcomes/get", { method: "POST" });
@@ -7693,7 +9613,7 @@ function App() {
   ] }) });
 }
 
-const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route27 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: App,
   loader: loader$1,
@@ -7883,12 +9803,12 @@ async function handleStream({
   close();
 }
 
-const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route28 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-CDFbDxLV.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/components-Dbuj-jCe.js','/assets/use-toast-DPb081JK.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/use-store-BFAQnfD-.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-C12Ffv2R.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/index-DRridQs4.js','/assets/alert-DTTcjJsS.js','/assets/card-CI__rBma.js','/assets/index-Bm4zUeiC.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/components-Dbuj-jCe.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-FySp-Rtv.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/components-Dbuj-jCe.js','/assets/scroll-area-MU3Ab1D6.js','/assets/index-DsgAMfJN.js','/assets/index-FAq9z4ls.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-BxWJknF1.js','/assets/index-fwHVxwM4.js','/assets/input-BA-aycuy.js','/assets/submit-field-DqAfEN8S.js','/assets/use-toast-DPb081JK.js','/assets/separator-DjWL-SG6.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-D-KSlnF1.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/checkbox-kRAsVnok.js','/assets/submit-field-DqAfEN8S.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/index-Bm4zUeiC.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/index-FAq9z4ls.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-BxWJknF1.js','/assets/index-DMkDirOg.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-3s72pyha.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js','/assets/index-Bm4zUeiC.js','/assets/index-Cu60BknP.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CKMEQocB.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/input-q0MbOGkw.js','/assets/alert-Qr8uk1we.js','/assets/index-Bm4zUeiC.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/turnstile-Czi_mYw3.js','/assets/components-Dbuj-jCe.js','/assets/input-BA-aycuy.js','/assets/label-DZUXmkCl.js','/assets/index-Cu60BknP.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-DS5QrWqx.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/index-Bm4zUeiC.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/dialog-COA1u6GI.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/input-BA-aycuy.js','/assets/separator-DjWL-SG6.js','/assets/sheet-B-hyboHM.js','/assets/skeleton-CyQC5eHP.js','/assets/index-FAq9z4ls.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-Cu60BknP.js','/assets/index-fwHVxwM4.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/index-DMkDirOg.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-Dt0XDl8D.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/dialog-COA1u6GI.js','/assets/input-q0MbOGkw.js','/assets/label-DZUXmkCl.js','/assets/textarea-B9ABGBnz.js','/assets/submit-field-DqAfEN8S.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/components-Dbuj-jCe.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js','/assets/input-BA-aycuy.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-JiI_zyDs.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/alert-DTTcjJsS.js','/assets/components-Dbuj-jCe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/index-Bm4zUeiC.js','/assets/alert-Qr8uk1we.js','/assets/x-BsuXUyX7.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-tX39jnSe.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/sheet-B-hyboHM.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/components-Dbuj-jCe.js','/assets/arrow-right-huveuXEQ.js','/assets/index-BNl-ebS2.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-FAq9z4ls.js','/assets/Combination-BHfFRwuW.js','/assets/index-Cu60BknP.js','/assets/index-6GVUIDKf.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-DcWzYqq_.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-D6jSVgkj.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/components-Dbuj-jCe.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-BXQN0r9h.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/submit-field-DqAfEN8S.js','/assets/index-Bm4zUeiC.js','/assets/use-toast-DPb081JK.js','/assets/logo-D1cHmNYB.js','/assets/card-CI__rBma.js','/assets/components-Dbuj-jCe.js','/assets/loader-circle-cINCiDbR.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-C40UsWCC.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/layout-BuN8tbiG.js','/assets/index-FAq9z4ls.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-Bm4zUeiC.js','/assets/index-Cu60BknP.js','/assets/components-Dbuj-jCe.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-DMkDirOg.js','/assets/index-BxWJknF1.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/skeleton-CyQC5eHP.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-BJnNBuZq.js','imports':['/assets/jsx-runtime-kF-aRxYe.js','/assets/logo-D1cHmNYB.js','/assets/index-DRridQs4.js','/assets/index-Bm4zUeiC.js','/assets/layout-BuN8tbiG.js','/assets/createLucideIcon-DG7n1AWV.js','/assets/use-store-BFAQnfD-.js','/assets/use-toast-DPb081JK.js','/assets/checkbox-kRAsVnok.js','/assets/label-DZUXmkCl.js','/assets/loader-circle-cINCiDbR.js','/assets/separator-DjWL-SG6.js','/assets/textarea-B9ABGBnz.js','/assets/components-Dbuj-jCe.js','/assets/x-BsuXUyX7.js','/assets/submit-field-DqAfEN8S.js','/assets/scroll-area-MU3Ab1D6.js','/assets/input-BA-aycuy.js','/assets/dialog-COA1u6GI.js','/assets/arrow-right-huveuXEQ.js','/assets/index-FAq9z4ls.js','/assets/index-Cu60BknP.js','/assets/react-icons.esm-ea5Z6rTG.js','/assets/index-DsgAMfJN.js','/assets/index-BR_V0lV8.js','/assets/index-6GVUIDKf.js','/assets/Combination-BHfFRwuW.js','/assets/index-CeA6JU2r.js','/assets/index-DMkDirOg.js','/assets/index-BxWJknF1.js','/assets/skeleton-CyQC5eHP.js','/assets/index-BNl-ebS2.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-59a1e472.js','version':'59a1e472'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Cs_krxAm.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-DKFFhUxw.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Cs_krxAm.js','/assets/use-toast-BCGEGR8f.js','/assets/index-CljonWh_.js','/assets/index-BTGzvWzS.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-C9NZiBh3.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/react-icons.esm-B40aDW1s.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-CYdcSz6T.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-JNTMtf-4.js','/assets/alert-4MC7A1MA.js','/assets/card-74d6DukL.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/components-Cs_krxAm.js','/assets/index-B1Bk9G9l.js','/assets/index-tUIF4Hk4.js','/assets/index-CljonWh_.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-zgFgl8hr.js','/assets/index-hpwYxh3J.js','/assets/x-cwrx78xb.js','/assets/card-BLI8GBzK.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-BApN-AzJ.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-BEHD0UYf.js','/assets/label-DolvN-6_.js','/assets/react-icons.esm-B40aDW1s.js','/assets/components-Cs_krxAm.js','/assets/scroll-area-RrBmYreh.js','/assets/index-BTGzvWzS.js','/assets/index-CljonWh_.js','/assets/index-tUIF4Hk4.js','/assets/index-DWIQZo4h.js','/assets/index-DdWlVz4l.js','/assets/index-_i_4rKMj.js','/assets/index-C9NZiBh3.js','/assets/Combination-DvcGEJik.js','/assets/input-7Bv8GH_s.js','/assets/submit-field-BDwn5Tmb.js','/assets/use-toast-BCGEGR8f.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/separator-DWdi9hra.js','/assets/index-hpwYxh3J.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-BW1qo6m9.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-DjfF00yl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BbxcDIWc.js','/assets/checkbox-DVOqueCT.js','/assets/submit-field-BDwn5Tmb.js','/assets/components-Cs_krxAm.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/input-7Bv8GH_s.js','/assets/index-BEHD0UYf.js','/assets/label-DolvN-6_.js','/assets/index-CljonWh_.js','/assets/index-hpwYxh3J.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-_i_4rKMj.js','/assets/index-BW1qo6m9.js','/assets/react-icons.esm-B40aDW1s.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-aWkQB1vi.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/input-7Bv8GH_s.js','/assets/label-DolvN-6_.js','/assets/turnstile-fAbmgdo-.js','/assets/components-Cs_krxAm.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/index-CljonWh_.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-2cUxNZ_A.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BbxcDIWc.js','/assets/alert-zgFgl8hr.js','/assets/index-BEHD0UYf.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/submit-field-BDwn5Tmb.js','/assets/turnstile-fAbmgdo-.js','/assets/components-Cs_krxAm.js','/assets/input-7Bv8GH_s.js','/assets/label-DolvN-6_.js','/assets/index-CljonWh_.js','/assets/index-hpwYxh3J.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-BLqTHUMi.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-BDwn5Tmb.js','/assets/input-7Bv8GH_s.js','/assets/label-DolvN-6_.js','/assets/dialog-DC3IwBnu.js','/assets/index-BEHD0UYf.js','/assets/components-Cs_krxAm.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-CljonWh_.js','/assets/index-DZZdMBkC.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-BP9n-Qme.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-BEHD0UYf.js','/assets/card-BLI8GBzK.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BzUl0XDW.js','/assets/users-round-CELzP7-z.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-CnLrwV49.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-BDwn5Tmb.js','/assets/card-BLI8GBzK.js','/assets/components-Cs_krxAm.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-C-rMwl77.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-CVfla0pn.js','/assets/button-kfEunpdx.js','/assets/sheet-DX5fYnaZ.js','/assets/scroll-area-RrBmYreh.js','/assets/components-Cs_krxAm.js','/assets/index-D3JQEnQH.js','/assets/index-BEHD0UYf.js','/assets/index-hpwYxh3J.js','/assets/index-B1Bk9G9l.js','/assets/table-BvF-YrHg.js','/assets/progress-JNTMtf-4.js','/assets/index-CX1PImTM.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-BDwn5Tmb.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-CljonWh_.js','/assets/index-DZZdMBkC.js','/assets/react-icons.esm-B40aDW1s.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js','/assets/loader-circle-gVrWrBVl.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-DT3w5V8M.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-BEHD0UYf.js','/assets/react-icons.esm-B40aDW1s.js','/assets/dialog-DC3IwBnu.js','/assets/sidebar-C1rzg7YP.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js','/assets/components-Cs_krxAm.js','/assets/index-DZZdMBkC.js','/assets/Combination-DvcGEJik.js','/assets/index-hpwYxh3J.js','/assets/button-kfEunpdx.js','/assets/input-7Bv8GH_s.js','/assets/separator-DWdi9hra.js','/assets/sheet-DX5fYnaZ.js','/assets/skeleton-uyA8LfUW.js','/assets/floating-ui.react-dom-jdDz5OSD.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-DYNCEXqx.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-7Bv8GH_s.js','/assets/table-BvF-YrHg.js','/assets/components-Cs_krxAm.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/scroll-area-RrBmYreh.js','/assets/index-CljonWh_.js','/assets/index-DdWlVz4l.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-FiPr_WDq.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-DC3IwBnu.js','/assets/input-BbxcDIWc.js','/assets/label-DolvN-6_.js','/assets/textarea-C8iVi7Po.js','/assets/submit-field-BDwn5Tmb.js','/assets/button-kfEunpdx.js','/assets/index-BEHD0UYf.js','/assets/components-Cs_krxAm.js','/assets/index-DZZdMBkC.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/input-7Bv8GH_s.js','/assets/index-CljonWh_.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-BcR1Ah1N.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-4MC7A1MA.js','/assets/components-Cs_krxAm.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-zgFgl8hr.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/x-cwrx78xb.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-BO-_vsWW.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/table-BvF-YrHg.js','/assets/progress-JNTMtf-4.js','/assets/components-Cs_krxAm.js','/assets/plus-D0z1o2bi.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/scroll-area-RrBmYreh.js','/assets/index-CljonWh_.js','/assets/index-DdWlVz4l.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-nmxgsCM7.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-DX5fYnaZ.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/components-Cs_krxAm.js','/assets/arrow-right-DNdxeF8t.js','/assets/index-DZZdMBkC.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-dAOVcqOu.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-Cs_krxAm.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-Bg3SYgi_.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-C1rzg7YP.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-BRDkM5ZC.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/users-round-CELzP7-z.js','/assets/components-Cs_krxAm.js','/assets/button-kfEunpdx.js','/assets/loader-circle-gVrWrBVl.js','/assets/bell-C_47a_f0.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/input-7Bv8GH_s.js','/assets/separator-DWdi9hra.js','/assets/sheet-DX5fYnaZ.js','/assets/index-DZZdMBkC.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/skeleton-uyA8LfUW.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-CljonWh_.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-BTGzvWzS.js','/assets/index-DWIQZo4h.js','/assets/index-BW1qo6m9.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-BIrPoY7X.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/submit-field-BDwn5Tmb.js','/assets/index-BEHD0UYf.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-74d6DukL.js','/assets/components-Cs_krxAm.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/card-BLI8GBzK.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-Cb0XO7aq.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-Cy39rnkt.js','/assets/avatar-CVfla0pn.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-CljonWh_.js','/assets/components-Cs_krxAm.js','/assets/index-BEHD0UYf.js','/assets/dropdown-menu-BRDkM5ZC.js','/assets/index-BTGzvWzS.js','/assets/index-DWIQZo4h.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-BW1qo6m9.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/skeleton-uyA8LfUW.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-aUtv1YIR.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-JNTMtf-4.js','/assets/index-BEHD0UYf.js','/assets/layout-Cy39rnkt.js','/assets/button-kfEunpdx.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/index-hpwYxh3J.js','/assets/checkbox-DVOqueCT.js','/assets/label-DolvN-6_.js','/assets/loader-circle-gVrWrBVl.js','/assets/separator-DWdi9hra.js','/assets/textarea-C8iVi7Po.js','/assets/components-Cs_krxAm.js','/assets/x-cwrx78xb.js','/assets/submit-field-BDwn5Tmb.js','/assets/index-B1Bk9G9l.js','/assets/chevron-right-DPfqaxnT.js','/assets/scroll-area-RrBmYreh.js','/assets/avatar-CVfla0pn.js','/assets/index-CX1PImTM.js','/assets/input-7Bv8GH_s.js','/assets/dialog-DC3IwBnu.js','/assets/plus-D0z1o2bi.js','/assets/arrow-right-DNdxeF8t.js','/assets/bell-C_47a_f0.js','/assets/index-tUIF4Hk4.js','/assets/index-CljonWh_.js','/assets/dropdown-menu-BRDkM5ZC.js','/assets/index-DdWlVz4l.js','/assets/index-BTGzvWzS.js','/assets/index-DWIQZo4h.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-BW1qo6m9.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/skeleton-uyA8LfUW.js','/assets/user-D4pQVfP0.js','/assets/index-D3JQEnQH.js','/assets/index-DZZdMBkC.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-5e789732.js','version':'5e789732'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
@@ -7950,13 +9870,45 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           caseSensitive: undefined,
           module: route5
         },
+  "routes/dash.user.create": {
+          id: "routes/dash.user.create",
+          parentId: "routes/dash.user",
+          path: "create",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route6
+        },
   "routes/outcomes.$action": {
           id: "routes/outcomes.$action",
           parentId: "root",
           path: "outcomes/:action",
           index: undefined,
           caseSensitive: undefined,
-          module: route6
+          module: route7
+        },
+  "routes/dash.overview": {
+          id: "routes/dash.overview",
+          parentId: "routes/dash",
+          path: "overview",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route8
+        },
+  "routes/dash.settings": {
+          id: "routes/dash.settings",
+          parentId: "routes/dash",
+          path: "settings",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route9
+        },
+  "routes/dash.user.$id": {
+          id: "routes/dash.user.$id",
+          parentId: "routes/dash.user",
+          path: ":id",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route10
         },
   "routes/app.settings": {
           id: "routes/app.settings",
@@ -7964,7 +9916,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route7
+          module: route11
+        },
+  "routes/dash.license": {
+          id: "routes/dash.license",
+          parentId: "routes/dash",
+          path: "license",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route12
         },
   "routes/app.contact": {
           id: "routes/app.contact",
@@ -7972,7 +9932,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "contact",
           index: undefined,
           caseSensitive: undefined,
-          module: route8
+          module: route13
         },
   "routes/app.alert": {
           id: "routes/app.alert",
@@ -7980,7 +9940,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "alert",
           index: undefined,
           caseSensitive: undefined,
-          module: route9
+          module: route14
+        },
+  "routes/dash.user": {
+          id: "routes/dash.user",
+          parentId: "routes/dash",
+          path: "user",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route15
         },
   "routes/nav-user": {
           id: "routes/nav-user",
@@ -7988,7 +9956,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "nav-user",
           index: undefined,
           caseSensitive: undefined,
-          module: route10
+          module: route16
         },
   "routes/join.wh": {
           id: "routes/join.wh",
@@ -7996,7 +9964,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "wh",
           index: undefined,
           caseSensitive: undefined,
-          module: route11
+          module: route17
         },
   "routes/_index": {
           id: "routes/_index",
@@ -8004,7 +9972,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: undefined,
           index: true,
           caseSensitive: undefined,
-          module: route12
+          module: route18
         },
   "routes/logout": {
           id: "routes/logout",
@@ -8012,7 +9980,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "logout",
           index: undefined,
           caseSensitive: undefined,
-          module: route13
+          module: route19
         },
   "routes/mobile": {
           id: "routes/mobile",
@@ -8020,7 +9988,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "mobile",
           index: undefined,
           caseSensitive: undefined,
-          module: route14
+          module: route20
         },
   "routes/_auth": {
           id: "routes/_auth",
@@ -8028,7 +9996,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: undefined,
           index: undefined,
           caseSensitive: undefined,
-          module: route15
+          module: route21
         },
   "routes/files": {
           id: "routes/files",
@@ -8036,7 +10004,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "files",
           index: undefined,
           caseSensitive: undefined,
-          module: route16
+          module: route22
         },
   "routes/score": {
           id: "routes/score",
@@ -8044,7 +10012,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "score",
           index: undefined,
           caseSensitive: undefined,
-          module: route17
+          module: route23
+        },
+  "routes/dash": {
+          id: "routes/dash",
+          parentId: "root",
+          path: "dash",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route24
         },
   "routes/join": {
           id: "routes/join",
@@ -8052,7 +10028,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "join",
           index: undefined,
           caseSensitive: undefined,
-          module: route18
+          module: route25
         },
   "routes/test": {
           id: "routes/test",
@@ -8060,7 +10036,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "test",
           index: undefined,
           caseSensitive: undefined,
-          module: route19
+          module: route26
         },
   "routes/app": {
           id: "routes/app",
@@ -8068,7 +10044,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "app",
           index: undefined,
           caseSensitive: undefined,
-          module: route20
+          module: route27
         },
   "routes/sse": {
           id: "routes/sse",
@@ -8076,7 +10052,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-HhAqKcvB.js','im
           path: "sse",
           index: undefined,
           caseSensitive: undefined,
-          module: route21
+          module: route28
         }
       };
 
