@@ -1303,24 +1303,24 @@ const prices = {
       tokens: 120000,
     },
   },
-  P1: {
-    key: "P1",
+  Pn1: {
+    key: "Pn1",
     plan: plans.paid,
     limit: {
       cycles: 34,
       tokens: 10000000,
     },
   },
-  P2: {
-    key: "P2",
+  Pn2: {
+    key: "Pn2",
     plan: plans.paid,
     limit: {
       cycles: 34,
       tokens: 10000000,
     },
   },
-  P3: {
-    key: "P3",
+  Pn3: {
+    key: "Pn3",
     plan: plans.paid,
     limit: {
       cycles: 34,
