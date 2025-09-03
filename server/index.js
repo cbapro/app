@@ -991,10 +991,10 @@ async function create$3(arg, sessionToken) {
 async function update$2(arg, sessionToken) {
   try {
     if (!arg?.objectId) return null;
-    // const existObject = await new Parse.Query("Outcome").get(arg?.objectId, {
-    //   sessionToken,
-    // });
-    // if (!existObject) return null;
+    const existObject = await new Parse.Query("Outcome").get(arg?.objectId, {
+      sessionToken,
+    });
+    if (!existObject) return null;
 
     const Outcome = Parse.Object.extend("Outcome");
     const outcome = new Outcome();
