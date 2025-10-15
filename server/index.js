@@ -1157,6 +1157,7 @@ async function read$4(user, { thread, include }) {
 async function create$3(arg, sessionToken) {
   try {
     const existObject = await new Parse.Query("Outcome")
+      .equalTo("thread", arg?.thread)
       .equalTo("competency", arg?.competency)
       .first({ sessionToken });
     if (existObject) return null;
@@ -4701,20 +4702,18 @@ function TableModule({ columns, data, pagination, fullHeight, ...props }) {
                       TableRow,
                       {
                         "data-state": row.getIsSelected() && "selected",
-                        children: row
-                          .getVisibleCells()
-                          .map((cell) =>
-                            /* @__PURE__ */ jsx(
-                              TableCell,
-                              {
-                                children: flexRender(
-                                  cell.column.columnDef.cell,
-                                  cell.getContext()
-                                ),
-                              },
-                              cell.id
-                            )
-                          ),
+                        children: row.getVisibleCells().map((cell) =>
+                          /* @__PURE__ */ jsx(
+                            TableCell,
+                            {
+                              children: flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              ),
+                            },
+                            cell.id
+                          )
+                        ),
                       },
                       row.id
                     )
