@@ -975,6 +975,7 @@ async function read$4(user, { thread, include }) {
 async function create$3(arg, sessionToken) {
   try {
     const existObject = await new Parse.Query("Outcome")
+      .equalTo("thread", arg?.thread)
       .equalTo("competency", arg?.competency)
       .first({ sessionToken });
     if (existObject) return null;
@@ -991,10 +992,10 @@ async function create$3(arg, sessionToken) {
 async function update$2(arg, sessionToken) {
   try {
     if (!arg?.objectId) return null;
-    // const existObject = await new Parse.Query("Outcome").get(arg?.objectId, {
-    //   sessionToken,
-    // });
-    // if (!existObject) return null;
+    const existObject = await new Parse.Query("Outcome").get(arg?.objectId, {
+      sessionToken,
+    });
+    if (!existObject) return null;
 
     const Outcome = Parse.Object.extend("Outcome");
     const outcome = new Outcome();
@@ -1158,6 +1159,11 @@ async function createCheckoutSession(user, { customerId, lookup_key }) {
       cancel_url: `${domain}/join?canceled=true&priceKey=${lookup_key}`,
       metadata: {
         userId: user.objectId,
+      },
+      automatic_tax: { enabled: true },
+      billing_address_collection: "required",
+      customer_update: {
+        address: "auto",
       },
     });
 
@@ -2697,7 +2703,7 @@ async function action$b({ request }) {
   if (!remember$1)
     return {
       error: true,
-      message: { title: "Email is found!" }
+      message: { title: "Email not found!" }
     };
   return {
     message: { title: "Check your email" }
