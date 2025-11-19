@@ -1,0 +1,15 @@
+import{r,j as e}from"./jsx-runtime-CNvHvvCs.js";import{P as l}from"./progress-DUdCl3qs.js";import{A as c,O as d}from"./alert-Dl2_XlUv.js";import{C as n}from"./card-Bof-jOhR.js";import{c as m}from"./index-z_6t8hgT.js";import{B as p}from"./button-7RhbRVm-.js";import{c as u}from"./components-Dal_ZMJn.js";import{M as x}from"./index-DzK6_lIe.js";import"./index-tUIF4Hk4.js";import"./index-BdpVbFgu.js";import"./createLucideIcon-4kAVNgbW.js";import"./alert-Dv8VQtr3.js";import"./index-R_5LapDR.js";import"./x-cwrx78xb.js";import"./card-b0vSRkw8.js";import"./index-D3JQEnQH.js";function h({total:s,tokens:t=3e4}){const[i,o]=r.useState(0),a=t/100;return r.useEffect(()=>{o(s>=t?100:s/a)},[s]),e.jsxs("div",{className:"grid gap-4",children:[e.jsxs("div",{className:"grid gap-1",children:[e.jsxs("strong",{className:"text-sm text-zinc-400",children:[i.toString().split(".")[0],"%"]}),e.jsx(l,{value:i})]}),e.jsxs("div",{className:"flex gap-4 justify-between text-sm",children:[e.jsxs("span",{children:["Usage tokens: ",e.jsx("strong",{children:s})]}),e.jsxs("span",{children:["Limit tokens: ",e.jsx("strong",{children:t})]})]})]})}function M(){const s=u();return e.jsx("div",{className:"grid gap-4",children:s?.plan?e.jsxs(e.Fragment,{children:[e.jsx("div",{className:"flex justify-between",children:e.jsxs("span",{className:m("text-primary",s.plan?.expired?"text-red-500":"text-green-500"),children:["License: ",s.plan?.name]})}),e.jsxs(n,{className:"shadow-none",title:"Tokens used",children:[e.jsx(h,{tokens:s.plan?.tokens,total:s.plan?.$tokens??0}),s.plan?.expired&&e.jsx(c,{className:"mt-8",icon:e.jsx(d,{}),title:"Your license has come to an end!",description:"License tokens finished, Go to Pricing to get a new license.",variant:"destructive",actionButton:{title:"Upgrade Now",onClick:()=>{window.location=s?.sitePricingUrl}},open:!0})]}),s.plan?.isFree&&e.jsx(x,{children:g,className:"p-4 text-sm space-y-4 [&>ul]:space-y-2 [&>ul]:list-disc [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:list-disc [&>ol]:my-2 [&>ol]:pl-4"})]}):e.jsx("div",{className:"grid gap-2",children:e.jsxs(n,{className:"shadow-none",title:"Get new License",children:[e.jsx("div",{children:"You don't have an active license to start. Please get a new license."}),e.jsx("div",{className:"flex justify-end",children:e.jsx(p,{onClick:()=>window.location=s?.sitePricingUrl,children:"Get License"})})]})})})}const g=`
+  You're currently using the Free Trial version of CBA Pro.
+
+  The free trial is designed to give you a hands-on experience with how the platform works --- but it includes access to only one competency: **1.1 -- Regulation, Codes & Standards.**
+
+  All other competencies (2.1 to 7.5) are locked in the trial version.
+  To unlock the full set of 34 competencies and submit a complete competency report, you'll need to upgrade your license.
+
+  - This limited access allows you to:
+  - Explore the dashboard layout
+  - Interact with memory-triggering questions
+  - Understand how personalized prompts guide your writing
+  - Experience the self-assessment scoring system
+  - Preview the report writing tool
+`;export{M as default};

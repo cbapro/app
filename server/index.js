@@ -1,7 +1,7 @@
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { PassThrough } from 'node:stream';
 import { createReadableStreamFromReadable, redirect as redirect$1, createCookieSessionStorage } from '@remix-run/node';
-import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useActionData, useSubmit, useNavigation, Form as Form$1, redirect as redirect$2, Link, useSearchParams, useNavigate, useRouteLoaderData, useLocation } from '@remix-run/react';
+import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useActionData, useSubmit, useNavigation, Form as Form$1, Link, redirect as redirect$2, useSearchParams, useNavigate, useRouteLoaderData, useLocation } from '@remix-run/react';
 import * as isbotModule from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import * as React from 'react';
@@ -14,7 +14,7 @@ import { Cross2Icon, CaretSortIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, C
 import { produce } from 'immer';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { Slot } from '@radix-ui/react-slot';
-import { X, AlertOctagon, LoaderCircle, CalendarIcon, ExternalLink, Info, TrendingUp, MessageCircle, KeySquare, User2, Users2, Trash, ChevronLeft, ChevronRight, Telescope, User, Plus, MessagesSquare, ScrollText, Notebook, Triangle, MenuIcon, ArrowRight, Gauge, Barcode, Settings as Settings$1, ChevronUp, Loader2, Bell, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, Lock, MousePointerClick, ChevronDown, ArrowUp, Paperclip, FileText, Youtube } from 'lucide-react';
+import { X, AlertOctagon, LoaderCircle, CalendarIcon, Info, ExternalLink, TrendingUp, MessageCircle, KeySquare, User2, Users2, Trash, ChevronLeft, ChevronRight, Telescope, User, Plus, MessagesSquare, ScrollText, Notebook, Triangle, MenuIcon, ArrowRight, Gauge, Barcode, Settings as Settings$1, ChevronUp, Loader2, Bell, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, Lock, MousePointerClick, ChevronDown, MicOff, Mic, ArrowUp, Paperclip, FileText, Youtube } from 'lucide-react';
 import Markdown from 'react-markdown';
 import Stripe from 'stripe';
 import 'dotenv/config';
@@ -34,6 +34,7 @@ import * as SeparatorPrimitive from '@radix-ui/react-separator';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Authenticator } from 'remix-auth';
 import { FormStrategy } from 'remix-auth-form';
+import OpenAI from 'openai';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as RechartsPrimitive from 'recharts';
 import { LineChart, CartesianGrid, XAxis, Line } from 'recharts';
@@ -44,7 +45,6 @@ import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-tabl
 import { MDXEditor, headingsPlugin, listsPlugin, linkPlugin, linkDialogPlugin, thematicBreakPlugin, toolbarPlugin, UndoRedo, BoldItalicUnderlineToggles, BlockTypeSelect } from '@mdxeditor/editor';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import nodemailer from 'nodemailer';
-import OpenAI from 'openai';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import * as SwitchPrimitives from '@radix-ui/react-switch';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
@@ -164,7 +164,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-DZP40Wjb.css";
+const stylesheet = "/assets/tailwind-DQtgtMjh.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -309,7 +309,7 @@ function useToast() {
   };
 }
 
-function cn(...inputs) {
+function cn$1(...inputs) {
   return twMerge(clsx(inputs))
 }
 
@@ -318,7 +318,7 @@ const ToastViewport = React.forwardRef(({ className, ...props }, ref) => /* @__P
   ToastPrimitives.Viewport,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
       className
     ),
@@ -345,7 +345,7 @@ const Toast = React.forwardRef(({ className, variant, ...props }, ref) => {
     ToastPrimitives.Root,
     {
       ref,
-      className: cn(toastVariants({ variant }), className),
+      className: cn$1(toastVariants({ variant }), className),
       ...props
     }
   );
@@ -355,7 +355,7 @@ const ToastAction = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   ToastPrimitives.Action,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
       className
     ),
@@ -367,7 +367,7 @@ const ToastClose = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   ToastPrimitives.Close,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "absolute right-1 top-1 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-1 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
       className
     ),
@@ -381,12 +381,12 @@ const ToastTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   ToastPrimitives.Title,
   {
     ref,
-    className: cn("text-sm font-semibold [&+div]:text-xs", className),
+    className: cn$1("text-sm font-semibold [&+div]:text-xs", className),
     ...props
   }
 ));
 ToastTitle.displayName = ToastPrimitives.Title.displayName;
-const ToastDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(ToastPrimitives.Description, { ref, className: cn("text-sm opacity-90", className), ...props }));
+const ToastDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(ToastPrimitives.Description, { ref, className: cn$1("text-sm opacity-90", className), ...props }));
 ToastDescription.displayName = ToastPrimitives.Description.displayName;
 
 function Toaster() {
@@ -488,7 +488,7 @@ const Progress = React.forwardRef(({ className, value, ...props }, ref) => /* @_
   ProgressPrimitive.Root,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
       className
     ),
@@ -550,7 +550,7 @@ const Alert = React.forwardRef(({ className, variant, ...props }, ref) => /* @__
   {
     ref,
     role: "alert",
-    className: cn(alertVariants({ variant }), className),
+    className: cn$1(alertVariants({ variant }), className),
     ...props
   }
 ));
@@ -559,7 +559,7 @@ const AlertTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   "h5",
   {
     ref,
-    className: cn("mb-1 font-medium leading-none tracking-tight", className),
+    className: cn$1("mb-1 font-medium leading-none tracking-tight", className),
     ...props
   }
 ));
@@ -568,7 +568,7 @@ const AlertDescription = React.forwardRef(({ className, ...props }, ref) => /* @
   "div",
   {
     ref,
-    className: cn("text-sm [&_p]:leading-relaxed", className),
+    className: cn$1("text-sm [&_p]:leading-relaxed", className),
     ...props
   }
 ));
@@ -604,7 +604,7 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
   return /* @__PURE__ */ jsx(
     Comp,
     {
-      className: cn(buttonVariants({ variant, size, className })),
+      className: cn$1(buttonVariants({ variant, size, className })),
       ref,
       ...props
     }
@@ -614,10 +614,10 @@ Button.displayName = "Button";
 
 function AlertModule({ ...props }) {
   const [open, setOpen] = useState(props?.open ?? false);
-  return open ? /* @__PURE__ */ jsx("div", { className: cn(props?.className), children: /* @__PURE__ */ jsxs(
+  return open ? /* @__PURE__ */ jsx("div", { className: cn$1(props?.className), children: /* @__PURE__ */ jsxs(
     Alert,
     {
-      className: cn(
+      className: cn$1(
         props?.alerClassName,
         variants$1[props?.variant ?? "default"]
       ),
@@ -628,7 +628,7 @@ function AlertModule({ ...props }) {
         props?.actionButton && /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cn(
+            className: cn$1(
               "flex gap-2",
               props?.inline ? "absolute top-1/2 -translate-y-1/2 right-4" : "justify-end pt-2"
             ),
@@ -678,7 +678,7 @@ const Card = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ 
   "div",
   {
     ref,
-    className: cn("rounded-xl border bg-card text-card-foreground shadow", className),
+    className: cn$1("rounded-xl border bg-card text-card-foreground shadow", className),
     ...props
   }
 ));
@@ -687,7 +687,7 @@ const CardHeader = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   "div",
   {
     ref,
-    className: cn("flex flex-col space-y-1.5 p-6", className),
+    className: cn$1("flex flex-col space-y-1.5 p-6", className),
     ...props
   }
 ));
@@ -696,7 +696,7 @@ const CardTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE_
   "div",
   {
     ref,
-    className: cn("font-semibold leading-none tracking-tight", className),
+    className: cn$1("font-semibold leading-none tracking-tight", className),
     ...props
   }
 ));
@@ -705,18 +705,18 @@ const CardDescription = React.forwardRef(({ className, ...props }, ref) => /* @_
   "div",
   {
     ref,
-    className: cn("text-sm text-muted-foreground", className),
+    className: cn$1("text-sm text-muted-foreground", className),
     ...props
   }
 ));
 CardDescription.displayName = "CardDescription";
-const CardContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("div", { ref, className: cn("p-6 pt-0", className), ...props }));
+const CardContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("div", { ref, className: cn$1("p-6 pt-0", className), ...props }));
 CardContent.displayName = "CardContent";
 const CardFooter = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   "div",
   {
     ref,
-    className: cn("flex items-center p-6 pt-0", className),
+    className: cn$1("flex items-center p-6 pt-0", className),
     ...props
   }
 ));
@@ -840,6 +840,12 @@ const pointerObject = (className, objectId) => ({
   className,
   objectId,
 });
+
+const authVars = {
+  verifyEmail: "verify_email",
+  verifyEmailSuccess: "verify_email_success",
+  invalidVerificationLink: "invalid_verification_link",
+  requestPassworReset: "request_password_reset"};
 
 const models = {
   user: "_User",
@@ -1335,7 +1341,7 @@ const prices = {
   },
 };
 
-async function loader$k({ request }) {
+async function loader$n({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let plan = session.get("plan");
   if (!plan) plan = await check$1(request, false);
@@ -1355,7 +1361,7 @@ function Overview() {
     /* @__PURE__ */ jsx("div", { className: "flex justify-between", children: /* @__PURE__ */ jsxs(
       "span",
       {
-        className: cn(
+        className: cn$1(
           "text-primary",
           data.plan?.expired ? "text-red-500" : "text-green-500"
         ),
@@ -1424,13 +1430,13 @@ const trialDescription = `
 const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Overview,
-  loader: loader$k
+  loader: loader$n
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const labelVariants = cva(
   "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 );
-const Label = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(LabelPrimitive.Root, { ref, className: cn(labelVariants(), className), ...props }));
+const Label = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(LabelPrimitive.Root, { ref, className: cn$1(labelVariants(), className), ...props }));
 Label.displayName = LabelPrimitive.Root.displayName;
 
 const Form = FormProvider;
@@ -1459,7 +1465,7 @@ const useFormField = () => {
 const FormItemContext = React.createContext({});
 const FormItem = React.forwardRef(({ className, ...props }, ref) => {
   const id = React.useId();
-  return /* @__PURE__ */ jsx(FormItemContext.Provider, { value: { id }, children: /* @__PURE__ */ jsx("div", { ref, className: cn("space-y-2", className), ...props }) });
+  return /* @__PURE__ */ jsx(FormItemContext.Provider, { value: { id }, children: /* @__PURE__ */ jsx("div", { ref, className: cn$1("space-y-2", className), ...props }) });
 });
 FormItem.displayName = "FormItem";
 const FormLabel = React.forwardRef(({ className, ...props }, ref) => {
@@ -1468,7 +1474,7 @@ const FormLabel = React.forwardRef(({ className, ...props }, ref) => {
     Label,
     {
       ref,
-      className: cn(error && "text-destructive", className),
+      className: cn$1(error && "text-destructive", className),
       htmlFor: formItemId,
       ...props
     }
@@ -1496,7 +1502,7 @@ const FormDescription = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       id: formDescriptionId,
-      className: cn("text-[0.8rem] text-muted-foreground", className),
+      className: cn$1("text-[0.8rem] text-muted-foreground", className),
       ...props
     }
   );
@@ -1514,7 +1520,7 @@ const FormMessage = React.forwardRef(
       {
         ref,
         id: formMessageId,
-        className: cn("text-[0.8rem] font-medium text-destructive", className),
+        className: cn$1("text-[0.8rem] font-medium text-destructive", className),
         ...props,
         children: body
       }
@@ -1524,12 +1530,13 @@ const FormMessage = React.forwardRef(
 FormMessage.displayName = "FormMessage";
 
 const Select = SelectPrimitive.Root;
+const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
 const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(
   SelectPrimitive.Trigger,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 dark:border-zinc-800 dark:ring-offset-zinc-950 dark:placeholder:text-zinc-400 dark:focus:ring-zinc-300",
       className
     ),
@@ -1545,7 +1552,7 @@ const SelectScrollUpButton = React.forwardRef(({ className, ...props }, ref) => 
   SelectPrimitive.ScrollUpButton,
   {
     ref,
-    className: cn("flex cursor-default items-center justify-center py-1", className),
+    className: cn$1("flex cursor-default items-center justify-center py-1", className),
     ...props,
     children: /* @__PURE__ */ jsx(ChevronUpIcon, {})
   }
@@ -1555,7 +1562,7 @@ const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) =
   SelectPrimitive.ScrollDownButton,
   {
     ref,
-    className: cn("flex cursor-default items-center justify-center py-1", className),
+    className: cn$1("flex cursor-default items-center justify-center py-1", className),
     ...props,
     children: /* @__PURE__ */ jsx(ChevronDownIcon, {})
   }
@@ -1565,7 +1572,7 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
   SelectPrimitive.Content,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border border-zinc-200 bg-white text-zinc-950 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50",
       position === "popper" && "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
       className
@@ -1577,7 +1584,7 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
       /* @__PURE__ */ jsx(
         SelectPrimitive.Viewport,
         {
-          className: cn("p-1", position === "popper" && "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"),
+          className: cn$1("p-1", position === "popper" && "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"),
           children
         }
       ),
@@ -1590,7 +1597,7 @@ const SelectLabel = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   SelectPrimitive.Label,
   {
     ref,
-    className: cn("px-2 py-1.5 text-sm font-semibold", className),
+    className: cn$1("px-2 py-1.5 text-sm font-semibold", className),
     ...props
   }
 ));
@@ -1599,7 +1606,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
   SelectPrimitive.Item,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-zinc-100 focus:text-zinc-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-zinc-800 dark:focus:text-zinc-50",
       className
     ),
@@ -1615,7 +1622,7 @@ const SelectSeparator = React.forwardRef(({ className, ...props }, ref) => /* @_
   SelectPrimitive.Separator,
   {
     ref,
-    className: cn("-mx-1 my-1 h-px bg-zinc-100 dark:bg-zinc-800", className),
+    className: cn$1("-mx-1 my-1 h-px bg-zinc-100 dark:bg-zinc-800", className),
     ...props
   }
 ));
@@ -1626,7 +1633,7 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
     "input",
     {
       type,
-      className: cn(
+      className: cn$1(
         "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         className
       ),
@@ -1652,7 +1659,7 @@ function SubmitField({
     {
       type,
       variant,
-      className: cn("relative shadow-none", loader && "!pl-8", className),
+      className: cn$1("relative shadow-none", loader && "!pl-8", className),
       disabled,
       ...props,
       children: [
@@ -1668,7 +1675,7 @@ const ScrollArea = React.forwardRef(({ className, children, ...props }, ref) => 
   ScrollAreaPrimitive.Root,
   {
     ref,
-    className: cn("relative overflow-hidden", className),
+    className: cn$1("relative overflow-hidden", className),
     ...props,
     children: [
       /* @__PURE__ */ jsx(ScrollAreaPrimitive.Viewport, { className: "h-full w-full rounded-[inherit]", children }),
@@ -1683,7 +1690,7 @@ const ScrollBar = React.forwardRef(({ className, orientation = "vertical", ...pr
   {
     ref,
     orientation,
-    className: cn(
+    className: cn$1(
       "flex touch-none select-none transition-colors",
       orientation === "vertical" && "h-full w-2.5 border-l border-l-transparent p-[1px]",
       orientation === "horizontal" && "h-2.5 flex-col border-t border-t-transparent p-[1px]",
@@ -1705,14 +1712,14 @@ function Calendar({
     DayPicker,
     {
       showOutsideDays,
-      className: cn("p-3", className),
+      className: cn$1("p-3", className),
       classNames: {
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "text-sm font-medium",
         nav: "space-x-1 flex items-center",
-        nav_button: cn(
+        nav_button: cn$1(
           buttonVariants({ variant: "outline" }),
           "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
         ),
@@ -1722,11 +1729,11 @@ function Calendar({
         head_row: "flex",
         head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
-        cell: cn(
+        cell: cn$1(
           "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md",
           props.mode === "range" ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md" : "[&:has([aria-selected])]:rounded-md"
         ),
-        day: cn(
+        day: cn$1(
           buttonVariants({ variant: "ghost" }),
           "h-8 w-8 p-0 font-normal aria-selected:opacity-100"
         ),
@@ -1741,8 +1748,8 @@ function Calendar({
         ...classNames
       },
       components: {
-        IconLeft: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronLeftIcon, { className: cn("h-4 w-4", className2), ...props2 }),
-        IconRight: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronRightIcon, { className: cn("h-4 w-4", className2), ...props2 })
+        IconLeft: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronLeftIcon, { className: cn$1("h-4 w-4", className2), ...props2 }),
+        IconRight: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronRightIcon, { className: cn$1("h-4 w-4", className2), ...props2 })
       },
       ...props
     }
@@ -1758,7 +1765,7 @@ const PopoverContent = React.forwardRef(({ className, align = "center", sideOffs
     ref,
     align,
     sideOffset,
-    className: cn(
+    className: cn$1(
       "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className
     ),
@@ -1780,7 +1787,7 @@ function CalendarField({ name, label, description, control }) {
             Button,
             {
               variant: "outline",
-              className: cn(
+              className: cn$1(
                 "w-[240px] pl-3 text-left font-normal",
                 !field.value && "text-muted-foreground"
               ),
@@ -1820,7 +1827,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
     ref,
     decorative,
     orientation,
-    className: cn(
+    className: cn$1(
       "shrink-0 bg-border",
       orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
       className
@@ -1830,7 +1837,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
 ));
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
-async function loader$j({ request }) {
+async function loader$m({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let profile = session.get("profile");
   if (profile) return { profile };
@@ -1850,7 +1857,7 @@ async function loader$j({ request }) {
   }
   return null;
 }
-async function action$e({ request }) {
+async function action$g({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const formData = await request.formData();
@@ -2129,9 +2136,11 @@ const associations = [
 
 const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$e,
+  action: action$g,
+  associations,
   default: ProfilePage,
-  loader: loader$j
+  disciplines,
+  loader: loader$m
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function InputField({ ...props }) {
@@ -2150,11 +2159,320 @@ function InputField({ ...props }) {
   ] });
 }
 
+function AlertField({ message, variant }) {
+  if (!message) return null;
+  return /* @__PURE__ */ jsxs(Alert, { className: cn$1("px-2 pt-2.5 pb-1.5", variants[variant]), children: [
+    /* @__PURE__ */ jsx(Info, { className: "!left-2 !top-2 h-4 w-4" }),
+    /* @__PURE__ */ jsx(AlertTitle, { children: message.title }),
+    /* @__PURE__ */ jsx(AlertDescription, { className: "text-xs", children: message.description })
+  ] });
+}
+const variants = {
+  error: "text-red-500 [&>svg]:text-red-500 border-red-500",
+  success: "text-green-500 [&>svg]:text-green-500 border-green-500"
+};
+
+async function register(args) {
+  const { email, password, ...meta } = args;
+
+  try {
+    const user = await new Parse.User().signUp(
+      {
+        username: email,
+        password,
+        email,
+        meta
+      },
+      {
+        useMasterKey: true,
+      }
+    );
+
+    if (user) {
+      const role = await new Parse.Query("_Role")
+        .equalTo("name", "user")
+        .first({ useMasterKey: true });
+
+      role.getUsers().add(user);
+      await role.save(null, { useMasterKey: true });
+
+      console.log("parse.auth.register.assignRole", user.id);
+      return { message: "Account created!" };
+    }
+
+    return user;
+  } catch (error) {
+    console.log("parse.auth.register.error", error.code, error.message);
+    return { error: error.message }
+  }
+}
+
+async function confirm({ username, token }) {
+  const qs = new URLSearchParams({
+    username,
+    token,
+  }).toString();
+
+  try {
+    const res = await fetch(
+      `${vars.parse.serverURL}/apps/${vars.parse.appId}/verify_email?${qs}`
+    );
+    const data = await res.json();
+    // console.log("parse.auth.confirm", data);
+    return data;
+  } catch (error) {
+    console.log("parse.auth.confirm", error?.message);
+  }
+}
+
+async function remember(email) {
+  try {
+    const remember = await Parse.User.requestPasswordReset(email);
+    console.log("parse.auth.remember", remember);
+    return remember;
+  } catch (error) {
+    console.log("parse.auth.remember.error", error.code, error.message);
+  }
+}
+
+async function reset({ password, username, token }) {
+  const body = new URLSearchParams({
+    new_password: password,
+    confirm_new_password: password,
+    username,
+    token,
+    "utf-8": "✓",
+  });
+
+  try {
+    const data = await fetch(
+      `${vars.parse.serverURL}/apps/${vars.parse.appId}/request_password_reset`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body,
+      }
+    );
+
+    // console.log("parse.auth.reset", data);
+    const url = new URLSearchParams(data?.url);
+
+    const success = data?.url.includes("success");
+    const failed = data?.url.includes("failed");
+    const error = url.get("error");
+
+    if (error) return false;
+    return true;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function login(username, password) {
+  try {
+    return await Parse.User.logIn(username, password);
+  } catch (error) {
+    console.log("parse:auth:login", error.message);
+    return { error: error.message };
+  }
+}
+
+async function logout$1() {
+  try {
+    return await Parse.User.logOut();
+  } catch (error) {
+    console.log("parse:auth:logout", error.message);
+    // return { error: error.message };
+  }
+}
+
+let isHydrating$1 = true;
+function Turnstile({ onChange, error }) {
+  const [isHydrated, setIsHydrated] = useState(!isHydrating$1);
+  const [token, setToken] = useState(null);
+  const ref = useRef();
+  useEffect(() => {
+    isHydrating$1 = false;
+    setIsHydrated(true);
+  }, []);
+  useEffect(() => {
+    if (ref.current) {
+      turnstile.remove();
+      turnstile.render(ref.current, {
+        sitekey: "0x4AAAAAAA8rbrKZhit0xcFU",
+        size: "flexible",
+        theme: "light",
+        callback: function(token2) {
+          setToken(token2);
+          onChange?.({ target: { value: token2 } });
+        },
+        "error-callback": function(args) {
+          console.log(args);
+        }
+      });
+    }
+  }, [ref.current]);
+  useEffect(() => {
+    if (error) turnstile.reset();
+  }, [error]);
+  return isHydrated ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("div", { ref }),
+    !token && /* @__PURE__ */ jsx(
+      "input",
+      {
+        required: true,
+        className: "pointer-events-none w-full h-[1px] p-0 border-none focus:outline-none text-[0px] text-white -!my-4"
+      }
+    )
+  ] }) : null;
+}
+
+function cn(...inputs) {
+  return twMerge(clsx(inputs))
+}
+
+function SelectField({ ...props }) {
+  return /* @__PURE__ */ jsxs("div", { className: cn("grid gap-1.5", props?.className), children: [
+    props?.label && /* @__PURE__ */ jsx(Label, { children: props.label }),
+    /* @__PURE__ */ jsxs(
+      Select,
+      {
+        name: props?.name,
+        required: props?.required,
+        onValueChange: props?.onValueChange,
+        defaultValue: props?.defaultValue,
+        children: [
+          /* @__PURE__ */ jsx(SelectTrigger, { className: "bg-white shadow-none", children: /* @__PURE__ */ jsx(SelectValue, { placeholder: props?.placeholder }) }),
+          /* @__PURE__ */ jsx(SelectContent, { children: /* @__PURE__ */ jsxs(SelectGroup, { children: [
+            props?.selectLabel && /* @__PURE__ */ jsx(SelectLabel, { children: props.selectLabel }),
+            props?.items.map((item, index) => /* @__PURE__ */ jsx(SelectItem, { value: item.value, children: item.label }, index))
+          ] }) })
+        ]
+      }
+    ),
+    props?.error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: props.error })
+  ] });
+}
+
+const schema$1 = Joi.object({
+  email: Joi.string().email().required().label("Email"),
+  password: Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password"),
+  fullname: Joi.string().required().label("Full name"),
+  phone: Joi.string().regex(/^[0-9]{10}$/).messages({ "string.pattern.base": `Phone number must have 10 digits.` }).required(),
+  association: Joi.string().required().label("Association"),
+  plan: Joi.string().required().label("Plan")
+});
+async function loader$l({ request }) {
+  return null;
+}
+async function action$f({ request }) {
+  const url = new URL(request.url);
+  const plan = url.searchParams.get("plan") ?? "PLAN_0";
+  const form = await request.formData();
+  const email = form.get("email");
+  const password = form.get("password");
+  const fullname = form.get("fullname");
+  const phone = form.get("phone");
+  const association = form.get("association");
+  const data = { email, password, fullname, phone, association, plan };
+  const validate = schema$1.validate(data, { abortEarly: false });
+  if (validate?.error)
+    return {
+      error: true,
+      message: { title: validate.error.details[0].message }
+    };
+  const signup = await register(data);
+  if (signup?.error)
+    return {
+      error: true,
+      message: { title: signup.error }
+    };
+  return {
+    message: { title: "Signup completed! Check email for begin" }
+  };
+}
+function Signup() {
+  const adata = useActionData();
+  const { state } = useNavigation();
+  const formRef = useRef();
+  useEffect(() => {
+    if (state === "loading") formRef.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref: formRef, method: "post", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "email",
+        name: "email",
+        label: "Email",
+        defaultValue: "rkarimi2539@gmail.com"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "password",
+        name: "password",
+        label: "Password",
+        defaultValue: "a@b.cd1Q"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "fullname",
+        name: "fullname",
+        label: "Full name",
+        defaultValue: "fullname"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "tel",
+        name: "phone",
+        label: "Phone",
+        defaultValue: "1234567890"
+      }
+    ),
+    /* @__PURE__ */ jsx(SelectField, { required: true, name: "association", label: "Association", items: associations.map((i) => ({ label: i, value: i })), defaultValue: "APEGA" }),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Sing Up",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: adata?.error ? "error" : "success",
+        message: adata?.message
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$f,
+  default: Signup,
+  loader: loader$l
+}, Symbol.toStringTag, { value: 'Module' }));
+
 const Checkbox = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   CheckboxPrimitive.Root,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
       className
     ),
@@ -2162,7 +2480,7 @@ const Checkbox = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__
     children: /* @__PURE__ */ jsx(
       CheckboxPrimitive.Indicator,
       {
-        className: cn("flex items-center justify-center text-current"),
+        className: cn$1("flex items-center justify-center text-current"),
         children: /* @__PURE__ */ jsx(CheckIcon, { className: "h-4 w-4" })
       }
     )
@@ -2253,7 +2571,7 @@ const schema = Joi.object({
   privacyPolicy: Joi.string().required(),
   appRules: Joi.string().required()
 });
-async function loader$i({ request }) {
+async function loader$k({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   const setting = session.get("setting");
@@ -2262,7 +2580,7 @@ async function loader$i({ request }) {
   if (setting?.consent) return redirect$2("/app");
   return null;
 }
-async function action$d({ request }) {
+async function action$e({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   console.log("app.consent.action", user.objectId);
@@ -2367,11 +2685,20 @@ function Consent() {
   ] });
 }
 
-const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$d,
+  action: action$e,
   default: Consent,
-  loader: loader$i
+  loader: loader$k
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$j({ request }) {
+  return Response.json("verify");
+}
+
+const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  loader: loader$j
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function isMobileServer(request) {
@@ -2414,69 +2741,6 @@ async function challenge({ form }) {
   }
 }
 
-async function remember(email) {
-  try {
-    const remember = await Parse.User.requestPasswordReset(email);
-    console.log("parse.auth.remember", remember);
-    return remember;
-  } catch (error) {
-    console.log("parse.auth.remember.error", error.code, error.message);
-  }
-}
-
-async function reset({ password, username, token }) {
-  const body = new URLSearchParams({
-    new_password: password,
-    confirm_new_password: password,
-    username,
-    token,
-    "utf-8": "✓",
-  });
-
-  try {
-    const data = await fetch(
-      `${vars.parse.serverURL}/apps/${vars.parse.appId}/request_password_reset`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body,
-      }
-    );
-
-    // console.log("parse.auth.reset", data);
-    const url = new URLSearchParams(data?.url);
-
-    const success = data?.url.includes("success");
-    const failed = data?.url.includes("failed");
-    const error = url.get("error");
-
-    if (error) return false;
-    return true;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-async function login(username, password) {
-  try {
-    return await Parse.User.logIn(username, password);
-  } catch (error) {
-    console.log("parse:auth:login", error.message);
-    return { error: error.message };
-  }
-}
-
-async function logout$1() {
-  try {
-    return await Parse.User.logOut();
-  } catch (error) {
-    console.log("parse:auth:logout", error.message);
-    // return { error: error.message };
-  }
-}
-
 let authenticator = new Authenticator();
 
 authenticator.use(
@@ -2497,48 +2761,7 @@ async function logout() {
   await logout$1();
 }
 
-let isHydrating$1 = true;
-function Turnstile({ onChange, error }) {
-  const [isHydrated, setIsHydrated] = useState(!isHydrating$1);
-  const [token, setToken] = useState(null);
-  const ref = useRef();
-  useEffect(() => {
-    isHydrating$1 = false;
-    setIsHydrated(true);
-  }, []);
-  useEffect(() => {
-    if (ref.current) {
-      turnstile.remove();
-      turnstile.render(ref.current, {
-        sitekey: "0x4AAAAAAA8rbrKZhit0xcFU",
-        size: "flexible",
-        theme: "light",
-        callback: function(token2) {
-          setToken(token2);
-          onChange?.({ target: { value: token2 } });
-        },
-        "error-callback": function(args) {
-          console.log(args);
-        }
-      });
-    }
-  }, [ref.current]);
-  useEffect(() => {
-    if (error) turnstile.reset();
-  }, [error]);
-  return isHydrated ? /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("div", { ref }),
-    !token && /* @__PURE__ */ jsx(
-      "input",
-      {
-        required: true,
-        className: "pointer-events-none w-full h-[1px] p-0 border-none focus:outline-none text-[0px] text-white -!my-4"
-      }
-    )
-  ] }) : null;
-}
-
-async function loader$h({ request }) {
+async function loader$i({ request }) {
   console.log("auth.login.loader");
   if (isMobileServer(request)) return redirect$1("/mobile");
   const session = await getSession(request.headers.get("cookie"));
@@ -2548,7 +2771,7 @@ async function loader$h({ request }) {
   if (user) throw redirect$1(decodeURIComponent(from) ?? "/app");
   return null;
 }
-async function action$c({ request }) {
+async function action$d({ request }) {
   console.log("auth.login.action");
   const session = await getSession(request.headers.get("cookie"));
   let user;
@@ -2615,7 +2838,6 @@ function Login() {
       "a",
       {
         href: "https://competencybasedassessment.ca/cba-intake-form/",
-        target: "_blank",
         className: "mt-4 text-center text-sm flex gap-4 justify-center border border-primary rounded-md py-1.5 text-primary",
         children: [
           "Don't have an account?",
@@ -2626,29 +2848,16 @@ function Login() {
   ] });
 }
 
-const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$c,
+  action: action$d,
   default: Login,
-  loader: loader$h
+  loader: loader$i
 }, Symbol.toStringTag, { value: 'Module' }));
-
-function AlertField({ message, variant }) {
-  if (!message) return null;
-  return /* @__PURE__ */ jsxs(Alert, { className: cn("px-2 pt-2.5 pb-1.5", variants[variant]), children: [
-    /* @__PURE__ */ jsx(Info, { className: "!left-2 !top-2 h-4 w-4" }),
-    /* @__PURE__ */ jsx(AlertTitle, { children: message.title }),
-    /* @__PURE__ */ jsx(AlertDescription, { className: "text-xs", children: message.description })
-  ] });
-}
-const variants = {
-  error: "text-red-500 [&>svg]:text-red-500 border-red-500",
-  success: "text-green-500 [&>svg]:text-green-500 border-green-500"
-};
 
 const emailSchema = Joi.string().email().required().label("Email");
 const passwordSchema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
-async function loader$g({ request }) {
+async function loader$h({ request }) {
   const url = new URL(request.url);
   const link = url.searchParams.get("link");
   const token = url.searchParams.get("token");
@@ -2656,7 +2865,7 @@ async function loader$g({ request }) {
   if (link) return redirect$1(`/auth/reset?token=${token}&username=${username}`);
   return null;
 }
-async function action$b({ request }) {
+async function action$c({ request }) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   const username = url.searchParams.get("username");
@@ -2753,11 +2962,572 @@ function Reset() {
   ] });
 }
 
-const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$b,
+  action: action$c,
   default: Reset,
-  loader: loader$g
+  loader: loader$h
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const openai = new OpenAI({
+  // Add timeout configuration to prevent connection hangs
+  timeout: 60000, // 60 seconds timeout
+  maxRetries: 3, // Retry up to 3 times on connection failures
+  ...(process.env.NODE_ENV === "development" &&
+    process.env.USE_OPENAI_PROXY === "true" && {
+      httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
+    }),
+});
+
+async function createAssistant() {
+  const existingAssistants = await openai.beta.assistants.list();
+  let assistant = existingAssistants.data.find(a => a.name === "CBA PRO V4.0.OPP");
+
+  if (assistant) {
+    console.log("Using existing Assistant ID:", assistant.id);
+    return assistant.id;
+  }
+
+  assistant = await openai.beta.assistants.create({
+    name: "PEO CBA Prov V3",
+    instructions: `
+      # CBA PRO V4.1 - OpenAI API Assistant System Instructions
+      [Last Update: 2025-03-17, Step2, Personalized Competency Explanation]
+
+      ## 🔹 Role:
+      You are **CBA PRO V4.1**, an advanced AI assistant specializing in **Competency-Based Assessment (CBA) for Professional Engineers Associations in Canada**. Your goal is to help users:
+      - **Match their work experience** to PEng's **34 key competencies**.
+      - **Identify gaps** and seek clarifications.
+      - **Craft structured and well-written responses** for their PEng application.
+      - **Ensure responses meet PEng’s competency requirements and character limits as per your knowledgebase**.
+      - **Ensure the responses have high breadth, depth, and quality to convince PEng assessor with no historical context of the user based on user-provided explicit information to prove competency**.
+      - user will attach **cv** with this message **My CV has been uploaded with the name**.
+
+      **🔹 Response Formatting Rules (Strictly Follow Markdown)**
+      - Use **bold** for key terms.
+      - Use **headers (##, ###)** to separate sections.
+      - Use bullet points (• or -) for lists.
+      - Use \`code formatting\` where applicable (for highlighting key terms).
+      - Ensure responses are structured logically.
+
+      ---
+      ## 🔹 Workflow:
+
+      ### **1️⃣ Analyze the User's CV**
+      - Retrieve **7 competency categories** from **CATEGORY CHUNKS** vector file in your knowledge base.
+      - Categorize all of the user’s work under **7 competency categories** to :
+        - **Technical Competence** 
+          -**understanding of Canadian regulations and standards but also the ability to apply engineering principles to develop, verify, and communicate effective solutions. It requires a holistic view of projects, encompassing risk management, safety, quality assurance, and lifecycle management.**
+        - **Communication**
+          -**the ability to effectively convey, interpret, and evaluate information through verbal and written means, ensuring clarity, precision, and understanding among team members, clients, contractors, and the public**
+        - **Project and Financial Management**
+          -**the ability to understand and apply project management principles, progressively take on greater responsibilities, manage resources effectively, understand financial implications, and respond to feedback**
+        - **Team Effectiveness**
+          -**the ability to collaborate respectfully with colleagues from various disciplines, contribute to a harmonious work environment, and effectively resolve conflicts and differences**
+        - **Professional Accountability**
+          -**the ability to apply ethical principles, understand and respect one's professional limitations, recognize and address conflicts of interest, and demonstrate accountability and integrity in professional practice**
+        - **Social, Economic, Environmental & Sustainability**
+          -**the ability to understand and implement safeguards to protect the public, recognize the impact of engineering activities on society and the environment, understand the role of regulatory bodies such as PEO and other professional engineers organizations, and promote sustainability principles in professional practice**
+        - **Personal Continuing Professional Development**
+          -**the ongoing commitment to learning and improving professional skills and knowledge, recognizing and addressing knowledge gaps, and planning for future development to maintain competence and stay current in the field**
+      - If the CV is missing, **ask the user to upload it**.
+
+      ---
+
+      ### **2️⃣ Ask User to Select a Competency**
+      - Ask the user which **competency** to start to work on.
+      - Retrieve the competency's **intent** and **indicators** from the knowledge base by using specific search queries targeting the exact vector file name for the chosen **competency**.
+      - Present the user with the **full competency description** and **explicit indicators**.
+        - **Explain elaborately** what the **intent** and **indicators** of the competency means in the context of **user work experience background**.
+          -**Provide specific example and explanation of the concept**, for example:
+            -**if it is about ethics, explain what ethic means**
+            -**if it is about Canadian regulations and codes, name a few of the codes that relates to the user's background**
+      - **Take persona of an engineering applicant** with **similar work experience** as the user and **Generate a detailed scenario example of your own work** based on the **explicit indicators** and inspiration from the **user work experience and background** to help user sympathy and empathy with it.
+        - Story must show an **engineering problem**, where "I" contributed something, and resulted in something quantifiable.
+        - the goal of the story is to help user understand the **intent** and **indicators** in practice and how it can be related to the **competency**.
+      
+
+      ---
+
+      ### **3️⃣ Compare CV with Competency Requirements**
+      - Retrieve the competency's **intent** and **indicators** from the knowledge base.
+      - **Use Named Entity Recognition (NER) to scan user's CV and identify every single explicit project roles and activities** that match the competency intent and indicators.
+        - The goal is to find the best **project** **explicit match** to the **competency** while providing a comprehensive overview of all relevant roles.
+        - reiterate to ensure there is no **potential matching project role** that meets the competency.
+      - **DO NOT ask the user to select a project until you have FIRST presented a list of all explicit matches.**
+      - **List explicit matches in the following format:**
+        - **Project Name**
+          - **Position Name**
+          - **Relevant activities and job duties that demonstrate competency**
+      - **After listing ALL possible matches, then ask the user to select ONE to focus on.**
+      - **If the user does not select a project, DO NOT proceed**—instead, repeat the request:
+        > _"Please select one of the explicit matches to focus on for this competency before we continue."_  
+      - **Once the user has selected a match, perform a gap analysis:**  
+        - **Compare the user’s experience to the competency’s indicators.**  
+        - Identify missing details.  
+        - Highlight areas requiring further explanation.  
+      - **Before moving to Step 4, validate the explicit match:**  
+        - ❌ If the user has not selected a match, loop back and ask them to choose.  
+        - ❌ If no gaps are identified, confirm with the user before continuing.  
+        - ✅ **Only move forward once a match has been selected and a gap analysis is performed.**  
+
+
+      ---
+
+      ### **4️⃣ Ask for Specific Work Examples**
+      - After receiving an initial response from the user, **DO NOT proceed to drafting until you have validated the response against the competency indicators.**   
+      - Use the selected **explicit match** to craft contextual questions to seek clarification on the **gap analysis** items.
+      - Ask for the following information if not already provided: 
+        -**the project name**
+        -**how many team members**
+        -**the role**
+        -**seniority level**
+        -**whether user had supervisor or was supervising others**
+      - Ask **targeted memory-triggering questions** to help the user recall detailed examples.
+      - Guide user to provide answers in **STAR format (Situation, Action, Result)**.
+      - Ensure responses **demonstrate impact and personal contribution**.
+      - After receiving initial response from user, ask **follow-up questions** to delve deeper into specific aspects of user's experience:
+        -Request **specific challenges** or **issues** encountered and how user addressed them.
+        -Ask for **quantifiable results** or **metrics** that demonstrate the impact of user's actions.
+        -Seek more **technical details** about the engineering principles or standards applied.
+      -If **any of these are missing**, **loop back** and ask more targeted questions until the user provides all necessary information.  
+
+      ---
+
+      ### **5️⃣ Iterate Until Highly Sufficient Evidence Is Provided**
+      > Before moving forward, **perform a self-check**:  
+      > ✅ **Does the user’s response fully cover the competency indicators?**  
+      > ✅ **Are there quantifiable results, detailed actions, and technical aspects included?**  
+      > ✅ **Is the response convincing to a P.Eng. assessor with no prior knowledge of the user’s experience?**  
+      >  
+      > If **ANY answer is NO**, **DO NOT proceed to Step 7**. Instead:  
+      > 1️⃣ Ask another targeted follow-up question.  
+      > 2️⃣ Clarify missing details with an example-based query.  
+      > 3️⃣ If the user does not provide enough detail, **explicitly tell them what’s missing** before moving forward.  
+
+
+
+      ---
+      ### **6️⃣Self-Critique Before Finalizing a Response**
+
+      > Before moving to Step 7, run a final **self-check validation**:  
+      > ❌ If the response **lacks depth, quantifiable results, or personal contribution**, ask for more clarification.  
+      > ❌ If the response **reads like a generic job description**, ask for **specific personal actions taken**.  
+      > ❌ If the response **does not clearly address risk identification, analysis, mitigation, and impact**, **DO NOT proceed to drafting**—instead, **loop back to ask for more details.**  
+      > ✅ **Only move to Step 7 once the response is strong, specific, and convincing.**  
+
+      ---
+
+      ### **7️⃣Draft the Competency Response**
+      - Structure responses according to **PEng’s CBA guidelines**:
+        - **Situation (300 characters)**
+        - **Action (1650 characters)**
+        - **Outcome (300 characters)**
+      - Use **professional and concise writing**:
+        - **First-person narrative ("I did this...")**.
+        - **Avoid generic job descriptions**—focus on **personal contribution**.
+        - **Use technical and engineering-specific language**.
+        - **Include quantifiable results where possible**.
+        - **Ensure clarity, coherence, and logical flow**.
+
+      ---
+
+      ### **8 Review & Finalize**
+      - Check if the response meets **PEO’s expectations**: 
+        -**Does this response fully address the **competency's indicators**?**
+        -**Are there missing details or incorrect assumptions?**
+        -**Could the answer be more structured, concise, or logical?**
+        -**Does the structured response provides sufficient **breadth**, **depth**, and **quality** to convince PEng assessor is competent?**
+      - If any issue is detected within above, ask for more clarification, refine and improve the response before presenting it in the next step.
+
+
+      ---
+
+      ## 🔹 Writing Guidelines:
+      ✅ Use **first-person perspective ("I")** to highlight **personal contributions**.  
+      ✅ Avoid **vague job descriptions**—focus on **specific actions**.  
+      ✅ Use **concise, professional language**.  
+      ✅ Incorporate **real-world examples & measurable impact**.  
+      ✅ Ensure the response is **well-structured and logical**.  
+      ✅ Adhere to **PEO’s character limits** for responses.
+    `,
+    model: "gpt-4o",
+    temperature: 0.2,
+    top_p: 0.9
+  });
+
+  console.log("Created new Assistant ID:", assistant.id);
+  return assistant.id;
+}
+
+createAssistant();
+
+const ClassName = "Thread";
+
+async function read$2({ user, purpose = purposes.chat, objectId }) {
+  try {
+    const query = new Parse.Query(ClassName);
+    user && query.equalTo("user", user.objectId);
+    !objectId && query.equalTo("purpose", purpose);
+    !objectId && query.descending("createdAt");
+    if (objectId)
+      return await query.get(objectId, { sessionToken: user.sessionToken });
+    return await query.find({ sessionToken: user.sessionToken });
+  } catch (error) {
+    console.log("thread.read", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function create$1(args, sessionToken) {
+  try {
+    const Thread = Parse.Object.extend(ClassName);
+    const thread = new Thread();
+    return await thread.save(args, { sessionToken });
+  } catch (error) {
+    console.log("thread.create", error.message);
+  }
+}
+
+async function update(args, sessionToken) {
+  try {
+    const Thread = Parse.Object.extend(ClassName);
+    const thread = new Thread();
+    return await thread.save(args, { sessionToken });
+  } catch (error) {
+    console.log("thread.update", error.message);
+  }
+}
+
+const purposes = {
+  chat: "chat",
+  score: "score",
+};
+
+async function updateUsage(user, thread, usage) {
+  const $thread = await read$2({ user, objectId: thread.objectId });
+  const threadUsage = $thread.get("usage");
+  // console.log("usage.updateUsage:thread.usage", threadUsage);
+
+  await update(
+    {
+      objectId: thread.objectId,
+      usage: {
+        count: (threadUsage?.count ?? 0) + 1,
+        input: (threadUsage?.input ?? 0) + usage.input,
+        output: (threadUsage?.output ?? 0) + usage.output,
+        total: (threadUsage?.total ?? 0) + usage.total,
+      },
+    },
+    user.sessionToken
+  );
+
+  const profile = await read$5(user);
+  const profileUsage = profile.get("usage");
+
+  await update$3(user, {
+    objectId: profile.id,
+    usage: {
+      count: (profileUsage?.count ?? 0) + 1,
+      input: (profileUsage?.input ?? 0) + usage.input,
+      output: (profileUsage?.output ?? 0) + usage.output,
+      total: (profileUsage?.total ?? 0) + usage.total,
+    },
+  });
+}
+
+/**
+ * Transcribe audio using OpenAI Whisper API with whisper-1 model
+ * @param {File|Blob} audioFile - Audio file to transcribe
+ * @param {Object} user - User object
+ * @param {Object} thread - Thread object (optional, for token tracking)
+ * @param {number} duration - Audio duration in seconds (optional, more accurate if provided)
+ * @returns {Promise<{text: string, usage: {input: number, output: number, total: number}, duration: number}>}
+ */
+async function transcribe({ audioFile, user, thread, duration }) {
+  try {
+    // Create a File object if it's a Blob
+    const file = audioFile instanceof File 
+      ? audioFile 
+      : new File([audioFile], "audio.webm", { type: audioFile.type || "audio/webm" });
+
+    // Validate file size - OpenAI Whisper API has a 25MB limit
+    const maxSizeBytes = 25 * 1024 * 1024; // 25MB in bytes
+    if (file.size > maxSizeBytes) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      throw new Error(`Audio file is too large (${sizeMB}MB). Maximum size is 25MB. Please record a shorter audio clip or reduce audio quality.`);
+    }
+
+    // Validate file size is not empty or too small (likely silence/noise)
+    const minSizeBytes = 2048; // 2KB minimum (aligned with client-side validation)
+    if (file.size === 0) {
+      throw new Error('Audio file is empty. Please record some audio before submitting.');
+    }
+    
+    if (file.size < minSizeBytes) {
+      const sizeKB = (file.size / 1024).toFixed(2);
+      console.warn(`Audio file too small (${sizeKB}KB), likely silence or noise`);
+      throw new Error('Audio recording is too small. Please speak clearly and try again.');
+    }
+    
+    console.log('Audio file received:', {
+      size: `${(file.size / 1024).toFixed(2)}KB`,
+      type: file.type,
+      providedDuration: duration
+    });
+
+    // Get audio duration - use provided duration if available, otherwise estimate
+    const audioDuration = duration && duration > 0 
+      ? duration 
+      : await getAudioDuration(file);
+
+    // Ensure duration is valid
+    const finalDuration = Math.max(0.1, Math.min(audioDuration, 600)); // Min 0.1s, Max 10min
+
+    // Transcribe audio using OpenAI Whisper API with whisper-1 model
+    let transcription;
+    try {
+      transcription = await openai.audio.transcriptions.create({
+        file: file,
+        model: "whisper-1",
+        language: "en", // Optional: specify language for better accuracy
+      });
+    } catch (apiError) {
+      // Handle specific OpenAI API errors
+      if (apiError.code === 'ECONNRESET' || apiError.cause?.code === 'ECONNRESET') {
+        throw new Error('Connection to OpenAI was reset. Please check your network connection, firewall settings, or try again.');
+      }
+      if (apiError.code === 'ETIMEDOUT' || apiError.cause?.code === 'ETIMEDOUT') {
+        throw new Error('Connection to OpenAI timed out. The audio file may be too large or your network is slow. Please try again.');
+      }
+      // Re-throw the original error for other cases
+      throw apiError;
+    }
+
+    let text = transcription.text;
+    
+    // Detect and filter common Whisper hallucinations (silence produces these)
+    const commonHallucinations = [
+      'you',
+      'thank you',
+      'thanks for watching',
+      'bye',
+      'goodbye',
+      'thank you for watching',
+      'please subscribe',
+      'like and subscribe',
+      'you you you',
+      'uh',
+      'um',
+      'hmm',
+      '...',
+      'music',
+      '[music]',
+      '[silence]',
+      '[inaudible]'
+    ];
+    
+    const textLower = text.toLowerCase().trim();
+    const isHallucination = commonHallucinations.some(phrase => 
+      textLower === phrase || textLower.startsWith(phrase + '.') || textLower.startsWith(phrase + ',')
+    );
+    
+    if (isHallucination) {
+      console.warn('⚠️ Detected Whisper hallucination:', text);
+      console.warn('Audio likely contains only silence or unclear speech');
+      throw new Error('No clear speech detected. Please speak clearly into the microphone and try again.');
+    }
+    
+    // Also check for very short transcriptions (likely hallucinations)
+    if (text.trim().length < 2) {
+      console.warn('⚠️ Transcription too short:', text);
+      throw new Error('No speech detected. Please speak clearly and try again.');
+    }
+
+    // Calculate token usage for audio transcription
+    // Based on OpenAI Whisper API pricing: $0.006 per minute = $0.0001 per second
+    // Token calculation: Based on actual OpenAI billing model
+    // whisper-1 uses approximately 150 tokens per second of audio
+    const inputTokens = estimateAudioTokens(finalDuration);
+    
+    // Output tokens: Transcribed text tokens
+    // More accurate estimation using tiktoken-like calculation
+    // Average: ~0.75 tokens per word, or ~1 token per 4 characters
+    const outputTokens = estimateTextTokens(text);
+    
+    const usage = {
+      input: inputTokens,
+      output: outputTokens,
+      total: inputTokens + outputTokens,
+    };
+
+    console.log("Audio transcription usage:", {
+      duration: finalDuration,
+      durationSource: duration ? "client-provided" : "estimated",
+      textLength: text.length,
+      wordCount: text.split(/\s+/).length,
+      usage,
+    });
+
+    // Update usage if thread is provided
+    if (thread && user) {
+      await updateUsage(user, thread, usage);
+    }
+
+    return {
+      text,
+      usage,
+      duration: finalDuration,
+    };
+  } catch (error) {
+    console.error("Audio transcription error:", error);
+    throw new Error(`Transcription failed: ${error.message}`);
+  }
+}
+
+/**
+ * Get audio duration in seconds
+ * Since we're server-side, we estimate based on file size
+ * This is a fallback when client doesn't provide duration
+ * @param {File|Blob} audioFile - Audio file
+ * @returns {Promise<number>} Duration in seconds
+ */
+async function getAudioDuration(audioFile) {
+  // Server-side: estimate duration based on file size and format
+  // For WebM/Opus audio: typical bitrates vary
+  // - Low quality: ~32 kbps = ~4 KB per second
+  // - Medium quality: ~64 kbps = ~8 KB per second
+  // - High quality: ~128 kbps = ~16 KB per second
+  // Using adaptive estimation based on file size
+  
+  const sizeBytes = audioFile.size;
+  const sizeKB = sizeBytes / 1024;
+  
+  // Determine likely bitrate based on file size patterns
+  // Smaller files might be lower quality, larger files might be higher quality
+  let bytesPerSecond;
+  
+  if (sizeKB < 100) {
+    // Very small files: assume lower bitrate (~32-48 kbps)
+    bytesPerSecond = 4000; // ~4 KB/s
+  } else if (sizeKB < 500) {
+    // Medium files: assume medium bitrate (~48-64 kbps)
+    bytesPerSecond = 6000; // ~6 KB/s
+  } else {
+    // Larger files: assume higher bitrate (~64-96 kbps)
+    bytesPerSecond = 8000; // ~8 KB/s
+  }
+  
+  // Calculate estimated duration
+  const estimatedDuration = sizeBytes / bytesPerSecond;
+  
+  // Minimum 0.1 seconds, maximum reasonable limit of 10 minutes
+  return Math.max(0.1, Math.min(estimatedDuration, 600));
+}
+
+/**
+ * Estimate token usage from audio duration
+ * Based on OpenAI Whisper API pricing: $0.006 per minute = $0.0001 per second
+ * 
+ * OpenAI's token calculation for audio:
+ * - whisper-1: Processes audio at ~150 tokens per second
+ * - This is based on the actual billing model where you're charged per minute
+ * - Rounded to the nearest second for billing
+ * 
+ * @param {number} durationSeconds - Audio duration in seconds
+ * @returns {number} Estimated input tokens
+ */
+function estimateAudioTokens(durationSeconds) {
+  // OpenAI Whisper API billing: $0.006 per minute = $0.0001 per second
+  // Token calculation: Approximately 150 tokens per second of audio
+  // This is based on the token-to-cost ratio for whisper-1
+  
+  // Round duration to nearest second (as OpenAI does for billing)
+  const roundedDuration = Math.round(durationSeconds);
+  
+  // Calculate tokens: ~150 tokens per second
+  // Minimum 1 token even for very short audio (< 1 second)
+  const tokens = Math.max(1, Math.ceil(roundedDuration * 150));
+  
+  return tokens;
+}
+
+/**
+ * Estimate tokens from transcribed text
+ * More accurate than simple character division
+ * @param {string} text - Transcribed text
+ * @returns {number} Estimated output tokens
+ */
+function estimateTextTokens(text) {
+  if (!text || text.length === 0) return 0;
+  
+  // Method 1: Word-based estimation (more accurate)
+  // Average English word: ~1.3 tokens
+  // This accounts for punctuation, spaces, and word boundaries
+  const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+  const wordBasedTokens = Math.ceil(words.length * 1.3);
+  
+  // Method 2: Character-based estimation (fallback)
+  // Approximately 1 token per 4 characters (including spaces)
+  const charBasedTokens = Math.ceil(text.length / 4);
+  
+  // Use the average of both methods for better accuracy
+  // This accounts for varying text complexity
+  const estimatedTokens = Math.ceil((wordBasedTokens + charBasedTokens) / 2);
+  
+  return Math.max(1, estimatedTokens); // Minimum 1 token
+}
+
+async function action$b({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  const thread = session.get("thread");
+  if (!user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  try {
+    const formData = await request.formData();
+    const audioFile = formData.get("audio");
+    const durationParam = formData.get("duration");
+    if (!audioFile || !(audioFile instanceof File)) {
+      return Response.json(
+        { error: "No audio file provided" },
+        { status: 400 }
+      );
+    }
+    const duration = durationParam ? parseFloat(durationParam) : null;
+    const result = await transcribe({
+      audioFile,
+      user,
+      thread,
+      duration
+      // Pass accurate duration from client
+    });
+    return Response.json(
+      {
+        text: result.text,
+        usage: result.usage,
+        duration: result.duration
+        // Return duration for debugging
+      },
+      {
+        headers: {
+          "Set-Cookie": await commitSession(session)
+        }
+      }
+    );
+  } catch (error) {
+    console.error("Audio transcription route error:", error);
+    return Response.json(
+      { error: error.message || "Transcription failed" },
+      { status: 500 }
+    );
+  }
+}
+
+const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$b
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Dialog = DialogPrimitive.Root;
@@ -2767,7 +3537,7 @@ const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__P
   DialogPrimitive.Overlay,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     ),
@@ -2781,7 +3551,7 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
     DialogPrimitive.Content,
     {
       ref,
-      className: cn(
+      className: cn$1(
         "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
         className
       ),
@@ -2809,7 +3579,7 @@ const DialogHeader = ({
 }) => /* @__PURE__ */ jsx(
   "div",
   {
-    className: cn("flex flex-col space-y-1.5 text-center sm:text-left", className),
+    className: cn$1("flex flex-col space-y-1.5 text-center sm:text-left", className),
     ...props
   }
 );
@@ -2820,7 +3590,7 @@ const DialogFooter = ({
 }) => /* @__PURE__ */ jsx(
   "div",
   {
-    className: cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
+    className: cn$1("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
     ...props
   }
 );
@@ -2829,7 +3599,7 @@ const DialogTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   DialogPrimitive.Title,
   {
     ref,
-    className: cn("text-lg font-semibold leading-none tracking-tight", className),
+    className: cn$1("text-lg font-semibold leading-none tracking-tight", className),
     ...props
   }
 ));
@@ -2838,7 +3608,7 @@ const DialogDescription = React.forwardRef(({ className, ...props }, ref) => /* 
   DialogPrimitive.Description,
   {
     ref,
-    className: cn("text-sm text-muted-foreground", className),
+    className: cn$1("text-sm text-muted-foreground", className),
     ...props
   }
 ));
@@ -3193,13 +3963,13 @@ function DashUserCreate() {
   );
 }
 
-const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$a,
   default: DashUserCreate
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$f({ request }) {
+async function loader$g({ request }) {
   return redirect$1("/app");
 }
 async function action$9({ request, params }) {
@@ -3268,11 +4038,37 @@ const outcomeSchema = {
   flag: "idle"
 };
 
-const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$9,
-  loader: loader$f,
+  loader: loader$g,
   outcomeSchema
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$f({ request }) {
+  const { link, token, username } = Object.fromEntries(new URL(request.url).searchParams);
+  const type = link.split("/").reverse()[0];
+  switch (type) {
+    case authVars.verifyEmail:
+      const data = await confirm({ username, token });
+      console.log({ type, data });
+      return Response.json(type);
+    case authVars.verifyEmailSuccess:
+      console.log(type);
+      return Response.json(type);
+    case authVars.invalidVerificationLink:
+      console.log(type);
+      return Response.json(type);
+    case authVars.requestPassworReset:
+      console.log(type);
+      return Response.json(type);
+  }
+  return null;
+}
+
+const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  loader: loader$f
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const THEMES = {
@@ -3296,7 +4092,7 @@ const ChartContainer = React.forwardRef(
       {
         "data-chart": chartId,
         ref,
-        className: cn(
+        className: cn$1(
           "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
           className
         ),
@@ -3362,12 +4158,12 @@ const ChartTooltipContent = React.forwardRef(
       const itemConfig = getPayloadConfigFromPayload(config, item, key);
       const value = !labelKey && typeof label === "string" ? config[label]?.label || label : itemConfig?.label;
       if (labelFormatter) {
-        return /* @__PURE__ */ jsx("div", { className: cn("font-medium", labelClassName), children: labelFormatter(value, payload) });
+        return /* @__PURE__ */ jsx("div", { className: cn$1("font-medium", labelClassName), children: labelFormatter(value, payload) });
       }
       if (!value) {
         return null;
       }
-      return /* @__PURE__ */ jsx("div", { className: cn("font-medium", labelClassName), children: value });
+      return /* @__PURE__ */ jsx("div", { className: cn$1("font-medium", labelClassName), children: value });
     }, [
       label,
       labelFormatter,
@@ -3385,7 +4181,7 @@ const ChartTooltipContent = React.forwardRef(
       "div",
       {
         ref,
-        className: cn(
+        className: cn$1(
           "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
           className
         ),
@@ -3398,7 +4194,7 @@ const ChartTooltipContent = React.forwardRef(
             return /* @__PURE__ */ jsx(
               "div",
               {
-                className: cn(
+                className: cn$1(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
                 ),
@@ -3406,7 +4202,7 @@ const ChartTooltipContent = React.forwardRef(
                   itemConfig?.icon ? /* @__PURE__ */ jsx(itemConfig.icon, {}) : !hideIndicator && /* @__PURE__ */ jsx(
                     "div",
                     {
-                      className: cn(
+                      className: cn$1(
                         "shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]",
                         {
                           "h-2.5 w-2.5": indicator === "dot",
@@ -3424,7 +4220,7 @@ const ChartTooltipContent = React.forwardRef(
                   /* @__PURE__ */ jsxs(
                     "div",
                     {
-                      className: cn(
+                      className: cn$1(
                         "flex flex-1 justify-between leading-none",
                         nestLabel ? "items-end" : "items-center"
                       ),
@@ -3458,7 +4254,7 @@ const ChartLegendContent = React.forwardRef(
       "div",
       {
         ref,
-        className: cn(
+        className: cn$1(
           "flex items-center justify-center gap-4",
           verticalAlign === "top" ? "pb-3" : "pt-3",
           className
@@ -3469,7 +4265,7 @@ const ChartLegendContent = React.forwardRef(
           return /* @__PURE__ */ jsxs(
             "div",
             {
-              className: cn(
+              className: cn$1(
                 "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
               ),
               children: [
@@ -3591,7 +4387,7 @@ function DashOverview() {
 const Box = ({ box, value = 1248, percent = -12.5 }) => /* @__PURE__ */ jsxs(
   "div",
   {
-    className: cn(
+    className: cn$1(
       "p-4 bg-white border rounded-lg flex flex-col gap-2 justify-between relative",
       box.className
     ),
@@ -3643,7 +4439,7 @@ const boxes = {
   }
 };
 
-const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: DashOverview
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -3673,7 +4469,7 @@ function DashSettings() {
   ] }) });
 }
 
-const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$8,
   default: DashSettings
@@ -3683,7 +4479,7 @@ const Avatar = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ *
   AvatarPrimitive.Root,
   {
     ref,
-    className: cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className),
+    className: cn$1("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className),
     ...props
   }
 ));
@@ -3692,7 +4488,7 @@ const AvatarImage = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   AvatarPrimitive.Image,
   {
     ref,
-    className: cn("aspect-square h-full w-full", className),
+    className: cn$1("aspect-square h-full w-full", className),
     ...props
   }
 ));
@@ -3701,7 +4497,7 @@ const AvatarFallback = React.forwardRef(({ className, ...props }, ref) => /* @__
   AvatarPrimitive.Fallback,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex h-full w-full items-center justify-center rounded-full bg-muted",
       className
     ),
@@ -3717,7 +4513,7 @@ const SheetPortal = DialogPrimitive.Portal;
 const SheetOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   DialogPrimitive.Overlay,
   {
-    className: cn(
+    className: cn$1(
       "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     ),
@@ -3744,7 +4540,7 @@ const sheetVariants = cva(
 );
 const SheetContent = React.forwardRef(({ side = "right", className, children, ...props }, ref) => /* @__PURE__ */ jsxs(SheetPortal, { children: [
   /* @__PURE__ */ jsx(SheetOverlay, {}),
-  /* @__PURE__ */ jsxs(DialogPrimitive.Content, { ref, className: cn(sheetVariants({ side }), className), ...props, children: [
+  /* @__PURE__ */ jsxs(DialogPrimitive.Content, { ref, className: cn$1(sheetVariants({ side }), className), ...props, children: [
     /* @__PURE__ */ jsxs(
       DialogPrimitive.Close,
       {
@@ -3765,7 +4561,7 @@ const SheetHeader = ({
 }) => /* @__PURE__ */ jsx(
   "div",
   {
-    className: cn("flex flex-col space-y-2 text-center sm:text-left", className),
+    className: cn$1("flex flex-col space-y-2 text-center sm:text-left", className),
     ...props
   }
 );
@@ -3776,7 +4572,7 @@ const SheetFooter = ({
 }) => /* @__PURE__ */ jsx(
   "div",
   {
-    className: cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
+    className: cn$1("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
     ...props
   }
 );
@@ -3785,7 +4581,7 @@ const SheetTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   DialogPrimitive.Title,
   {
     ref,
-    className: cn("text-lg font-semibold text-foreground", className),
+    className: cn$1("text-lg font-semibold text-foreground", className),
     ...props
   }
 ));
@@ -3794,7 +4590,7 @@ const SheetDescription = React.forwardRef(({ className, ...props }, ref) => /* @
   DialogPrimitive.Description,
   {
     ref,
-    className: cn("text-sm text-muted-foreground", className),
+    className: cn$1("text-sm text-muted-foreground", className),
     ...props
   }
 ));
@@ -3849,7 +4645,7 @@ const Toggle = React.forwardRef(
     TogglePrimitive.Root,
     {
       ref,
-      className: cn(toggleVariants({ variant, size, className })),
+      className: cn$1(toggleVariants({ variant, size, className })),
       ...props
     }
   )
@@ -3865,7 +4661,7 @@ const ToggleGroup = React.forwardRef(
     ToggleGroupPrimitive.Root,
     {
       ref,
-      className: cn("flex items-center justify-center gap-1", className),
+      className: cn$1("flex items-center justify-center gap-1", className),
       ...props,
       children: /* @__PURE__ */ jsx(ToggleGroupContext.Provider, { value: { variant, size }, children })
     }
@@ -3879,7 +4675,7 @@ const ToggleGroupItem = React.forwardRef(
       ToggleGroupPrimitive.Item,
       {
         ref,
-        className: cn(
+        className: cn$1(
           toggleVariants({
             variant: context.variant || variant,
             size: context.size || size
@@ -3920,18 +4716,18 @@ const Table = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */
   "table",
   {
     ref,
-    className: cn("w-full caption-bottom text-sm", className),
+    className: cn$1("w-full caption-bottom text-sm", className),
     ...props
   }
 ) }));
 Table.displayName = "Table";
-const TableHeader = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("thead", { ref, className: cn("[&_tr]:border-b", className), ...props }));
+const TableHeader = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("thead", { ref, className: cn$1("[&_tr]:border-b", className), ...props }));
 TableHeader.displayName = "TableHeader";
 const TableBody = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   "tbody",
   {
     ref,
-    className: cn("[&_tr:last-child]:border-0", className),
+    className: cn$1("[&_tr:last-child]:border-0", className),
     ...props
   }
 ));
@@ -3940,7 +4736,7 @@ const TableFooter = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   "tfoot",
   {
     ref,
-    className: cn("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className),
+    className: cn$1("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className),
     ...props
   }
 ));
@@ -3949,7 +4745,7 @@ const TableRow = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__
   "tr",
   {
     ref,
-    className: cn(
+    className: cn$1(
       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
       className
     ),
@@ -3961,7 +4757,7 @@ const TableHead = React.forwardRef(({ className, ...props }, ref) => /* @__PURE_
   "th",
   {
     ref,
-    className: cn(
+    className: cn$1(
       "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     ),
@@ -3973,7 +4769,7 @@ const TableCell = React.forwardRef(({ className, ...props }, ref) => /* @__PURE_
   "td",
   {
     ref,
-    className: cn(
+    className: cn$1(
       "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     ),
@@ -3985,7 +4781,7 @@ const TableCaption = React.forwardRef(({ className, ...props }, ref) => /* @__PU
   "caption",
   {
     ref,
-    className: cn("mt-4 text-sm text-muted-foreground", className),
+    className: cn$1("mt-4 text-sm text-muted-foreground", className),
     ...props
   }
 ));
@@ -4009,7 +4805,7 @@ function TableModule({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cn(
+      className: cn$1(
         "rounded-lg border overflow-hidden",
         fullHeight && "h-full flex flex-col",
         props?.className
@@ -4040,11 +4836,11 @@ function TableModule({
         /* @__PURE__ */ jsx(
           ScrollArea,
           {
-            className: cn(
+            className: cn$1(
               // "whitespace-nowrap",
               fullHeight && "flex-auto [&>div>div:first-child]:h-full [&>div>div>div:first-child]:h-full"
             ),
-            children: /* @__PURE__ */ jsxs(Table, { className: cn("", props?.tableClassName), children: [
+            children: /* @__PURE__ */ jsxs(Table, { className: cn$1("", props?.tableClassName), children: [
               /* @__PURE__ */ jsx(TableHeader, { className: "sticky z-10 top-0 bg-white", children: table.getHeaderGroups().map((headerGroup) => /* @__PURE__ */ jsx(TableRow, { children: headerGroup.headers.map((header) => {
                 return /* @__PURE__ */ jsx(TableHead, { children: header.isPlaceholder ? null : flexRender(
                   header.column.columnDef.header,
@@ -4399,7 +5195,7 @@ function ProgressModule({ start, end, value, ...props }) {
   ] });
 }
 
-const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   ProgressModule,
   action: action$7,
@@ -4415,7 +5211,7 @@ const BreadcrumbList = React.forwardRef(({ className, ...props }, ref) => /* @__
   "ol",
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
       className
     ),
@@ -4427,7 +5223,7 @@ const BreadcrumbItem = React.forwardRef(({ className, ...props }, ref) => /* @__
   "li",
   {
     ref,
-    className: cn("inline-flex items-center gap-1.5", className),
+    className: cn$1("inline-flex items-center gap-1.5", className),
     ...props
   }
 ));
@@ -4438,7 +5234,7 @@ const BreadcrumbLink = React.forwardRef(({ asChild, className, ...props }, ref) 
     Comp,
     {
       ref,
-      className: cn("transition-colors hover:text-foreground", className),
+      className: cn$1("transition-colors hover:text-foreground", className),
       ...props
     }
   );
@@ -4451,7 +5247,7 @@ const BreadcrumbPage = React.forwardRef(({ className, ...props }, ref) => /* @__
     role: "link",
     "aria-disabled": "true",
     "aria-current": "page",
-    className: cn("font-normal text-foreground", className),
+    className: cn$1("font-normal text-foreground", className),
     ...props
   }
 ));
@@ -4465,7 +5261,7 @@ const BreadcrumbSeparator = ({
   {
     role: "presentation",
     "aria-hidden": "true",
-    className: cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className),
+    className: cn$1("[&>svg]:w-3.5 [&>svg]:h-3.5", className),
     ...props,
     children: children ?? /* @__PURE__ */ jsx(ChevronRightIcon, {})
   }
@@ -4494,7 +5290,7 @@ function Skeleton({
   return /* @__PURE__ */ jsx(
     "div",
     {
-      className: cn("animate-pulse rounded-md bg-primary/10", className),
+      className: cn$1("animate-pulse rounded-md bg-primary/10", className),
       ...props
     }
   );
@@ -4508,7 +5304,7 @@ const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }
   {
     ref,
     sideOffset,
-    className: cn(
+    className: cn$1(
       "z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-tooltip-content-transform-origin]",
       className
     ),
@@ -4591,7 +5387,7 @@ const SidebarProvider = React.forwardRef(
           "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
           ...style
         },
-        className: cn(
+        className: cn$1(
           "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
           className
         ),
@@ -4617,7 +5413,7 @@ const Sidebar = React.forwardRef(
       return /* @__PURE__ */ jsx(
         "div",
         {
-          className: cn(
+          className: cn$1(
             "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
             className
           ),
@@ -4661,7 +5457,7 @@ const Sidebar = React.forwardRef(
           /* @__PURE__ */ jsx(
             "div",
             {
-              className: cn(
+              className: cn$1(
                 "relative w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear",
                 "group-data-[collapsible=offcanvas]:w-0",
                 "group-data-[side=right]:rotate-180",
@@ -4672,7 +5468,7 @@ const Sidebar = React.forwardRef(
           /* @__PURE__ */ jsx(
             "div",
             {
-              className: cn(
+              className: cn$1(
                 "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
                 side === "left" ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]" : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
                 // Adjust the padding for floating and inset variants.
@@ -4706,7 +5502,7 @@ const SidebarTrigger = React.forwardRef(
         "data-sidebar": "trigger",
         variant: "ghost",
         size: "icon",
-        className: cn("h-7 w-7", className),
+        className: cn$1("h-7 w-7", className),
         onClick: (event) => {
           onClick?.(event);
           toggleSidebar();
@@ -4732,7 +5528,7 @@ const SidebarRail = React.forwardRef(({ className, ...props }, ref) => {
       tabIndex: -1,
       onClick: toggleSidebar,
       title: "Toggle Sidebar",
-      className: cn(
+      className: cn$1(
         "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
         "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
@@ -4751,7 +5547,7 @@ const SidebarInset = React.forwardRef(({ className, ...props }, ref) => {
     "main",
     {
       ref,
-      className: cn(
+      className: cn$1(
         "relative flex w-full flex-1 flex-col bg-background",
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
@@ -4767,7 +5563,7 @@ const SidebarInput = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "input",
-      className: cn(
+      className: cn$1(
         "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
         className
       ),
@@ -4782,7 +5578,7 @@ const SidebarHeader = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "header",
-      className: cn("flex flex-col gap-2 p-2", className),
+      className: cn$1("flex flex-col gap-2 p-2", className),
       ...props
     }
   );
@@ -4794,7 +5590,7 @@ const SidebarFooter = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "footer",
-      className: cn("flex flex-col gap-2 p-2", className),
+      className: cn$1("flex flex-col gap-2 p-2", className),
       ...props
     }
   );
@@ -4806,7 +5602,7 @@ const SidebarSeparator = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "separator",
-      className: cn("mx-2 w-auto bg-sidebar-border", className),
+      className: cn$1("mx-2 w-auto bg-sidebar-border", className),
       ...props
     }
   );
@@ -4818,7 +5614,7 @@ const SidebarContent = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "content",
-      className: cn(
+      className: cn$1(
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
         className
       ),
@@ -4833,7 +5629,7 @@ const SidebarGroup = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "group",
-      className: cn("relative flex w-full min-w-0 flex-col p-2", className),
+      className: cn$1("relative flex w-full min-w-0 flex-col p-2", className),
       ...props
     }
   );
@@ -4847,7 +5643,7 @@ const SidebarGroupLabel = React.forwardRef(
       {
         ref,
         "data-sidebar": "group-label",
-        className: cn(
+        className: cn$1(
           "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 outline-none ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
           "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
           className
@@ -4866,7 +5662,7 @@ const SidebarGroupAction = React.forwardRef(
       {
         ref,
         "data-sidebar": "group-action",
-        className: cn(
+        className: cn$1(
           "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
           // Increases the hit area of the button on mobile.
           "after:absolute after:-inset-2 after:md:hidden",
@@ -4884,7 +5680,7 @@ const SidebarGroupContent = React.forwardRef(({ className, ...props }, ref) => /
   {
     ref,
     "data-sidebar": "group-content",
-    className: cn("w-full text-sm", className),
+    className: cn$1("w-full text-sm", className),
     ...props
   }
 ));
@@ -4894,7 +5690,7 @@ const SidebarMenu = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   {
     ref,
     "data-sidebar": "menu",
-    className: cn("flex w-full min-w-0 flex-col gap-1", className),
+    className: cn$1("flex w-full min-w-0 flex-col gap-1", className),
     ...props
   }
 ));
@@ -4904,7 +5700,7 @@ const SidebarMenuItem = React.forwardRef(({ className, ...props }, ref) => /* @_
   {
     ref,
     "data-sidebar": "menu-item",
-    className: cn("group/menu-item relative", className),
+    className: cn$1("group/menu-item relative", className),
     ...props
   }
 ));
@@ -4948,7 +5744,7 @@ const SidebarMenuButton = React.forwardRef(
         "data-sidebar": "menu-button",
         "data-size": size,
         "data-active": isActive,
-        className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+        className: cn$1(sidebarMenuButtonVariants({ variant, size }), className),
         ...props
       }
     );
@@ -4983,7 +5779,7 @@ const SidebarMenuAction = React.forwardRef(
       {
         ref,
         "data-sidebar": "menu-action",
-        className: cn(
+        className: cn$1(
           "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
           // Increases the hit area of the button on mobile.
           "after:absolute after:-inset-2 after:md:hidden",
@@ -5005,7 +5801,7 @@ const SidebarMenuBadge = React.forwardRef(({ className, ...props }, ref) => /* @
   {
     ref,
     "data-sidebar": "menu-badge",
-    className: cn(
+    className: cn$1(
       "pointer-events-none absolute right-1 flex h-5 min-w-5 select-none items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground",
       "peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground",
       "peer-data-[size=sm]/menu-button:top-1",
@@ -5028,7 +5824,7 @@ const SidebarMenuSkeleton = React.forwardRef(
       {
         ref,
         "data-sidebar": "menu-skeleton",
-        className: cn("flex h-8 items-center gap-2 rounded-md px-2", className),
+        className: cn$1("flex h-8 items-center gap-2 rounded-md px-2", className),
         ...props,
         children: [
           showIcon && /* @__PURE__ */ jsx(
@@ -5059,7 +5855,7 @@ const SidebarMenuSub = React.forwardRef(({ className, ...props }, ref) => /* @__
   {
     ref,
     "data-sidebar": "menu-sub",
-    className: cn(
+    className: cn$1(
       "mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5",
       "group-data-[collapsible=icon]:hidden",
       className
@@ -5080,7 +5876,7 @@ const SidebarMenuSubButton = React.forwardRef(
         "data-sidebar": "menu-sub-button",
         "data-size": size,
         "data-active": isActive,
-        className: cn(
+        className: cn$1(
           "flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground outline-none ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
           "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
           size === "sm" && "text-xs",
@@ -5171,7 +5967,7 @@ function Settings() {
   ] });
 }
 
-const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Settings
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -5259,7 +6055,7 @@ const columns$1 = () => [
   }
 ];
 
-const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: DashLicense,
   loader: loader$d,
@@ -5270,7 +6066,7 @@ const Textarea = React.forwardRef(({ className, ...props }, ref) => {
   return /* @__PURE__ */ jsx(
     "textarea",
     {
-      className: cn(
+      className: cn$1(
         "flex min-h-[60px] w-full rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:placeholder:text-zinc-400 dark:focus-visible:ring-zinc-300",
         className
       ),
@@ -5417,7 +6213,7 @@ function Contact() {
   return /* @__PURE__ */ jsx(Dialog, { open, onOpenChange: (open2) => !open2 && navigate("/app"), children: /* @__PURE__ */ jsxs(
     DialogContent,
     {
-      className: cn("overflow-hidden", types$1[type].className),
+      className: cn$1("overflow-hidden", types$1[type].className),
       children: [
         /* @__PURE__ */ jsx(DialogTitle, { children: types$1[type].title }),
         /* @__PURE__ */ jsx(DialogDescription, { children: types$1[type].description }),
@@ -5478,7 +6274,7 @@ function Reviewer() {
   ] });
 }
 
-const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$6,
   default: Contact,
@@ -5524,7 +6320,7 @@ function AppAlert() {
   );
 }
 
-const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: AppAlert,
   loader: loader$b
@@ -5731,7 +6527,7 @@ const columns = ({ resource, admin }) => [
   }
 ];
 
-const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$5,
   default: DashUser,
@@ -5765,7 +6561,7 @@ async function loader$9({ request }) {
   return Response.json({ profile, license });
 }
 
-const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader: loader$9
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -5811,7 +6607,7 @@ async function getStripeEvent(request) {
   }
 }
 
-const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$4
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -5945,7 +6741,7 @@ function Index() {
   ] });
 }
 
-const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route22 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Index,
   loader: loader$8
@@ -5961,7 +6757,7 @@ const loader$7 = async ({ request }) => {
   });
 };
 
-const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route23 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader: loader$7
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -5998,7 +6794,7 @@ function Mobile() {
   ] });
 }
 
-const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route24 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Mobile
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6019,200 +6815,10 @@ function Auth() {
   ] });
 }
 
-const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Auth
 }, Symbol.toStringTag, { value: 'Module' }));
-
-const openai = new OpenAI({
-  ...(process.env.NODE_ENV === "development" &&
-    process.env.USE_OPENAI_PROXY === "true" && {
-      httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
-    }),
-});
-
-async function createAssistant() {
-  const existingAssistants = await openai.beta.assistants.list();
-  let assistant = existingAssistants.data.find(a => a.name === "CBA PRO V4.0.OPP");
-
-  if (assistant) {
-    console.log("Using existing Assistant ID:", assistant.id);
-    return assistant.id;
-  }
-
-  assistant = await openai.beta.assistants.create({
-    name: "PEO CBA Prov V3",
-    instructions: `
-      # CBA PRO V4.1 - OpenAI API Assistant System Instructions
-      [Last Update: 2025-03-17, Step2, Personalized Competency Explanation]
-
-      ## 🔹 Role:
-      You are **CBA PRO V4.1**, an advanced AI assistant specializing in **Competency-Based Assessment (CBA) for Professional Engineers Associations in Canada**. Your goal is to help users:
-      - **Match their work experience** to PEng's **34 key competencies**.
-      - **Identify gaps** and seek clarifications.
-      - **Craft structured and well-written responses** for their PEng application.
-      - **Ensure responses meet PEng’s competency requirements and character limits as per your knowledgebase**.
-      - **Ensure the responses have high breadth, depth, and quality to convince PEng assessor with no historical context of the user based on user-provided explicit information to prove competency**.
-      - user will attach **cv** with this message **My CV has been uploaded with the name**.
-
-      **🔹 Response Formatting Rules (Strictly Follow Markdown)**
-      - Use **bold** for key terms.
-      - Use **headers (##, ###)** to separate sections.
-      - Use bullet points (• or -) for lists.
-      - Use \`code formatting\` where applicable (for highlighting key terms).
-      - Ensure responses are structured logically.
-
-      ---
-      ## 🔹 Workflow:
-
-      ### **1️⃣ Analyze the User's CV**
-      - Retrieve **7 competency categories** from **CATEGORY CHUNKS** vector file in your knowledge base.
-      - Categorize all of the user’s work under **7 competency categories** to :
-        - **Technical Competence** 
-          -**understanding of Canadian regulations and standards but also the ability to apply engineering principles to develop, verify, and communicate effective solutions. It requires a holistic view of projects, encompassing risk management, safety, quality assurance, and lifecycle management.**
-        - **Communication**
-          -**the ability to effectively convey, interpret, and evaluate information through verbal and written means, ensuring clarity, precision, and understanding among team members, clients, contractors, and the public**
-        - **Project and Financial Management**
-          -**the ability to understand and apply project management principles, progressively take on greater responsibilities, manage resources effectively, understand financial implications, and respond to feedback**
-        - **Team Effectiveness**
-          -**the ability to collaborate respectfully with colleagues from various disciplines, contribute to a harmonious work environment, and effectively resolve conflicts and differences**
-        - **Professional Accountability**
-          -**the ability to apply ethical principles, understand and respect one's professional limitations, recognize and address conflicts of interest, and demonstrate accountability and integrity in professional practice**
-        - **Social, Economic, Environmental & Sustainability**
-          -**the ability to understand and implement safeguards to protect the public, recognize the impact of engineering activities on society and the environment, understand the role of regulatory bodies such as PEO and other professional engineers organizations, and promote sustainability principles in professional practice**
-        - **Personal Continuing Professional Development**
-          -**the ongoing commitment to learning and improving professional skills and knowledge, recognizing and addressing knowledge gaps, and planning for future development to maintain competence and stay current in the field**
-      - If the CV is missing, **ask the user to upload it**.
-
-      ---
-
-      ### **2️⃣ Ask User to Select a Competency**
-      - Ask the user which **competency** to start to work on.
-      - Retrieve the competency's **intent** and **indicators** from the knowledge base by using specific search queries targeting the exact vector file name for the chosen **competency**.
-      - Present the user with the **full competency description** and **explicit indicators**.
-        - **Explain elaborately** what the **intent** and **indicators** of the competency means in the context of **user work experience background**.
-          -**Provide specific example and explanation of the concept**, for example:
-            -**if it is about ethics, explain what ethic means**
-            -**if it is about Canadian regulations and codes, name a few of the codes that relates to the user's background**
-      - **Take persona of an engineering applicant** with **similar work experience** as the user and **Generate a detailed scenario example of your own work** based on the **explicit indicators** and inspiration from the **user work experience and background** to help user sympathy and empathy with it.
-        - Story must show an **engineering problem**, where "I" contributed something, and resulted in something quantifiable.
-        - the goal of the story is to help user understand the **intent** and **indicators** in practice and how it can be related to the **competency**.
-      
-
-      ---
-
-      ### **3️⃣ Compare CV with Competency Requirements**
-      - Retrieve the competency's **intent** and **indicators** from the knowledge base.
-      - **Use Named Entity Recognition (NER) to scan user's CV and identify every single explicit project roles and activities** that match the competency intent and indicators.
-        - The goal is to find the best **project** **explicit match** to the **competency** while providing a comprehensive overview of all relevant roles.
-        - reiterate to ensure there is no **potential matching project role** that meets the competency.
-      - **DO NOT ask the user to select a project until you have FIRST presented a list of all explicit matches.**
-      - **List explicit matches in the following format:**
-        - **Project Name**
-          - **Position Name**
-          - **Relevant activities and job duties that demonstrate competency**
-      - **After listing ALL possible matches, then ask the user to select ONE to focus on.**
-      - **If the user does not select a project, DO NOT proceed**—instead, repeat the request:
-        > _"Please select one of the explicit matches to focus on for this competency before we continue."_  
-      - **Once the user has selected a match, perform a gap analysis:**  
-        - **Compare the user’s experience to the competency’s indicators.**  
-        - Identify missing details.  
-        - Highlight areas requiring further explanation.  
-      - **Before moving to Step 4, validate the explicit match:**  
-        - ❌ If the user has not selected a match, loop back and ask them to choose.  
-        - ❌ If no gaps are identified, confirm with the user before continuing.  
-        - ✅ **Only move forward once a match has been selected and a gap analysis is performed.**  
-
-
-      ---
-
-      ### **4️⃣ Ask for Specific Work Examples**
-      - After receiving an initial response from the user, **DO NOT proceed to drafting until you have validated the response against the competency indicators.**   
-      - Use the selected **explicit match** to craft contextual questions to seek clarification on the **gap analysis** items.
-      - Ask for the following information if not already provided: 
-        -**the project name**
-        -**how many team members**
-        -**the role**
-        -**seniority level**
-        -**whether user had supervisor or was supervising others**
-      - Ask **targeted memory-triggering questions** to help the user recall detailed examples.
-      - Guide user to provide answers in **STAR format (Situation, Action, Result)**.
-      - Ensure responses **demonstrate impact and personal contribution**.
-      - After receiving initial response from user, ask **follow-up questions** to delve deeper into specific aspects of user's experience:
-        -Request **specific challenges** or **issues** encountered and how user addressed them.
-        -Ask for **quantifiable results** or **metrics** that demonstrate the impact of user's actions.
-        -Seek more **technical details** about the engineering principles or standards applied.
-      -If **any of these are missing**, **loop back** and ask more targeted questions until the user provides all necessary information.  
-
-      ---
-
-      ### **5️⃣ Iterate Until Highly Sufficient Evidence Is Provided**
-      > Before moving forward, **perform a self-check**:  
-      > ✅ **Does the user’s response fully cover the competency indicators?**  
-      > ✅ **Are there quantifiable results, detailed actions, and technical aspects included?**  
-      > ✅ **Is the response convincing to a P.Eng. assessor with no prior knowledge of the user’s experience?**  
-      >  
-      > If **ANY answer is NO**, **DO NOT proceed to Step 7**. Instead:  
-      > 1️⃣ Ask another targeted follow-up question.  
-      > 2️⃣ Clarify missing details with an example-based query.  
-      > 3️⃣ If the user does not provide enough detail, **explicitly tell them what’s missing** before moving forward.  
-
-
-
-      ---
-      ### **6️⃣Self-Critique Before Finalizing a Response**
-
-      > Before moving to Step 7, run a final **self-check validation**:  
-      > ❌ If the response **lacks depth, quantifiable results, or personal contribution**, ask for more clarification.  
-      > ❌ If the response **reads like a generic job description**, ask for **specific personal actions taken**.  
-      > ❌ If the response **does not clearly address risk identification, analysis, mitigation, and impact**, **DO NOT proceed to drafting**—instead, **loop back to ask for more details.**  
-      > ✅ **Only move to Step 7 once the response is strong, specific, and convincing.**  
-
-      ---
-
-      ### **7️⃣Draft the Competency Response**
-      - Structure responses according to **PEng’s CBA guidelines**:
-        - **Situation (300 characters)**
-        - **Action (1650 characters)**
-        - **Outcome (300 characters)**
-      - Use **professional and concise writing**:
-        - **First-person narrative ("I did this...")**.
-        - **Avoid generic job descriptions**—focus on **personal contribution**.
-        - **Use technical and engineering-specific language**.
-        - **Include quantifiable results where possible**.
-        - **Ensure clarity, coherence, and logical flow**.
-
-      ---
-
-      ### **8 Review & Finalize**
-      - Check if the response meets **PEO’s expectations**: 
-        -**Does this response fully address the **competency's indicators**?**
-        -**Are there missing details or incorrect assumptions?**
-        -**Could the answer be more structured, concise, or logical?**
-        -**Does the structured response provides sufficient **breadth**, **depth**, and **quality** to convince PEng assessor is competent?**
-      - If any issue is detected within above, ask for more clarification, refine and improve the response before presenting it in the next step.
-
-
-      ---
-
-      ## 🔹 Writing Guidelines:
-      ✅ Use **first-person perspective ("I")** to highlight **personal contributions**.  
-      ✅ Avoid **vague job descriptions**—focus on **specific actions**.  
-      ✅ Use **concise, professional language**.  
-      ✅ Incorporate **real-world examples & measurable impact**.  
-      ✅ Ensure the response is **well-structured and logical**.  
-      ✅ Adhere to **PEO’s character limits** for responses.
-    `,
-    model: "gpt-4o",
-    temperature: 0.2,
-    top_p: 0.9
-  });
-
-  console.log("Created new Assistant ID:", assistant.id);
-  return assistant.id;
-}
-
-createAssistant();
 
 // upload file to assistant's vector store
 async function CREATE({ thread, file }) {
@@ -6255,48 +6861,6 @@ const getOrCreateVectorStore = async (thread) => {
   return vectorStore.id;
 };
 
-const ClassName = "Thread";
-
-async function read$2({ user, purpose = purposes.chat, objectId }) {
-  try {
-    const query = new Parse.Query(ClassName);
-    user && query.equalTo("user", user.objectId);
-    !objectId && query.equalTo("purpose", purpose);
-    !objectId && query.descending("createdAt");
-    if (objectId)
-      return await query.get(objectId, { sessionToken: user.sessionToken });
-    return await query.find({ sessionToken: user.sessionToken });
-  } catch (error) {
-    console.log("thread.read", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-async function create$1(args, sessionToken) {
-  try {
-    const Thread = Parse.Object.extend(ClassName);
-    const thread = new Thread();
-    return await thread.save(args, { sessionToken });
-  } catch (error) {
-    console.log("thread.create", error.message);
-  }
-}
-
-async function update(args, sessionToken) {
-  try {
-    const Thread = Parse.Object.extend(ClassName);
-    const thread = new Thread();
-    return await thread.save(args, { sessionToken });
-  } catch (error) {
-    console.log("thread.update", error.message);
-  }
-}
-
-const purposes = {
-  chat: "chat",
-  score: "score",
-};
-
 async function loader$6() {
   console.log("files.loader");
   return redirect$1("/app");
@@ -6328,7 +6892,7 @@ async function action$3({ request }) {
   });
 }
 
-const route22 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route26 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$3,
   loader: loader$6
@@ -6365,38 +6929,6 @@ const roles = {
   assistant: "assistant",
   user: "user",
 };
-
-async function updateUsage(user, thread, usage) {
-  const $thread = await read$2({ user, objectId: thread.objectId });
-  const threadUsage = $thread.get("usage");
-  // console.log("usage.updateUsage:thread.usage", threadUsage);
-
-  await update(
-    {
-      objectId: thread.objectId,
-      usage: {
-        count: (threadUsage?.count ?? 0) + 1,
-        input: (threadUsage?.input ?? 0) + usage.input,
-        output: (threadUsage?.output ?? 0) + usage.output,
-        total: (threadUsage?.total ?? 0) + usage.total,
-      },
-    },
-    user.sessionToken
-  );
-
-  const profile = await read$5(user);
-  const profileUsage = profile.get("usage");
-
-  await update$3(user, {
-    objectId: profile.id,
-    usage: {
-      count: (profileUsage?.count ?? 0) + 1,
-      input: (profileUsage?.input ?? 0) + usage.input,
-      output: (profileUsage?.output ?? 0) + usage.output,
-      total: (profileUsage?.total ?? 0) + usage.total,
-    },
-  });
-}
 
 async function sync$1(request, body) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -6573,7 +7105,7 @@ async function action$2({ request }) {
   return await sync$1(request, body);
 }
 
-const route23 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route27 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$2,
   loader: loader$5
@@ -6625,7 +7157,7 @@ const DropdownMenuSubTrigger = React.forwardRef(({ className, inset, children, .
   DropdownMenuPrimitive.SubTrigger,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
       inset && "pl-8",
       className
@@ -6642,7 +7174,7 @@ const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) =
   DropdownMenuPrimitive.SubContent,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className
     ),
@@ -6655,7 +7187,7 @@ const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...pr
   {
     ref,
     sideOffset,
-    className: cn(
+    className: cn$1(
       "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
       "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className
@@ -6668,7 +7200,7 @@ const DropdownMenuItem = React.forwardRef(({ className, inset, ...props }, ref) 
   DropdownMenuPrimitive.Item,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
       inset && "pl-8",
       className
@@ -6681,7 +7213,7 @@ const DropdownMenuCheckboxItem = React.forwardRef(({ className, children, checke
   DropdownMenuPrimitive.CheckboxItem,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     ),
@@ -6698,7 +7230,7 @@ const DropdownMenuRadioItem = React.forwardRef(({ className, children, ...props 
   DropdownMenuPrimitive.RadioItem,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     ),
@@ -6714,7 +7246,7 @@ const DropdownMenuLabel = React.forwardRef(({ className, inset, ...props }, ref)
   DropdownMenuPrimitive.Label,
   {
     ref,
-    className: cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className),
+    className: cn$1("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className),
     ...props
   }
 ));
@@ -6723,7 +7255,7 @@ const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) =>
   DropdownMenuPrimitive.Separator,
   {
     ref,
-    className: cn("-mx-1 my-1 h-px bg-muted", className),
+    className: cn$1("-mx-1 my-1 h-px bg-muted", className),
     ...props
   }
 ));
@@ -6837,7 +7369,7 @@ function Dash() {
   return /* @__PURE__ */ jsx(Layout$1, { nav, children: /* @__PURE__ */ jsx(Outlet, {}) });
 }
 
-const route24 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route28 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Dash,
   loader: loader$4
@@ -6977,7 +7509,7 @@ function join() {
           {
             type: "submit",
             size: "small",
-            className: cn(
+            className: cn$1(
               "shadow-none px-2 py-1 mt-4",
               license?.priceKey === price.lookup_key && "bg-green-500"
             ),
@@ -7017,7 +7549,7 @@ function join() {
   ] });
 }
 
-const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route29 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$1,
   default: join,
@@ -7027,7 +7559,7 @@ const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
 const Switch = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   SwitchPrimitives.Root,
   {
-    className: cn(
+    className: cn$1(
       "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
       className
     ),
@@ -7036,7 +7568,7 @@ const Switch = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ *
     children: /* @__PURE__ */ jsx(
       SwitchPrimitives.Thumb,
       {
-        className: cn(
+        className: cn$1(
           "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
         )
       }
@@ -7046,13 +7578,13 @@ const Switch = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ *
 Switch.displayName = SwitchPrimitives.Root.displayName;
 
 const Accordion = AccordionPrimitive.Root;
-const AccordionItem = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Item, { ref, className: cn("border-b", className), ...props }));
+const AccordionItem = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Item, { ref, className: cn$1("border-b", className), ...props }));
 AccordionItem.displayName = "AccordionItem";
 const AccordionTrigger = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Header, { className: "flex", children: /* @__PURE__ */ jsxs(
   AccordionPrimitive.Trigger,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180",
       className
     ),
@@ -7075,7 +7607,7 @@ const AccordionContent = React.forwardRef(({ className, children, ...props }, re
     ref,
     className: "overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
     ...props,
-    children: /* @__PURE__ */ jsx("div", { className: cn("pb-4 pt-0", className), children })
+    children: /* @__PURE__ */ jsx("div", { className: cn$1("pb-4 pt-0", className), children })
   }
 ));
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;
@@ -7366,7 +7898,7 @@ function Guide() {
     onNext();
     localStorage.setItem("guide", true);
   }
-  return /* @__PURE__ */ jsxs("div", { className: cn(open ? "block visible" : "hidden invisible"), children: [
+  return /* @__PURE__ */ jsxs("div", { className: cn$1(open ? "block visible" : "hidden invisible"), children: [
     /* @__PURE__ */ jsx("div", { className: "fixed left-0 top-0 w-screen h-screen bg-white/80 z-30" }),
     step && /* @__PURE__ */ jsx(Step$1, { ...{ step, onSkip, onNext } })
   ] });
@@ -7389,7 +7921,7 @@ function Step$1({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cn(
+      className: cn$1(
         "absolute z-50 bg-white shadow-lg rounded-xl p-4 text-sm space-y-4 w-96"
       ),
       style: { left: x + "px", top: y + "px" },
@@ -7450,7 +7982,7 @@ function Test() {
   return /* @__PURE__ */ jsx(Layout, { children: /* @__PURE__ */ jsx("div", { className: "w-[400px] p-8 grid gap-16", children: /* @__PURE__ */ jsx(NavUser, {}) }) });
 }
 
-const route26 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route30 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action,
   default: Test,
@@ -7482,7 +8014,7 @@ function ChatProgress({ className, input = 0, outcomes }) {
         Progress,
         {
           value,
-          className: cn(className, status.progressClassname)
+          className: cn$1(className, status.progressClassname)
         }
       )
     ] }),
@@ -7521,7 +8053,7 @@ function Play({ ...props }) {
     {
       variant: "default",
       size: "icon",
-      className: cn(
+      className: cn$1(
         "rounded-full w-6 h-6 text-xs peer-hover:scale-110 transition",
         props?.className
       ),
@@ -7586,7 +8118,7 @@ function ChatIncome({
             /* @__PURE__ */ jsxs(
               "button",
               {
-                className: cn(
+                className: cn$1(
                   "peer pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
                   getClassName(ci)
                 ),
@@ -7650,7 +8182,7 @@ function Badge({
   variant,
   ...props
 }) {
-  return /* @__PURE__ */ jsx("div", { className: cn(badgeVariants({ variant }), className), ...props });
+  return /* @__PURE__ */ jsx("div", { className: cn$1(badgeVariants({ variant }), className), ...props });
 }
 
 function useOutcome() {
@@ -7721,7 +8253,7 @@ function Guides({ ...props }) {
     /* @__PURE__ */ jsx("div", { className: "space-y-4 text-xs", children: value && guides.map((item, index) => /* @__PURE__ */ jsxs(
       "div",
       {
-        className: cn(
+        className: cn$1(
           "flex gap-2",
           !value?.includes?.(index) && !value?.includes?.(index - 1) && index !== 0 && "opacity-50"
         ),
@@ -7749,7 +8281,7 @@ function Guides({ ...props }) {
           /* @__PURE__ */ jsxs(
             "span",
             {
-              className: cn(
+              className: cn$1(
                 "space-y-1",
                 value?.includes?.(index) && "text-primary- line-through",
                 index === value.length && "text-primary"
@@ -7902,7 +8434,7 @@ function OutcomeBox({
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cn(
+            className: cn$1(
               "text-[10px] text-nowrap",
               counter > limit ? "text-red-500" : "text-green-500",
               counter === 0 && "text-zinc-500"
@@ -7917,7 +8449,7 @@ function OutcomeBox({
           Button,
           {
             variant: "ghost",
-            className: cn(
+            className: cn$1(
               "h-4 p-1 rounded-md text-xs",
               updated ? "text-blue-500" : "text-orange-500"
             ),
@@ -7941,7 +8473,7 @@ function OutcomeBox({
     updated ? /* @__PURE__ */ jsx("div", { ref: contentRef, className: "text-zinc-400 text-sm", children: value }) : /* @__PURE__ */ jsx(
       Textarea,
       {
-        className: cn(
+        className: cn$1(
           "min-h-40 bg-none focus-visible:ring-0 border-zinc/50 focus-visible:border-primary text-primary",
           `h-[${contentRef?.current?.clientHeight}px]`
         ),
@@ -8367,14 +8899,14 @@ function CollapsibleModule({ ...props }) {
       open: props?.open,
       defaultOpen: props?.defaultOpen,
       onOpenChange: props?.onOpenChange,
-      className: cn(props?.className),
+      className: cn$1(props?.className),
       disabled: props?.disabled,
       children: [
-        /* @__PURE__ */ jsxs(CollapsibleTrigger, { className: cn(props?.triggerClassName), children: [
+        /* @__PURE__ */ jsxs(CollapsibleTrigger, { className: cn$1(props?.triggerClassName), children: [
           props?.trigger,
           props?.icon
         ] }),
-        /* @__PURE__ */ jsx(CollapsibleContent, { className: cn(props?.contentClassName), children: props?.content })
+        /* @__PURE__ */ jsx(CollapsibleContent, { className: cn$1(props?.contentClassName), children: props?.content })
       ]
     }
   );
@@ -8506,7 +9038,7 @@ function Step({ ...props }) {
       content: props?.content,
       defaultOpen: props.step === props.open,
       className: "group",
-      triggerClassName: cn(
+      triggerClassName: cn$1(
         "w-full flex justify-between text-left border rounded-lg p-3 my-1 text-[.85rem] border-zinc-200 group-data-[state=open]:border-primary group-data-[state=open]:text-primary",
         state.outcome.steps?.includes(props.step) && "!border-green-500 !text-green-500"
       ),
@@ -8648,8 +9180,311 @@ const Icon = () => /* @__PURE__ */ jsxs(
 
 const ChatInput = forwardRef(function ChatInput({ getInput }, ref) {
   const [message, setMessage] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSupported, setIsSupported] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [isWarmingUp, setIsWarmingUp] = useState(false);
   const messageRef = useRef();
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const recordingStartTimeRef = useRef(null);
+  const recordingDurationRef = useRef(0);
+  const recordingTimerRef = useRef(null);
+  const shouldCollectChunksRef = useRef(false);
+  const MAX_RECORDING_DURATION = 600;
+  useEffect(() => {
+    if (typeof MediaRecorder !== "undefined" && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      setIsSupported(true);
+      console.log("Audio recording is supported");
+    } else {
+      console.warn("Audio recording not supported:", {
+        hasMediaRecorder: typeof MediaRecorder !== "undefined",
+        hasMediaDevices: !!navigator.mediaDevices,
+        hasGetUserMedia: !!navigator.mediaDevices?.getUserMedia
+      });
+    }
+    return () => {
+      shouldCollectChunksRef.current = false;
+      if (mediaRecorderRef.current?.recorder && mediaRecorderRef.current.recorder.state !== "inactive") {
+        mediaRecorderRef.current.recorder.stop();
+        if (mediaRecorderRef.current.stream) {
+          mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+        }
+      }
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+      audioChunksRef.current = [];
+    };
+  }, []);
+  const startRecording = async () => {
+    try {
+      if (typeof MediaRecorder === "undefined") {
+        alert("Audio recording is not supported in this browser. Please use a modern browser like Chrome, Firefox, or Edge.");
+        return;
+      }
+      if (mediaRecorderRef.current?.recorder) {
+        const prevRecorder = mediaRecorderRef.current.recorder;
+        if (prevRecorder.state !== "inactive") {
+          console.warn("Previous recording still active, stopping it first...");
+          prevRecorder.stop();
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        if (mediaRecorderRef.current.stream) {
+          mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+        }
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 16e3,
+          // Lower sample rate for smaller file size
+          autoGainControl: true
+          // Better audio capture
+        }
+      });
+      let options = { mimeType: "audio/webm;codecs=opus" };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        const mimeTypes = [
+          "audio/webm",
+          "audio/ogg;codecs=opus",
+          "audio/mp4",
+          "audio/mpeg"
+        ];
+        for (const mimeType of mimeTypes) {
+          if (MediaRecorder.isTypeSupported(mimeType)) {
+            options = { mimeType };
+            break;
+          }
+        }
+      }
+      const mediaRecorder = new MediaRecorder(stream, options);
+      audioChunksRef.current = [];
+      recordingDurationRef.current = 0;
+      recordingStartTimeRef.current = null;
+      shouldCollectChunksRef.current = true;
+      console.log("Audio chunks cleared, starting fresh recording");
+      let chunkCount = 0;
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunkCount++;
+          console.log(`Audio chunk #${chunkCount} received:`, event.data.size, "bytes", "shouldCollect:", shouldCollectChunksRef.current, "state:", mediaRecorder.state);
+          if (shouldCollectChunksRef.current && mediaRecorder.state === "recording") {
+            audioChunksRef.current.push(event.data);
+            console.log("Chunk accepted, total chunks:", audioChunksRef.current.length);
+          } else {
+            console.warn("🚫 CHUNK REJECTED - shouldCollect:", shouldCollectChunksRef.current, "state:", mediaRecorder.state);
+          }
+        }
+      };
+      mediaRecorder.onstop = async () => {
+        console.log("MediaRecorder onstop fired - state:", mediaRecorder.state);
+        shouldCollectChunksRef.current = false;
+        stream.getTracks().forEach((track) => {
+          console.log("Stopping track:", track.kind, track.label);
+          track.stop();
+        });
+        if (recordingStartTimeRef.current) {
+          const calculatedDuration = (Date.now() - recordingStartTimeRef.current) / 1e3;
+          const totalDuration = calculatedDuration + 0.3;
+          recordingDurationRef.current = Math.max(0.1, Math.min(totalDuration, 600));
+        } else {
+          recordingDurationRef.current = 1;
+        }
+        const chunksToUse = [...audioChunksRef.current];
+        const audioBlob = new Blob(chunksToUse, { type: options.mimeType || "audio/webm" });
+        console.log("📊 Recording stopped:", {
+          chunks: chunksToUse.length,
+          totalSize: audioBlob.size,
+          sizeKB: (audioBlob.size / 1024).toFixed(2),
+          duration: recordingDurationRef.current,
+          mimeType: options.mimeType
+        });
+        audioChunksRef.current = [];
+        console.log("✅ Audio chunks cleared after blob creation");
+        const maxSizeBytes = 25 * 1024 * 1024;
+        if (audioBlob.size > maxSizeBytes) {
+          const sizeMB = (audioBlob.size / (1024 * 1024)).toFixed(2);
+          alert(`Audio recording is too large (${sizeMB}MB). Maximum size is 25MB. Please record a shorter clip.`);
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        const minSizeBytes = 2048;
+        if (audioBlob.size === 0) {
+          alert("Audio recording is empty. Please try recording again.");
+          return;
+        }
+        const bytesPerSecond = audioBlob.size / recordingDurationRef.current;
+        console.log("Audio quality check:", {
+          size: audioBlob.size,
+          duration: recordingDurationRef.current,
+          bytesPerSecond: bytesPerSecond.toFixed(0),
+          sizeKB: (audioBlob.size / 1024).toFixed(2)
+        });
+        if (audioBlob.size < minSizeBytes) {
+          console.warn("⚠️ Recording too small - likely silence/noise");
+          alert("Recording is too small. This usually means no speech was detected. Please speak clearly and try again.");
+          return;
+        }
+        if (bytesPerSecond < 800 && recordingDurationRef.current > 1) {
+          console.warn("⚠️ Bytes per second too low - likely silence");
+          alert("Audio quality is too low. Please speak louder and closer to the microphone.");
+          return;
+        }
+        if (recordingDurationRef.current < 0.5) {
+          alert("Recording is too short. Please record for at least 0.5 seconds.");
+          return;
+        }
+        const duration = recordingDurationRef.current;
+        console.log("Using recorded duration:", duration, "seconds");
+        await transcribeAudio(audioBlob, duration);
+      };
+      mediaRecorder.start(1e3);
+      mediaRecorderRef.current = { recorder: mediaRecorder, stream };
+      setIsRecording(true);
+      setIsWarmingUp(true);
+      setRecordingDuration(0);
+      console.log("Recording started with options:", options);
+      console.log("Starting with 300ms warm-up buffer to capture first words...");
+      setTimeout(() => {
+        setIsWarmingUp(false);
+        recordingStartTimeRef.current = Date.now();
+        recordingTimerRef.current = setInterval(() => {
+          if (!recordingStartTimeRef.current) return;
+          const elapsed = Math.floor((Date.now() - recordingStartTimeRef.current) / 1e3);
+          setRecordingDuration(elapsed);
+          if (elapsed >= MAX_RECORDING_DURATION) {
+            console.warn("Maximum recording duration reached, stopping...");
+            stopRecording();
+            alert("Maximum recording duration (10 minutes) reached. Recording stopped automatically.");
+          }
+        }, 1e3);
+      }, 300);
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      setIsRecording(false);
+      setIsWarmingUp(false);
+      shouldCollectChunksRef.current = false;
+      audioChunksRef.current = [];
+      alert("Failed to access microphone. Please check permissions.");
+    }
+  };
+  const stopRecording = () => {
+    console.log("stopRecording called, current state:", mediaRecorderRef.current?.recorder?.state);
+    if (mediaRecorderRef.current?.recorder && mediaRecorderRef.current.recorder.state !== "inactive") {
+      const recorder = mediaRecorderRef.current.recorder;
+      mediaRecorderRef.current.stream;
+      const chunksBeforeStop = audioChunksRef.current.length;
+      console.log("🛑 DISABLING CHUNK COLLECTION - chunks collected so far:", chunksBeforeStop);
+      shouldCollectChunksRef.current = false;
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+      if (recorder.state === "recording") {
+        console.log("Requesting final data before stop...");
+        try {
+          recorder.requestData();
+        } catch (e) {
+          console.warn("requestData failed:", e);
+        }
+        setTimeout(() => {
+          console.log("Stopping MediaRecorder after requestData...");
+          if (recorder.state !== "inactive") {
+            recorder.stop();
+          }
+        }, 50);
+      } else {
+        console.log("Stopping MediaRecorder...");
+        recorder.stop();
+      }
+      setIsRecording(false);
+      setIsWarmingUp(false);
+      setRecordingDuration(0);
+      console.log("Recording stop initiated");
+    }
+  };
+  const transcribeAudio = async (audioBlob, duration) => {
+    setIsTranscribing(true);
+    let validDuration = duration;
+    if (!isFinite(duration) || duration <= 0) {
+      console.warn("Invalid duration received:", duration, "- will let server estimate");
+      validDuration = null;
+    }
+    console.log("=== SENDING FOR TRANSCRIPTION ===");
+    console.log("Audio blob size:", (audioBlob.size / 1024).toFixed(2), "KB");
+    console.log("Audio blob type:", audioBlob.type);
+    console.log("Duration:", validDuration ? `${validDuration} seconds` : "will be estimated by server");
+    console.log("================================");
+    try {
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "recording.webm");
+      if (validDuration && validDuration > 0) {
+        formData.append("duration", validDuration.toString());
+      }
+      const response = await fetch("/audio/transcribe", {
+        method: "POST",
+        body: formData
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        let errorMsg = errorData.error || "Transcription failed";
+        if (errorMsg.includes("Connection") || errorMsg.includes("ECONNRESET")) {
+          errorMsg = "Failed to connect to transcription service. Please check your internet connection and try again.";
+        } else if (errorMsg.includes("timeout") || errorMsg.includes("ETIMEDOUT")) {
+          errorMsg = "Transcription request timed out. The audio may be too large. Please try recording a shorter clip.";
+        } else if (errorMsg.includes("too large") || errorMsg.includes("too small")) {
+          errorMsg = errorMsg;
+        } else if (errorMsg.includes("No clear speech") || errorMsg.includes("No speech detected")) {
+          errorMsg = errorMsg;
+        } else if (errorMsg.includes("Unauthorized")) {
+          errorMsg = "Please log in to use the transcription feature.";
+        }
+        throw new Error(errorMsg);
+      }
+      const result = await response.json();
+      console.log("=== TRANSCRIPTION RESULT ===");
+      console.log("Transcribed text:", result.text);
+      console.log("Text length:", result.text?.length || 0);
+      console.log("Word count:", result.text?.split(/\s+/).length || 0);
+      console.log("Duration:", result.duration || duration, "seconds");
+      if (result.usage) {
+        console.log("Token usage:", result.usage);
+      }
+      console.log("==========================");
+      const wordCount = result.text?.split(/\s+/).length || 0;
+      if (wordCount > 50) {
+        console.error("⚠️ FIREFOX BUG DETECTED: Transcription has", wordCount, "words - much longer than expected!");
+        console.error("This suggests audio continued recording after stop was called.");
+      }
+      const existingText = messageRef.current.value || "";
+      const newText = existingText + (existingText ? " " : "") + result.text;
+      messageRef.current.value = newText;
+      setMessage(newText.trim() || null);
+    } catch (error) {
+      console.error("Transcription error:", error);
+      let displayMessage = error.message;
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        displayMessage = "Network error. Please check your internet connection and try again.";
+      }
+      alert(displayMessage);
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
   async function onClick(value) {
+    if (isRecording) {
+      stopRecording();
+    }
     messageRef.current.value = "";
     getInput({ status: true, req: message ?? value });
     setMessage(null);
@@ -8676,22 +9511,40 @@ const ChatInput = forwardRef(function ChatInput({ getInput }, ref) {
         rows: 1,
         variant: "ghost",
         placeholder: "Write a messge here ...",
-        className: "border-none shadow-none focus-visible:ring-border-primary resize-none pr-8",
+        className: "border-none shadow-none focus-visible:ring-border-primary resize-none pr-20",
         ref: messageRef,
         onKeyUp
       }
     ),
-    /* @__PURE__ */ jsx(
-      Button,
-      {
-        variant: "destructive",
-        size: "icon",
-        className: "rounded-full bg-zinc-300 hover:bg-primary w-8 h-8 absolute right-4 top-4",
-        disabled: !message || message === "" ? true : false,
-        onClick,
-        children: /* @__PURE__ */ jsx(ArrowUp, {})
-      }
-    )
+    /* @__PURE__ */ jsxs("div", { className: "absolute right-4 top-4 flex gap-2 items-center", children: [
+      isSupported && /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx(
+          Button,
+          {
+            type: "button",
+            variant: isRecording || isTranscribing ? "destructive" : "ghost",
+            size: "icon",
+            className: `rounded-full w-8 h-8 ${isRecording ? "bg-red-500 hover:bg-red-600 animate-pulse" : isTranscribing ? "bg-blue-500 hover:bg-blue-600 animate-pulse" : "bg-zinc-200 hover:bg-zinc-300"}`,
+            onClick: toggleRecording,
+            disabled: isTranscribing,
+            title: isTranscribing ? "Transcribing..." : isRecording ? "Stop recording" : "Start voice input",
+            children: isRecording || isTranscribing ? /* @__PURE__ */ jsx(MicOff, { className: "w-4 h-4 text-white" }) : /* @__PURE__ */ jsx(Mic, { className: "w-4 h-4" })
+          }
+        ),
+        (isRecording || isTranscribing) && /* @__PURE__ */ jsx("span", { className: "text-xs text-zinc-500 animate-pulse", children: isTranscribing ? "🔵 Transcribing..." : isWarmingUp ? "⏳ Ready..." : `🔴 Recording... ${Math.floor(recordingDuration / 60)}:${String(recordingDuration % 60).padStart(2, "0")}` })
+      ] }),
+      /* @__PURE__ */ jsx(
+        Button,
+        {
+          variant: "destructive",
+          size: "icon",
+          className: "rounded-full bg-zinc-300 hover:bg-primary w-8 h-8",
+          disabled: !message || message === "" ? true : false,
+          onClick,
+          children: /* @__PURE__ */ jsx(ArrowUp, {})
+        }
+      )
+    ] })
   ] });
 });
 
@@ -8861,7 +9714,7 @@ const Icon3 = () => /* @__PURE__ */ jsxs(
 );
 
 function UserAvatar({ className }) {
-  return /* @__PURE__ */ jsxs(Avatar, { className: cn("rounded-xl", className), children: [
+  return /* @__PURE__ */ jsxs(Avatar, { className: cn$1("rounded-xl", className), children: [
     /* @__PURE__ */ jsx(AvatarImage, { src: "/avatar.jpg" }),
     /* @__PURE__ */ jsx(AvatarFallback, { children: "CN" })
   ] });
@@ -8876,7 +9729,7 @@ function Message({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cn(
+      className: cn$1(
         "message flex gap-4 items-start",
         !assistant && "flex-row-reverse"
       ),
@@ -8885,7 +9738,7 @@ function Message({
         /* @__PURE__ */ jsx(
           "div",
           {
-            className: cn(
+            className: cn$1(
               "markdown-content prose prose-lg dark:prose-invert max-w-none",
               "p-4 rounded-2xl text-sm text-zinc-600 max-w-[80%]",
               "[&_p]:mb-4 last:[&_p]:m-0 [&_li]:mb-4 [&_hr]:mb-4",
@@ -8944,7 +9797,8 @@ function ChatOutput({
   useEffect(() => {
     scrollTo(true);
   }, []);
-  function handleStream(q) {
+  function handleStream(req) {
+    const q = `Competency name is: ${req}`;
     const c = `${competencyGroup?.order}.${competencyItem?.order}`;
     const eventSource = new EventSource(`/sse?q=${q}&c=${c}`);
     eventSource.addEventListener("redirected", (event) => {
@@ -9651,7 +10505,7 @@ function App() {
   ] }) });
 }
 
-const route27 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route31 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: App,
   loader: loader$1,
@@ -9841,12 +10695,12 @@ async function handleStream({
   close();
 }
 
-const route28 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route32 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Cs_krxAm.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-DKFFhUxw.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Cs_krxAm.js','/assets/use-toast-BCGEGR8f.js','/assets/index-CljonWh_.js','/assets/index-BTGzvWzS.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-C9NZiBh3.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/react-icons.esm-B40aDW1s.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-DFVETxWz.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-JNTMtf-4.js','/assets/alert-4MC7A1MA.js','/assets/card-74d6DukL.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/components-Cs_krxAm.js','/assets/index-B1Bk9G9l.js','/assets/index-tUIF4Hk4.js','/assets/index-CljonWh_.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-zgFgl8hr.js','/assets/index-hpwYxh3J.js','/assets/x-cwrx78xb.js','/assets/card-BLI8GBzK.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-BApN-AzJ.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-BEHD0UYf.js','/assets/label-DolvN-6_.js','/assets/react-icons.esm-B40aDW1s.js','/assets/components-Cs_krxAm.js','/assets/scroll-area-RrBmYreh.js','/assets/index-BTGzvWzS.js','/assets/index-CljonWh_.js','/assets/index-tUIF4Hk4.js','/assets/index-DWIQZo4h.js','/assets/index-DdWlVz4l.js','/assets/index-_i_4rKMj.js','/assets/index-C9NZiBh3.js','/assets/Combination-DvcGEJik.js','/assets/input-7Bv8GH_s.js','/assets/submit-field-BDwn5Tmb.js','/assets/use-toast-BCGEGR8f.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/separator-DWdi9hra.js','/assets/index-hpwYxh3J.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-BW1qo6m9.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-DjfF00yl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BbxcDIWc.js','/assets/checkbox-DVOqueCT.js','/assets/submit-field-BDwn5Tmb.js','/assets/components-Cs_krxAm.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/input-7Bv8GH_s.js','/assets/index-BEHD0UYf.js','/assets/label-DolvN-6_.js','/assets/index-CljonWh_.js','/assets/index-hpwYxh3J.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-_i_4rKMj.js','/assets/index-BW1qo6m9.js','/assets/react-icons.esm-B40aDW1s.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-BTeIF7d1.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/input-7Bv8GH_s.js','/assets/label-DolvN-6_.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Cs_krxAm.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/index-CljonWh_.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-_AnRCIJf.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BbxcDIWc.js','/assets/alert-zgFgl8hr.js','/assets/index-BEHD0UYf.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/submit-field-BDwn5Tmb.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Cs_krxAm.js','/assets/input-7Bv8GH_s.js','/assets/label-DolvN-6_.js','/assets/index-CljonWh_.js','/assets/index-hpwYxh3J.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-DYCu9Px-.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-BDwn5Tmb.js','/assets/input-7Bv8GH_s.js','/assets/label-DolvN-6_.js','/assets/dialog-neKdJeZ3.js','/assets/index-BEHD0UYf.js','/assets/components-Cs_krxAm.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-CljonWh_.js','/assets/index-DZZdMBkC.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-BP9n-Qme.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-BEHD0UYf.js','/assets/card-BLI8GBzK.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BzUl0XDW.js','/assets/users-round-CELzP7-z.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-CnLrwV49.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-BDwn5Tmb.js','/assets/card-BLI8GBzK.js','/assets/components-Cs_krxAm.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-C-rMwl77.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-CVfla0pn.js','/assets/button-kfEunpdx.js','/assets/sheet-DX5fYnaZ.js','/assets/scroll-area-RrBmYreh.js','/assets/components-Cs_krxAm.js','/assets/index-D3JQEnQH.js','/assets/index-BEHD0UYf.js','/assets/index-hpwYxh3J.js','/assets/index-B1Bk9G9l.js','/assets/table-BvF-YrHg.js','/assets/progress-JNTMtf-4.js','/assets/index-CX1PImTM.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-BDwn5Tmb.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-CljonWh_.js','/assets/index-DZZdMBkC.js','/assets/react-icons.esm-B40aDW1s.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js','/assets/loader-circle-gVrWrBVl.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-TrvACXZE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-BEHD0UYf.js','/assets/react-icons.esm-B40aDW1s.js','/assets/dialog-neKdJeZ3.js','/assets/sidebar-C1rzg7YP.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js','/assets/components-Cs_krxAm.js','/assets/index-DZZdMBkC.js','/assets/Combination-DvcGEJik.js','/assets/index-hpwYxh3J.js','/assets/button-kfEunpdx.js','/assets/input-7Bv8GH_s.js','/assets/separator-DWdi9hra.js','/assets/sheet-DX5fYnaZ.js','/assets/skeleton-uyA8LfUW.js','/assets/floating-ui.react-dom-jdDz5OSD.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-DYNCEXqx.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-7Bv8GH_s.js','/assets/table-BvF-YrHg.js','/assets/components-Cs_krxAm.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/scroll-area-RrBmYreh.js','/assets/index-CljonWh_.js','/assets/index-DdWlVz4l.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-B617M2Qt.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-neKdJeZ3.js','/assets/input-BbxcDIWc.js','/assets/label-DolvN-6_.js','/assets/textarea-C8iVi7Po.js','/assets/submit-field-BDwn5Tmb.js','/assets/button-kfEunpdx.js','/assets/index-BEHD0UYf.js','/assets/components-Cs_krxAm.js','/assets/index-DZZdMBkC.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/input-7Bv8GH_s.js','/assets/index-CljonWh_.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-BcR1Ah1N.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-4MC7A1MA.js','/assets/components-Cs_krxAm.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-zgFgl8hr.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/x-cwrx78xb.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-BO-_vsWW.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/table-BvF-YrHg.js','/assets/progress-JNTMtf-4.js','/assets/components-Cs_krxAm.js','/assets/plus-D0z1o2bi.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/scroll-area-RrBmYreh.js','/assets/index-CljonWh_.js','/assets/index-DdWlVz4l.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-nmxgsCM7.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-DX5fYnaZ.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/components-Cs_krxAm.js','/assets/arrow-right-DNdxeF8t.js','/assets/index-DZZdMBkC.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-dAOVcqOu.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-Cs_krxAm.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-Bg3SYgi_.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-C1rzg7YP.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-BRDkM5ZC.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/users-round-CELzP7-z.js','/assets/components-Cs_krxAm.js','/assets/button-kfEunpdx.js','/assets/loader-circle-gVrWrBVl.js','/assets/bell-C_47a_f0.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/input-7Bv8GH_s.js','/assets/separator-DWdi9hra.js','/assets/sheet-DX5fYnaZ.js','/assets/index-DZZdMBkC.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/skeleton-uyA8LfUW.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-CljonWh_.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-BTGzvWzS.js','/assets/index-DWIQZo4h.js','/assets/index-BW1qo6m9.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-BIrPoY7X.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/submit-field-BDwn5Tmb.js','/assets/index-BEHD0UYf.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-74d6DukL.js','/assets/components-Cs_krxAm.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/card-BLI8GBzK.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-Cb0XO7aq.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-Cy39rnkt.js','/assets/avatar-CVfla0pn.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-CljonWh_.js','/assets/components-Cs_krxAm.js','/assets/index-BEHD0UYf.js','/assets/dropdown-menu-BRDkM5ZC.js','/assets/index-BTGzvWzS.js','/assets/index-DWIQZo4h.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-BW1qo6m9.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/skeleton-uyA8LfUW.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-c6lznVkv.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-JNTMtf-4.js','/assets/index-BEHD0UYf.js','/assets/layout-Cy39rnkt.js','/assets/button-kfEunpdx.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/index-hpwYxh3J.js','/assets/checkbox-DVOqueCT.js','/assets/label-DolvN-6_.js','/assets/loader-circle-gVrWrBVl.js','/assets/separator-DWdi9hra.js','/assets/textarea-C8iVi7Po.js','/assets/components-Cs_krxAm.js','/assets/x-cwrx78xb.js','/assets/submit-field-BDwn5Tmb.js','/assets/index-B1Bk9G9l.js','/assets/chevron-right-DPfqaxnT.js','/assets/scroll-area-RrBmYreh.js','/assets/avatar-CVfla0pn.js','/assets/index-CX1PImTM.js','/assets/input-7Bv8GH_s.js','/assets/dialog-neKdJeZ3.js','/assets/plus-D0z1o2bi.js','/assets/arrow-right-DNdxeF8t.js','/assets/bell-C_47a_f0.js','/assets/index-tUIF4Hk4.js','/assets/index-CljonWh_.js','/assets/dropdown-menu-BRDkM5ZC.js','/assets/index-DdWlVz4l.js','/assets/index-BTGzvWzS.js','/assets/index-DWIQZo4h.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-BW1qo6m9.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/skeleton-uyA8LfUW.js','/assets/user-D4pQVfP0.js','/assets/index-D3JQEnQH.js','/assets/index-DZZdMBkC.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-fd3ea657.js','version':'fd3ea657'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Dal_ZMJn.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-CMW-oDW3.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Dal_ZMJn.js','/assets/use-toast-BCGEGR8f.js','/assets/index-BdpVbFgu.js','/assets/index-CrIjIrGh.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-BKaAGTlx.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-B40aDW1s.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-CIgwSMIE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-DUdCl3qs.js','/assets/alert-Dl2_XlUv.js','/assets/card-Bof-jOhR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/components-Dal_ZMJn.js','/assets/index-DzK6_lIe.js','/assets/index-tUIF4Hk4.js','/assets/index-BdpVbFgu.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/x-cwrx78xb.js','/assets/card-b0vSRkw8.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-B9v7k_h1.js','imports':['/assets/app.settings.profile-DxvZdo6z.js','/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/label-Ba6dwClO.js','/assets/index-BdpVbFgu.js','/assets/components-Dal_ZMJn.js','/assets/react-icons.esm-B40aDW1s.js','/assets/scroll-area-B1oQHGMo.js','/assets/index-WCCUdi2N.js','/assets/index-tUIF4Hk4.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BWQgaDDw.js','/assets/index-_i_4rKMj.js','/assets/index-BKaAGTlx.js','/assets/Combination-DvcGEJik.js','/assets/input-CVFQA-es.js','/assets/submit-field-C-hs90dx.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-BbBG5zXC.js'],'css':[]},'routes/_auth.auth.register':{'id':'routes/_auth.auth.register','parentId':'routes/_auth','path':'auth/register','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.register-BbJxzvuW.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BGwbgmtT.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/index-z_6t8hgT.js','/assets/label-Ba6dwClO.js','/assets/app.settings.profile-DxvZdo6z.js','/assets/components-Dal_ZMJn.js','/assets/input-CVFQA-es.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-BdpVbFgu.js','/assets/react-icons.esm-B40aDW1s.js','/assets/scroll-area-B1oQHGMo.js','/assets/index-WCCUdi2N.js','/assets/index-tUIF4Hk4.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BWQgaDDw.js','/assets/index-_i_4rKMj.js','/assets/index-BKaAGTlx.js','/assets/Combination-DvcGEJik.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-BbBG5zXC.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BybBsntf.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BGwbgmtT.js','/assets/checkbox-BWpD0q_U.js','/assets/submit-field-C-hs90dx.js','/assets/components-Dal_ZMJn.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-Ba6dwClO.js','/assets/index-BdpVbFgu.js','/assets/index-R_5LapDR.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-_i_4rKMj.js','/assets/index-BWQgaDDw.js','/assets/react-icons.esm-B40aDW1s.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.verify':{'id':'routes/_auth.auth.verify','parentId':'routes/_auth','path':'auth/verify','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.verify-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-BY4wDwhe.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/label-Ba6dwClO.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Dal_ZMJn.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/index-BdpVbFgu.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CZ-SKJr8.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BGwbgmtT.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Dal_ZMJn.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-Ba6dwClO.js','/assets/index-BdpVbFgu.js','/assets/index-R_5LapDR.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/audio.transcribe':{'id':'routes/audio.transcribe','parentId':'root','path':'audio/transcribe','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/audio.transcribe-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-CHUXpFoZ.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/input-CVFQA-es.js','/assets/label-Ba6dwClO.js','/assets/dialog-BJnC-BRM.js','/assets/index-z_6t8hgT.js','/assets/components-Dal_ZMJn.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BdpVbFgu.js','/assets/index-C9OjpV1Q.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.cb':{'id':'routes/_auth.auth.cb','parentId':'routes/_auth','path':'auth/cb','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.cb-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-CRR9doBl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BzUl0XDW.js','/assets/users-round-CELzP7-z.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-DwmSnB_n.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/card-b0vSRkw8.js','/assets/components-Dal_ZMJn.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-Dfn_W4BH.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-DSas3ycN.js','/assets/button-7RhbRVm-.js','/assets/sheet-Cn2sBBz7.js','/assets/scroll-area-B1oQHGMo.js','/assets/components-Dal_ZMJn.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/index-R_5LapDR.js','/assets/index-DzK6_lIe.js','/assets/table-C1aCCJLD.js','/assets/progress-DUdCl3qs.js','/assets/index-BLD_4dua.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-C-hs90dx.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-BdpVbFgu.js','/assets/index-C9OjpV1Q.js','/assets/react-icons.esm-B40aDW1s.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js','/assets/loader-circle-gVrWrBVl.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-BRqmKMTD.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-B40aDW1s.js','/assets/dialog-BJnC-BRM.js','/assets/sidebar-Cn1G2qNg.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js','/assets/components-Dal_ZMJn.js','/assets/index-C9OjpV1Q.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/separator-BbBG5zXC.js','/assets/sheet-Cn2sBBz7.js','/assets/skeleton-DivTniFP.js','/assets/floating-ui.react-dom-2Fe06YWV.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-CZ2MPJ9u.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CVFQA-es.js','/assets/table-C1aCCJLD.js','/assets/components-Dal_ZMJn.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/scroll-area-B1oQHGMo.js','/assets/index-BdpVbFgu.js','/assets/index-WCCUdi2N.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-CZZvrwUM.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-BJnC-BRM.js','/assets/input-BGwbgmtT.js','/assets/label-Ba6dwClO.js','/assets/textarea-_nxwdXwg.js','/assets/submit-field-C-hs90dx.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/components-Dal_ZMJn.js','/assets/index-C9OjpV1Q.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/input-CVFQA-es.js','/assets/index-BdpVbFgu.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-Di_y7C36.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-Dl2_XlUv.js','/assets/components-Dal_ZMJn.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/x-cwrx78xb.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-DDQmCFXT.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/table-C1aCCJLD.js','/assets/progress-DUdCl3qs.js','/assets/components-Dal_ZMJn.js','/assets/plus-D0z1o2bi.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/scroll-area-B1oQHGMo.js','/assets/index-BdpVbFgu.js','/assets/index-WCCUdi2N.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-R2gBIaBe.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-Cn2sBBz7.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/components-Dal_ZMJn.js','/assets/arrow-right-DNdxeF8t.js','/assets/index-C9OjpV1Q.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-CDXQN8Fj.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-Dal_ZMJn.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-tA9XR2dn.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-Cn1G2qNg.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-vPxY5GKa.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/users-round-CELzP7-z.js','/assets/components-Dal_ZMJn.js','/assets/button-7RhbRVm-.js','/assets/loader-circle-gVrWrBVl.js','/assets/bell-C_47a_f0.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/input-CVFQA-es.js','/assets/separator-BbBG5zXC.js','/assets/sheet-Cn2sBBz7.js','/assets/index-C9OjpV1Q.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/skeleton-DivTniFP.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BdpVbFgu.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/index-BWQgaDDw.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-Cbsb6Cug.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/submit-field-C-hs90dx.js','/assets/index-z_6t8hgT.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-Bof-jOhR.js','/assets/components-Dal_ZMJn.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-CPOf67ii.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-CbJ9oAdO.js','/assets/avatar-DSas3ycN.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-BdpVbFgu.js','/assets/components-Dal_ZMJn.js','/assets/index-z_6t8hgT.js','/assets/dropdown-menu-vPxY5GKa.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BWQgaDDw.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/skeleton-DivTniFP.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-CfvQMQs2.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-DUdCl3qs.js','/assets/index-z_6t8hgT.js','/assets/layout-CbJ9oAdO.js','/assets/button-7RhbRVm-.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/index-R_5LapDR.js','/assets/checkbox-BWpD0q_U.js','/assets/label-Ba6dwClO.js','/assets/loader-circle-gVrWrBVl.js','/assets/separator-BbBG5zXC.js','/assets/textarea-_nxwdXwg.js','/assets/components-Dal_ZMJn.js','/assets/x-cwrx78xb.js','/assets/submit-field-C-hs90dx.js','/assets/index-DzK6_lIe.js','/assets/chevron-right-DPfqaxnT.js','/assets/scroll-area-B1oQHGMo.js','/assets/avatar-DSas3ycN.js','/assets/index-BLD_4dua.js','/assets/input-CVFQA-es.js','/assets/dialog-BJnC-BRM.js','/assets/plus-D0z1o2bi.js','/assets/arrow-right-DNdxeF8t.js','/assets/bell-C_47a_f0.js','/assets/index-tUIF4Hk4.js','/assets/index-BdpVbFgu.js','/assets/dropdown-menu-vPxY5GKa.js','/assets/index-WCCUdi2N.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BWQgaDDw.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/skeleton-DivTniFP.js','/assets/user-D4pQVfP0.js','/assets/index-D3JQEnQH.js','/assets/index-C9OjpV1Q.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-f290b552.js','version':'f290b552'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
@@ -9884,13 +10738,29 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           caseSensitive: undefined,
           module: route2
         },
+  "routes/_auth.auth.register": {
+          id: "routes/_auth.auth.register",
+          parentId: "routes/_auth",
+          path: "auth/register",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route3
+        },
   "routes/_auth.auth.consent": {
           id: "routes/_auth.auth.consent",
           parentId: "routes/_auth",
           path: "auth/consent",
           index: undefined,
           caseSensitive: undefined,
-          module: route3
+          module: route4
+        },
+  "routes/_auth.auth.verify": {
+          id: "routes/_auth.auth.verify",
+          parentId: "routes/_auth",
+          path: "auth/verify",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route5
         },
   "routes/_auth.auth.login": {
           id: "routes/_auth.auth.login",
@@ -9898,7 +10768,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "auth/login",
           index: undefined,
           caseSensitive: undefined,
-          module: route4
+          module: route6
         },
   "routes/_auth.auth.reset": {
           id: "routes/_auth.auth.reset",
@@ -9906,7 +10776,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "auth/reset",
           index: undefined,
           caseSensitive: undefined,
-          module: route5
+          module: route7
+        },
+  "routes/audio.transcribe": {
+          id: "routes/audio.transcribe",
+          parentId: "root",
+          path: "audio/transcribe",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route8
         },
   "routes/dash.user.create": {
           id: "routes/dash.user.create",
@@ -9914,7 +10792,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "create",
           index: undefined,
           caseSensitive: undefined,
-          module: route6
+          module: route9
         },
   "routes/outcomes.$action": {
           id: "routes/outcomes.$action",
@@ -9922,7 +10800,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "outcomes/:action",
           index: undefined,
           caseSensitive: undefined,
-          module: route7
+          module: route10
+        },
+  "routes/_auth.auth.cb": {
+          id: "routes/_auth.auth.cb",
+          parentId: "routes/_auth",
+          path: "auth/cb",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route11
         },
   "routes/dash.overview": {
           id: "routes/dash.overview",
@@ -9930,7 +10816,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "overview",
           index: undefined,
           caseSensitive: undefined,
-          module: route8
+          module: route12
         },
   "routes/dash.settings": {
           id: "routes/dash.settings",
@@ -9938,7 +10824,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route9
+          module: route13
         },
   "routes/dash.user.$id": {
           id: "routes/dash.user.$id",
@@ -9946,7 +10832,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: ":id",
           index: undefined,
           caseSensitive: undefined,
-          module: route10
+          module: route14
         },
   "routes/app.settings": {
           id: "routes/app.settings",
@@ -9954,7 +10840,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route11
+          module: route15
         },
   "routes/dash.license": {
           id: "routes/dash.license",
@@ -9962,7 +10848,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "license",
           index: undefined,
           caseSensitive: undefined,
-          module: route12
+          module: route16
         },
   "routes/app.contact": {
           id: "routes/app.contact",
@@ -9970,7 +10856,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "contact",
           index: undefined,
           caseSensitive: undefined,
-          module: route13
+          module: route17
         },
   "routes/app.alert": {
           id: "routes/app.alert",
@@ -9978,7 +10864,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "alert",
           index: undefined,
           caseSensitive: undefined,
-          module: route14
+          module: route18
         },
   "routes/dash.user": {
           id: "routes/dash.user",
@@ -9986,7 +10872,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "user",
           index: undefined,
           caseSensitive: undefined,
-          module: route15
+          module: route19
         },
   "routes/nav-user": {
           id: "routes/nav-user",
@@ -9994,7 +10880,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "nav-user",
           index: undefined,
           caseSensitive: undefined,
-          module: route16
+          module: route20
         },
   "routes/join.wh": {
           id: "routes/join.wh",
@@ -10002,7 +10888,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "wh",
           index: undefined,
           caseSensitive: undefined,
-          module: route17
+          module: route21
         },
   "routes/_index": {
           id: "routes/_index",
@@ -10010,7 +10896,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: undefined,
           index: true,
           caseSensitive: undefined,
-          module: route18
+          module: route22
         },
   "routes/logout": {
           id: "routes/logout",
@@ -10018,7 +10904,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "logout",
           index: undefined,
           caseSensitive: undefined,
-          module: route19
+          module: route23
         },
   "routes/mobile": {
           id: "routes/mobile",
@@ -10026,7 +10912,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "mobile",
           index: undefined,
           caseSensitive: undefined,
-          module: route20
+          module: route24
         },
   "routes/_auth": {
           id: "routes/_auth",
@@ -10034,7 +10920,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: undefined,
           index: undefined,
           caseSensitive: undefined,
-          module: route21
+          module: route25
         },
   "routes/files": {
           id: "routes/files",
@@ -10042,7 +10928,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "files",
           index: undefined,
           caseSensitive: undefined,
-          module: route22
+          module: route26
         },
   "routes/score": {
           id: "routes/score",
@@ -10050,7 +10936,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "score",
           index: undefined,
           caseSensitive: undefined,
-          module: route23
+          module: route27
         },
   "routes/dash": {
           id: "routes/dash",
@@ -10058,7 +10944,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "dash",
           index: undefined,
           caseSensitive: undefined,
-          module: route24
+          module: route28
         },
   "routes/join": {
           id: "routes/join",
@@ -10066,7 +10952,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "join",
           index: undefined,
           caseSensitive: undefined,
-          module: route25
+          module: route29
         },
   "routes/test": {
           id: "routes/test",
@@ -10074,7 +10960,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "test",
           index: undefined,
           caseSensitive: undefined,
-          module: route26
+          module: route30
         },
   "routes/app": {
           id: "routes/app",
@@ -10082,7 +10968,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "app",
           index: undefined,
           caseSensitive: undefined,
-          module: route27
+          module: route31
         },
   "routes/sse": {
           id: "routes/sse",
@@ -10090,7 +10976,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "sse",
           index: undefined,
           caseSensitive: undefined,
-          module: route28
+          module: route32
         }
       };
 

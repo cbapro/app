@@ -1,0 +1,1 @@
+import{j as r}from"./jsx-runtime-CNvHvvCs.js";import{C,a as i,b as o,d as x,c as j,e as t}from"./card-b0vSRkw8.js";function h({className:e,title:s,description:a,children:n,footer:d}){return r.jsxs(C,{className:e,children:[r.jsxs(i,{children:[s&&r.jsx(o,{children:s}),a&&r.jsx(x,{children:a})]}),r.jsx(j,{children:n}),d&&r.jsx(t,{children:d})]})}export{h as C};
