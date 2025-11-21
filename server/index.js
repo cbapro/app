@@ -164,7 +164,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-DQtgtMjh.css";
+const stylesheet = "/assets/tailwind-yIuU6N8_.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -782,14 +782,14 @@ const vars = {
     port: process.env.PARSE_PORT,
     clientURL,
     customPages: {
-      choosePassword: `${clientURL}${choosePassword}`,
-      invalidLink: `${clientURL}${invalidLink}`,
-      invalidVerificationLink: `${clientURL}${invalidVerificationLink}`,
-      linkSendFail: `${clientURL}${linkSendFail}`,
-      linkSendSuccess: `${clientURL}${linkSendSuccess}`,
       parseFrameURL: `${clientURL}${parseFrameURL}`,
-      passwordResetSuccess: `${clientURL}${passwordResetSuccess}`,
-      verifyEmailSuccess: `${clientURL}${verifyEmailSuccess}`,
+      // choosePassword: `${clientURL}${choosePassword}`,
+      // invalidLink: `${clientURL}${invalidLink}`,
+      // invalidVerificationLink: `${clientURL}${invalidVerificationLink}`,
+      // linkSendFail: `${clientURL}${linkSendFail}`,
+      // linkSendSuccess: `${clientURL}${linkSendSuccess}`,
+      // passwordResetSuccess: `${clientURL}${passwordResetSuccess}`,
+      // verifyEmailSuccess: `${clientURL}${verifyEmailSuccess}`,
     },
   },
   database: {
@@ -842,9 +842,9 @@ const pointerObject = (className, objectId) => ({
 });
 
 const authVars = {
+  //
   verifyEmail: "verify_email",
-  verifyEmailSuccess: "verify_email_success",
-  invalidVerificationLink: "invalid_verification_link",
+  //
   requestPassworReset: "request_password_reset"};
 
 const models = {
@@ -932,7 +932,7 @@ async function create$4(user, args) {
         user: pointerObject(models.user, user.objectId),
         ...args,
       },
-      { sessionToken: user.sessionToken }
+      { useMasterKey: true }
     );
   } catch (error) {
     console.log("profile.create", error.message);
@@ -1137,6 +1137,24 @@ async function strat(user, { priceKey }) {
       })
     )?.id;
 
+  // free tier without Stripe checkout session
+  if (priceKey === prices.P0.key) {
+    const { id: priceId } = (
+      await stripe.prices.list({
+        lookup_keys: [priceKey],
+      })
+    )?.data?.[0];
+
+    await checkoutSessionCompleted({
+      id: "free_tier",
+      customer: customerId,
+      amount_total: 0,
+      metadata: { userId: user.objectId, priceId, priceKey },
+    });
+
+    throw redirect$1("/join?success=true");
+  }
+
   return await createCheckoutSession(user, {
     customerId,
     lookup_key: priceKey,
@@ -1182,20 +1200,26 @@ async function createCheckoutSession(user, { customerId, lookup_key }) {
 
 async function checkoutSessionCompleted(session) {
   console.log("join.checkoutSessionCompleted", session?.id);
-  const {
+
+  let {
     id: sessionId,
     customer: customerId,
     amount_total: amount,
-    metadata,
+    metadata: { userId: objectId, priceId, priceKey },
   } = session;
-  const line_items = await stripe.checkout.sessions.listLineItems(sessionId);
-  const { id: priceId, lookup_key: priceKey } = line_items.data[0].price;
+
+  if (!priceId && !priceKey) {
+    const line_items = await stripe.checkout.sessions.listLineItems(sessionId);
+    const { id, lookup_key } = line_items.data[0].price;
+    priceId = id;
+    priceKey = lookup_key;
+  }
 
   // console.log({ customerId, priceId, amount, priceKey });
 
   await upsert$1(
     {
-      objectId: metadata.userId,
+      objectId,
     },
     {
       licenseKey: nanoid(),
@@ -1341,7 +1365,7 @@ const prices = {
   },
 };
 
-async function loader$n({ request }) {
+async function loader$m({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let plan = session.get("plan");
   if (!plan) plan = await check$1(request, false);
@@ -1430,7 +1454,7 @@ const trialDescription = `
 const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Overview,
-  loader: loader$n
+  loader: loader$m
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const labelVariants = cva(
@@ -1837,7 +1861,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
 ));
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
-async function loader$m({ request }) {
+async function loader$l({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let profile = session.get("profile");
   if (profile) return { profile };
@@ -1857,7 +1881,7 @@ async function loader$m({ request }) {
   }
   return null;
 }
-async function action$g({ request }) {
+async function action$i({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const formData = await request.formData();
@@ -2136,11 +2160,11 @@ const associations = [
 
 const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$g,
+  action: action$i,
   associations,
   default: ProfilePage,
   disciplines,
-  loader: loader$m
+  loader: loader$l
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function InputField({ ...props }) {
@@ -2188,22 +2212,49 @@ async function register(args) {
       }
     );
 
-    if (user) {
-      const role = await new Parse.Query("_Role")
-        .equalTo("name", "user")
-        .first({ useMasterKey: true });
-
-      role.getUsers().add(user);
-      await role.save(null, { useMasterKey: true });
-
-      console.log("parse.auth.register.assignRole", user.id);
-      return { message: "Account created!" };
-    }
+    await assign(user, "user");
 
     return user;
   } catch (error) {
     console.log("parse.auth.register.error", error.code, error.message);
     return { error: error.message }
+  }
+}
+
+async function assign(user, role = "user") {
+  try {
+    const $role = await new Parse.Query("_Role")
+      .equalTo("name", role)
+      .first({ useMasterKey: true });
+
+    $role.getUsers().add(user);
+    await $role.save(null, { useMasterKey: true });
+
+    console.log("parse.auth.assign", user.id);
+    return { message: "Role assined!" };
+  } catch (error) {
+    console.log("parse.auth.assign.error", error.code, error.message);
+    return { error: error.message }
+  }
+
+}
+
+async function verify(email) {
+  try {
+    const data = await Parse.User.requestEmailVerification(email);
+    // console.log("parse.auth.verify", data);
+
+    return {
+      error: false,
+      message: "Check your email now!",
+    }
+  } catch (error) {
+    console.log("parse.auth.verify.error", error.code, error.message);
+
+    return {
+      error: true,
+      message: error.message,
+    }
   }
 }
 
@@ -2214,14 +2265,28 @@ async function confirm({ username, token }) {
   }).toString();
 
   try {
-    const res = await fetch(
+    const data = await fetch(
       `${vars.parse.serverURL}/apps/${vars.parse.appId}/verify_email?${qs}`
     );
-    const data = await res.json();
-    // console.log("parse.auth.confirm", data);
-    return data;
+
+    const url = new URLSearchParams(data?.url);
+    // console.log("parse.auth.confirm", url);
+
+    const success = data?.url.includes("verify_email_success");
+    const failed = data?.url.includes("invalid_verification_link");
+
+    if (failed)
+      return {
+        error: true,
+        message: "Username or token invalid! try again."
+      }
+
+    return {
+      error: false,
+      message: "Your email has been verified!, Try login.",
+    }
   } catch (error) {
-    console.log("parse.auth.confirm", error?.message);
+    console.log("parse.auth.confirm", error.message);
   }
 }
 
@@ -2256,8 +2321,8 @@ async function reset({ password, username, token }) {
       }
     );
 
-    // console.log("parse.auth.reset", data);
     const url = new URLSearchParams(data?.url);
+    // console.log("parse.auth.reset", url);
 
     const success = data?.url.includes("success");
     const failed = data?.url.includes("failed");
@@ -2329,6 +2394,34 @@ function Turnstile({ onChange, error }) {
   ] }) : null;
 }
 
+const { TURNSTILE_SECRET_KEY: secretKey, TURNSTILE_VERIFY_URL: verifyUrl } =
+  process.env;
+
+async function challenge({ form }) {
+  const token = form.get("cf-turnstile-response");
+
+  try {
+    const res = await fetch(verifyUrl, {
+      method: "POST",
+      body: JSON.stringify({
+        secret: secretKey,
+        response: token,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await res.json();
+    // console.log(token, data);
+
+    if (data.success) return true;
+    return { error: "Turnstile verification failed" };
+  } catch (error) {
+    console.log("turnstile.challenge", error?.message);
+    return { error: "Error verifying Turnstile token" };
+  }
+}
+
 function cn(...inputs) {
   return twMerge(clsx(inputs))
 }
@@ -2356,28 +2449,33 @@ function SelectField({ ...props }) {
   ] });
 }
 
-const schema$1 = Joi.object({
+const schema$4 = Joi.object({
   email: Joi.string().email().required().label("Email"),
   password: Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password"),
-  fullname: Joi.string().required().label("Full name"),
+  firstName: Joi.string().required().label("First name"),
+  lastName: Joi.string().required().label("Last name"),
   phone: Joi.string().regex(/^[0-9]{10}$/).messages({ "string.pattern.base": `Phone number must have 10 digits.` }).required(),
   association: Joi.string().required().label("Association"),
-  plan: Joi.string().required().label("Plan")
+  plan: Joi.string().allow(null).optional().label("Plan")
 });
-async function loader$l({ request }) {
+async function loader$k({ request }) {
   return null;
 }
-async function action$f({ request }) {
+async function action$h({ request }) {
   const url = new URL(request.url);
-  const plan = url.searchParams.get("plan") ?? "PLAN_0";
+  const plan = url.searchParams.get("plan");
   const form = await request.formData();
   const email = form.get("email");
   const password = form.get("password");
-  const fullname = form.get("fullname");
+  const firstName = form.get("firstName");
+  const lastName = form.get("lastName");
   const phone = form.get("phone");
   const association = form.get("association");
-  const data = { email, password, fullname, phone, association, plan };
-  const validate = schema$1.validate(data, { abortEarly: false });
+  const data = { email, password, firstName, lastName, phone, fields: { association, plan } };
+  const challenge$1 = await challenge({ form });
+  if (challenge$1.error)
+    return { error: true, message: { title: "Fill the Chaptcha!" } };
+  const validate = schema$4.validate(data, { abortEarly: false });
   if (validate?.error)
     return {
       error: true,
@@ -2407,8 +2505,7 @@ function Signup() {
         required: true,
         type: "email",
         name: "email",
-        label: "Email",
-        defaultValue: "rkarimi2539@gmail.com"
+        label: "Email"
       }
     ),
     /* @__PURE__ */ jsx(
@@ -2417,35 +2514,49 @@ function Signup() {
         required: true,
         type: "password",
         name: "password",
-        label: "Password",
-        defaultValue: "a@b.cd1Q"
+        label: "Password"
       }
     ),
+    /* @__PURE__ */ jsxs("div", { class: "grid grid-cols-2 gap-4", children: [
+      /* @__PURE__ */ jsx(
+        InputField,
+        {
+          required: true,
+          type: "text",
+          name: "firstName",
+          label: "First name"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        InputField,
+        {
+          required: true,
+          type: "text",
+          name: "lastName",
+          label: "Last name"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        InputField,
+        {
+          required: true,
+          type: "tel",
+          name: "phone",
+          label: "Phone"
+        }
+      ),
+      /* @__PURE__ */ jsx(SelectField, { required: true, name: "association", label: "Association", items: associations.map((i) => ({ label: i, value: i })) })
+    ] }),
     /* @__PURE__ */ jsx(
-      InputField,
+      Turnstile,
       {
-        required: true,
-        type: "fullname",
-        name: "fullname",
-        label: "Full name",
-        defaultValue: "fullname"
+        error: adata?.errorType === "challenge" ? adata.message : null
       }
     ),
-    /* @__PURE__ */ jsx(
-      InputField,
-      {
-        required: true,
-        type: "tel",
-        name: "phone",
-        label: "Phone",
-        defaultValue: "1234567890"
-      }
-    ),
-    /* @__PURE__ */ jsx(SelectField, { required: true, name: "association", label: "Association", items: associations.map((i) => ({ label: i, value: i })), defaultValue: "APEGA" }),
     /* @__PURE__ */ jsx(
       SubmitField,
       {
-        label: "Sing Up",
+        label: "Register now",
         loader: state === "submitting" || state === "loading",
         className: "w-full"
       }
@@ -2463,9 +2574,80 @@ function Signup() {
 
 const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$f,
+  action: action$h,
   default: Signup,
-  loader: loader$l
+  loader: loader$k
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const schema$3 = Joi.string().email().required().label("Email");
+async function action$g({ request }) {
+  const form = await request.formData();
+  const email = form.get("email");
+  const challenge$1 = await challenge({ form });
+  if (challenge$1.error)
+    return { error: true, message: challenge$1.error, errorType: "challenge" };
+  const validate = schema$3.validate(email);
+  if (validate?.error)
+    return {
+      error: true,
+      message: { title: validate.error.details[0].message }
+    };
+  const remember$1 = await remember(email);
+  if (!remember$1)
+    return {
+      error: true,
+      message: { title: "Email not found!" }
+    };
+  return {
+    message: { title: "Check your email" }
+  };
+}
+function Reset$1() {
+  const adata = useActionData();
+  const { state } = useNavigation();
+  const ref = useRef();
+  useEffect(() => {
+    if (state === "loading") ref.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref, method: "post", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "email",
+        name: "email",
+        label: "Email"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: adata?.errorType === "challenge" ? adata.message : null
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Remember password",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: adata?.error ? "error" : "success",
+        message: adata?.message
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$g,
+  default: Reset$1
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Checkbox = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
@@ -2524,7 +2706,7 @@ async function create$2(user, args) {
         user: pointerObject(models.user, user.objectId),
         ...args,
       },
-      { sessionToken: user.sessionToken }
+      { useMasterKey: true }
     );
   } catch (error) {
     console.log("setting.create", error.message);
@@ -2565,13 +2747,13 @@ async function upsert(user, args) {
   return await create$2(user, args);
 }
 
-const schema = Joi.object({
+const schema$2 = Joi.object({
   fullName: Joi.string().required(),
   termsConditions: Joi.string().required(),
   privacyPolicy: Joi.string().required(),
   appRules: Joi.string().required()
 });
-async function loader$k({ request }) {
+async function loader$j({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   const setting = session.get("setting");
@@ -2580,7 +2762,7 @@ async function loader$k({ request }) {
   if (setting?.consent) return redirect$2("/app");
   return null;
 }
-async function action$e({ request }) {
+async function action$f({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   console.log("app.consent.action", user.objectId);
@@ -2591,7 +2773,7 @@ async function action$e({ request }) {
   const appRules = formData.get("appRules");
   const consent = { fullName, termsConditions, privacyPolicy, appRules };
   try {
-    await schema.validateAsync(consent, { abortEarly: false });
+    await schema$2.validateAsync(consent, { abortEarly: false });
     const setting = await upsert(user, { consent });
     session.set("setting", setting);
     return redirect$2("/app", {
@@ -2685,20 +2867,92 @@ function Consent() {
   ] });
 }
 
-const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  action: action$e,
-  default: Consent,
-  loader: loader$k
-}, Symbol.toStringTag, { value: 'Module' }));
-
-async function loader$j({ request }) {
-  return Response.json("verify");
-}
-
 const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
+  action: action$f,
+  default: Consent,
   loader: loader$j
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const schema$1 = Joi.string().email().required().label("Email");
+async function loader$i({ request }) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  const username = url.searchParams.get("username");
+  if (username && token) return await confirm({ username, token });
+  return null;
+}
+async function action$e({ request }) {
+  const form = await request.formData();
+  const email = form.get("email");
+  const challenge$1 = await challenge({ form });
+  if (challenge$1.error)
+    return { error: true, message: challenge$1.error, errorType: "challenge" };
+  const validate = schema$1.validate(email);
+  if (validate?.error)
+    return {
+      error: true,
+      message: validate.error.details[0].message
+    };
+  return await verify(email);
+}
+function Verify() {
+  const ldata = useLoaderData();
+  const adata = useActionData();
+  const [alert, setAlert] = useState(null);
+  const { state } = useNavigation();
+  const ref = useRef();
+  const [searchParams] = useSearchParams();
+  searchParams.get("email");
+  useEffect(() => {
+    setAlert({
+      error: ldata?.error ?? adata?.error,
+      message: ldata?.message ?? adata?.message
+    });
+  }, [ldata, adata]);
+  useEffect(() => {
+    if (state === "loading") ref.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref, method: "post", action: "/auth/verify", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "email",
+        name: "email",
+        label: "Email"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: adata?.errorType === "challenge" ? adata.message : null
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Verify email",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    alert?.message && /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: alert?.error ? "error" : "success",
+        message: { title: alert?.message }
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$e,
+  default: Verify,
+  loader: loader$i
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function isMobileServer(request) {
@@ -2711,34 +2965,6 @@ function isMobileServer(request) {
       ua.substr(0, 4)
     );
   return is ? true : false;
-}
-
-const { TURNSTILE_SECRET_KEY: secretKey, TURNSTILE_VERIFY_URL: verifyUrl } =
-  process.env;
-
-async function challenge({ form }) {
-  const token = form.get("cf-turnstile-response");
-
-  try {
-    const res = await fetch(verifyUrl, {
-      method: "POST",
-      body: JSON.stringify({
-        secret: secretKey,
-        response: token,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await res.json();
-    // console.log(token, data);
-
-    if (data.success) return true;
-    return { error: "Turnstile verification failed" };
-  } catch (error) {
-    console.log("turnstile.challenge", error?.message);
-    return { error: "Error verifying Turnstile token" };
-  }
 }
 
 let authenticator = new Authenticator();
@@ -2761,7 +2987,7 @@ async function logout() {
   await logout$1();
 }
 
-async function loader$i({ request }) {
+async function loader$h({ request }) {
   console.log("auth.login.loader");
   if (isMobileServer(request)) return redirect$1("/mobile");
   const session = await getSession(request.headers.get("cookie"));
@@ -2804,7 +3030,7 @@ function Login() {
         /* @__PURE__ */ jsx(
           Link,
           {
-            to: "/auth/reset",
+            to: "/auth/remember",
             className: "ml-auto inline-block-- text-sm underline",
             children: "Forgot your password?"
           }
@@ -2837,7 +3063,7 @@ function Login() {
     /* @__PURE__ */ jsxs(
       "a",
       {
-        href: "https://competencybasedassessment.ca/cba-intake-form/",
+        href: "/auth/register",
         className: "mt-4 text-center text-sm flex gap-4 justify-center border border-primary rounded-md py-1.5 text-primary",
         children: [
           "Don't have an account?",
@@ -2848,82 +3074,43 @@ function Login() {
   ] });
 }
 
-const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$d,
   default: Login,
-  loader: loader$i
+  loader: loader$h
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const emailSchema = Joi.string().email().required().label("Email");
-const passwordSchema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
-async function loader$h({ request }) {
-  const url = new URL(request.url);
-  const link = url.searchParams.get("link");
-  const token = url.searchParams.get("token");
-  const username = url.searchParams.get("username");
-  if (link) return redirect$1(`/auth/reset?token=${token}&username=${username}`);
-  return null;
-}
+const schema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
 async function action$c({ request }) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   const username = url.searchParams.get("username");
   const form = await request.formData();
-  const email = form.get("email");
   const password = form.get("password");
   const challenge$1 = await challenge({ form });
   if (challenge$1.error)
     return { error: true, message: challenge$1.error, errorType: "challenge" };
-  if (token) {
-    if (!password)
-      return {
-        error: true,
-        message: { title: "Password is required!" }
-      };
-    const validate2 = passwordSchema.validate(password, { abortEarly: false });
-    if (validate2?.error)
-      return {
-        error: true,
-        message: { title: validate2.error.details[0].message }
-      };
-    const reset$1 = await reset({ password, username, token });
-    if (!reset$1)
-      return {
-        error: true,
-        message: { title: "Email or token invalid, chack again!" }
-      };
-    return {
-      message: { title: "Your password has been changed" }
-    };
-  }
-  if (!email)
-    return {
-      error: true,
-      message: { title: "Email is required!" }
-    };
-  const validate = emailSchema.validate(email);
+  const validate = schema.validate(password, { abortEarly: false });
   if (validate?.error)
     return {
       error: true,
       message: { title: validate.error.details[0].message }
     };
-  const remember$1 = await remember(email);
-  if (!remember$1)
+  const reset$1 = await reset({ password, username, token });
+  if (!reset$1)
     return {
       error: true,
-      message: { title: "Email not found!" }
+      message: { title: "Email or token invalid, try again!" }
     };
   return {
-    message: { title: "Check your email" }
+    message: { title: "Your password has been changed" }
   };
 }
 function Reset() {
   const adata = useActionData();
   const { state } = useNavigation();
   const formRef = useRef();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
   useEffect(() => {
     if (state === "loading") formRef.current.reset();
   }, [state]);
@@ -2932,9 +3119,9 @@ function Reset() {
       InputField,
       {
         required: true,
-        type: token ? "password" : "email",
-        name: token ? "password" : "email",
-        label: token ? "New password" : "Email"
+        type: "password",
+        name: "password",
+        label: "New password"
       }
     ),
     /* @__PURE__ */ jsx(
@@ -2946,7 +3133,7 @@ function Reset() {
     /* @__PURE__ */ jsx(
       SubmitField,
       {
-        label: token ? "Reset password" : "Remember password",
+        label: "Reset password",
         loader: state === "submitting" || state === "loading",
         className: "w-full"
       }
@@ -2962,11 +3149,10 @@ function Reset() {
   ] });
 }
 
-const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$c,
-  default: Reset,
-  loader: loader$h
+  default: Reset
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const openai = new OpenAI({
@@ -3525,7 +3711,7 @@ async function action$b({ request }) {
   }
 }
 
-const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$b
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -3963,7 +4149,7 @@ function DashUserCreate() {
   );
 }
 
-const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$a,
   default: DashUserCreate
@@ -4038,7 +4224,7 @@ const outcomeSchema = {
   flag: "idle"
 };
 
-const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$9,
   loader: loader$g,
@@ -4050,23 +4236,16 @@ async function loader$f({ request }) {
   const type = link.split("/").reverse()[0];
   switch (type) {
     case authVars.verifyEmail:
-      const data = await confirm({ username, token });
-      console.log({ type, data });
-      return Response.json(type);
-    case authVars.verifyEmailSuccess:
-      console.log(type);
-      return Response.json(type);
-    case authVars.invalidVerificationLink:
-      console.log(type);
-      return Response.json(type);
+      console.log("auth.cb", type);
+      return redirect$1(`/auth/verify?username=${username}&token=${token}`);
     case authVars.requestPassworReset:
-      console.log(type);
-      return Response.json(type);
+      console.log("auth.cb", type);
+      return redirect$1(`/auth/reset?username=${username}&token=${token}`);
   }
   return null;
 }
 
-const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader: loader$f
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -4439,7 +4618,7 @@ const boxes = {
   }
 };
 
-const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: DashOverview
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -4469,7 +4648,7 @@ function DashSettings() {
   ] }) });
 }
 
-const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$8,
   default: DashSettings
@@ -5195,7 +5374,7 @@ function ProgressModule({ start, end, value, ...props }) {
   ] });
 }
 
-const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   ProgressModule,
   action: action$7,
@@ -5967,7 +6146,7 @@ function Settings() {
   ] });
 }
 
-const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Settings
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6055,7 +6234,7 @@ const columns$1 = () => [
   }
 ];
 
-const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: DashLicense,
   loader: loader$d,
@@ -6274,7 +6453,7 @@ function Reviewer() {
   ] });
 }
 
-const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$6,
   default: Contact,
@@ -6320,7 +6499,7 @@ function AppAlert() {
   );
 }
 
-const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: AppAlert,
   loader: loader$b
@@ -6527,7 +6706,7 @@ const columns = ({ resource, admin }) => [
   }
 ];
 
-const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$5,
   default: DashUser,
@@ -6561,7 +6740,7 @@ async function loader$9({ request }) {
   return Response.json({ profile, license });
 }
 
-const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader: loader$9
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6607,7 +6786,7 @@ async function getStripeEvent(request) {
   }
 }
 
-const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route22 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$4
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6741,7 +6920,7 @@ function Index() {
   ] });
 }
 
-const route22 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route23 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Index,
   loader: loader$8
@@ -6757,7 +6936,7 @@ const loader$7 = async ({ request }) => {
   });
 };
 
-const route23 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route24 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader: loader$7
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6794,7 +6973,7 @@ function Mobile() {
   ] });
 }
 
-const route24 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Mobile
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6815,7 +6994,7 @@ function Auth() {
   ] });
 }
 
-const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route26 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Auth
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6892,7 +7071,7 @@ async function action$3({ request }) {
   });
 }
 
-const route26 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route27 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$3,
   loader: loader$6
@@ -7105,7 +7284,7 @@ async function action$2({ request }) {
   return await sync$1(request, body);
 }
 
-const route27 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route28 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$2,
   loader: loader$5
@@ -7369,7 +7548,7 @@ function Dash() {
   return /* @__PURE__ */ jsx(Layout$1, { nav, children: /* @__PURE__ */ jsx(Outlet, {}) });
 }
 
-const route28 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route29 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Dash,
   loader: loader$4
@@ -7549,7 +7728,7 @@ function join() {
   ] });
 }
 
-const route29 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route30 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$1,
   default: join,
@@ -7982,7 +8161,7 @@ function Test() {
   return /* @__PURE__ */ jsx(Layout, { children: /* @__PURE__ */ jsx("div", { className: "w-[400px] p-8 grid gap-16", children: /* @__PURE__ */ jsx(NavUser, {}) }) });
 }
 
-const route30 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route31 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action,
   default: Test,
@@ -10280,7 +10459,7 @@ async function start(request) {
 
   const { profile, setting, license } = await check(user, session);
 
-  if (!license) return redirect$1("/join?type=start");
+  if (!license) return redirect$1(`/join?type=create&priceKey=${user?.meta?.plan ?? prices.P0.key}`);
 
   if (!setting?.consent)
     return redirect$1("/auth/consent", {
@@ -10304,7 +10483,7 @@ async function check(user, session) {
     console.log("app.check.profile", profile?.objectId);
 
     if (!profile) {
-      profile = (await create$4(user))?.toJSON();
+      profile = (await create$4(user, user?.meta))?.toJSON();
       console.log("app.check.profile.create", profile?.objectId);
     }
 
@@ -10505,7 +10684,7 @@ function App() {
   ] }) });
 }
 
-const route31 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route32 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: App,
   loader: loader$1,
@@ -10695,12 +10874,12 @@ async function handleStream({
   close();
 }
 
-const route32 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route33 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Dal_ZMJn.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-CMW-oDW3.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Dal_ZMJn.js','/assets/use-toast-BCGEGR8f.js','/assets/index-BdpVbFgu.js','/assets/index-CrIjIrGh.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-BKaAGTlx.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-B40aDW1s.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-CIgwSMIE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-DUdCl3qs.js','/assets/alert-Dl2_XlUv.js','/assets/card-Bof-jOhR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/components-Dal_ZMJn.js','/assets/index-DzK6_lIe.js','/assets/index-tUIF4Hk4.js','/assets/index-BdpVbFgu.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/x-cwrx78xb.js','/assets/card-b0vSRkw8.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-B9v7k_h1.js','imports':['/assets/app.settings.profile-DxvZdo6z.js','/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/label-Ba6dwClO.js','/assets/index-BdpVbFgu.js','/assets/components-Dal_ZMJn.js','/assets/react-icons.esm-B40aDW1s.js','/assets/scroll-area-B1oQHGMo.js','/assets/index-WCCUdi2N.js','/assets/index-tUIF4Hk4.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BWQgaDDw.js','/assets/index-_i_4rKMj.js','/assets/index-BKaAGTlx.js','/assets/Combination-DvcGEJik.js','/assets/input-CVFQA-es.js','/assets/submit-field-C-hs90dx.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-BbBG5zXC.js'],'css':[]},'routes/_auth.auth.register':{'id':'routes/_auth.auth.register','parentId':'routes/_auth','path':'auth/register','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.register-BbJxzvuW.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BGwbgmtT.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/index-z_6t8hgT.js','/assets/label-Ba6dwClO.js','/assets/app.settings.profile-DxvZdo6z.js','/assets/components-Dal_ZMJn.js','/assets/input-CVFQA-es.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-BdpVbFgu.js','/assets/react-icons.esm-B40aDW1s.js','/assets/scroll-area-B1oQHGMo.js','/assets/index-WCCUdi2N.js','/assets/index-tUIF4Hk4.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BWQgaDDw.js','/assets/index-_i_4rKMj.js','/assets/index-BKaAGTlx.js','/assets/Combination-DvcGEJik.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-BbBG5zXC.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BybBsntf.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BGwbgmtT.js','/assets/checkbox-BWpD0q_U.js','/assets/submit-field-C-hs90dx.js','/assets/components-Dal_ZMJn.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-Ba6dwClO.js','/assets/index-BdpVbFgu.js','/assets/index-R_5LapDR.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-_i_4rKMj.js','/assets/index-BWQgaDDw.js','/assets/react-icons.esm-B40aDW1s.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.verify':{'id':'routes/_auth.auth.verify','parentId':'routes/_auth','path':'auth/verify','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.verify-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-BY4wDwhe.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/label-Ba6dwClO.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Dal_ZMJn.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/index-BdpVbFgu.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CZ-SKJr8.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BGwbgmtT.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Dal_ZMJn.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-Ba6dwClO.js','/assets/index-BdpVbFgu.js','/assets/index-R_5LapDR.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/audio.transcribe':{'id':'routes/audio.transcribe','parentId':'root','path':'audio/transcribe','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/audio.transcribe-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-CHUXpFoZ.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/input-CVFQA-es.js','/assets/label-Ba6dwClO.js','/assets/dialog-BJnC-BRM.js','/assets/index-z_6t8hgT.js','/assets/components-Dal_ZMJn.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BdpVbFgu.js','/assets/index-C9OjpV1Q.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.cb':{'id':'routes/_auth.auth.cb','parentId':'routes/_auth','path':'auth/cb','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.cb-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-CRR9doBl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BzUl0XDW.js','/assets/users-round-CELzP7-z.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-DwmSnB_n.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/card-b0vSRkw8.js','/assets/components-Dal_ZMJn.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-Dfn_W4BH.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-DSas3ycN.js','/assets/button-7RhbRVm-.js','/assets/sheet-Cn2sBBz7.js','/assets/scroll-area-B1oQHGMo.js','/assets/components-Dal_ZMJn.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/index-R_5LapDR.js','/assets/index-DzK6_lIe.js','/assets/table-C1aCCJLD.js','/assets/progress-DUdCl3qs.js','/assets/index-BLD_4dua.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-C-hs90dx.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-BdpVbFgu.js','/assets/index-C9OjpV1Q.js','/assets/react-icons.esm-B40aDW1s.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js','/assets/loader-circle-gVrWrBVl.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-BRqmKMTD.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-B40aDW1s.js','/assets/dialog-BJnC-BRM.js','/assets/sidebar-Cn1G2qNg.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js','/assets/components-Dal_ZMJn.js','/assets/index-C9OjpV1Q.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/separator-BbBG5zXC.js','/assets/sheet-Cn2sBBz7.js','/assets/skeleton-DivTniFP.js','/assets/floating-ui.react-dom-2Fe06YWV.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-CZ2MPJ9u.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CVFQA-es.js','/assets/table-C1aCCJLD.js','/assets/components-Dal_ZMJn.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/scroll-area-B1oQHGMo.js','/assets/index-BdpVbFgu.js','/assets/index-WCCUdi2N.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-CZZvrwUM.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-BJnC-BRM.js','/assets/input-BGwbgmtT.js','/assets/label-Ba6dwClO.js','/assets/textarea-_nxwdXwg.js','/assets/submit-field-C-hs90dx.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/components-Dal_ZMJn.js','/assets/index-C9OjpV1Q.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/input-CVFQA-es.js','/assets/index-BdpVbFgu.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-Di_y7C36.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-Dl2_XlUv.js','/assets/components-Dal_ZMJn.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/x-cwrx78xb.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-DDQmCFXT.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/table-C1aCCJLD.js','/assets/progress-DUdCl3qs.js','/assets/components-Dal_ZMJn.js','/assets/plus-D0z1o2bi.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/scroll-area-B1oQHGMo.js','/assets/index-BdpVbFgu.js','/assets/index-WCCUdi2N.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-R2gBIaBe.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-Cn2sBBz7.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/components-Dal_ZMJn.js','/assets/arrow-right-DNdxeF8t.js','/assets/index-C9OjpV1Q.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-CDXQN8Fj.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-Dal_ZMJn.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-tA9XR2dn.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-Cn1G2qNg.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-vPxY5GKa.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/users-round-CELzP7-z.js','/assets/components-Dal_ZMJn.js','/assets/button-7RhbRVm-.js','/assets/loader-circle-gVrWrBVl.js','/assets/bell-C_47a_f0.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/input-CVFQA-es.js','/assets/separator-BbBG5zXC.js','/assets/sheet-Cn2sBBz7.js','/assets/index-C9OjpV1Q.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/skeleton-DivTniFP.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BdpVbFgu.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/index-BWQgaDDw.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-Cbsb6Cug.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/submit-field-C-hs90dx.js','/assets/index-z_6t8hgT.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-Bof-jOhR.js','/assets/components-Dal_ZMJn.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-CPOf67ii.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-CbJ9oAdO.js','/assets/avatar-DSas3ycN.js','/assets/index-tUIF4Hk4.js','/assets/index-WCCUdi2N.js','/assets/index-BdpVbFgu.js','/assets/components-Dal_ZMJn.js','/assets/index-z_6t8hgT.js','/assets/dropdown-menu-vPxY5GKa.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BWQgaDDw.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/skeleton-DivTniFP.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-CfvQMQs2.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-DUdCl3qs.js','/assets/index-z_6t8hgT.js','/assets/layout-CbJ9oAdO.js','/assets/button-7RhbRVm-.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/index-R_5LapDR.js','/assets/checkbox-BWpD0q_U.js','/assets/label-Ba6dwClO.js','/assets/loader-circle-gVrWrBVl.js','/assets/separator-BbBG5zXC.js','/assets/textarea-_nxwdXwg.js','/assets/components-Dal_ZMJn.js','/assets/x-cwrx78xb.js','/assets/submit-field-C-hs90dx.js','/assets/index-DzK6_lIe.js','/assets/chevron-right-DPfqaxnT.js','/assets/scroll-area-B1oQHGMo.js','/assets/avatar-DSas3ycN.js','/assets/index-BLD_4dua.js','/assets/input-CVFQA-es.js','/assets/dialog-BJnC-BRM.js','/assets/plus-D0z1o2bi.js','/assets/arrow-right-DNdxeF8t.js','/assets/bell-C_47a_f0.js','/assets/index-tUIF4Hk4.js','/assets/index-BdpVbFgu.js','/assets/dropdown-menu-vPxY5GKa.js','/assets/index-WCCUdi2N.js','/assets/index-CrIjIrGh.js','/assets/index-ClPMXGwB.js','/assets/floating-ui.react-dom-2Fe06YWV.js','/assets/index-BWQgaDDw.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/skeleton-DivTniFP.js','/assets/user-D4pQVfP0.js','/assets/index-D3JQEnQH.js','/assets/index-C9OjpV1Q.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-f290b552.js','version':'f290b552'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Bw8K3xe8.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-Dg3BWAyC.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Bw8K3xe8.js','/assets/use-toast-BCGEGR8f.js','/assets/index-29UXrhUA.js','/assets/index-B8UPRwx3.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-BMIf7ckC.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-B40aDW1s.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-Bxvvg2eV.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-CadnIgti.js','/assets/alert-Dl2_XlUv.js','/assets/card-Bof-jOhR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/components-Bw8K3xe8.js','/assets/index-DzK6_lIe.js','/assets/index-tUIF4Hk4.js','/assets/index-29UXrhUA.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/x-cwrx78xb.js','/assets/card-b0vSRkw8.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-HHI9Fn-I.js','imports':['/assets/app.settings.profile-C7juAggj.js','/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/components-Bw8K3xe8.js','/assets/react-icons.esm-B40aDW1s.js','/assets/scroll-area-CrpnatIp.js','/assets/index-Ci7t80ag.js','/assets/index-tUIF4Hk4.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-MB7iY2e5.js','/assets/index-_i_4rKMj.js','/assets/index-BMIf7ckC.js','/assets/Combination-DvcGEJik.js','/assets/input-CVFQA-es.js','/assets/submit-field-C-hs90dx.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-DlECK5RS.js'],'css':[]},'routes/_auth.auth.register':{'id':'routes/_auth.auth.register','parentId':'routes/_auth','path':'auth/register','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.register-B_rt-tJV.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CiWcYZp3.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/app.settings.profile-C7juAggj.js','/assets/components-Bw8K3xe8.js','/assets/input-CVFQA-es.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-29UXrhUA.js','/assets/react-icons.esm-B40aDW1s.js','/assets/scroll-area-CrpnatIp.js','/assets/index-Ci7t80ag.js','/assets/index-tUIF4Hk4.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-MB7iY2e5.js','/assets/index-_i_4rKMj.js','/assets/index-BMIf7ckC.js','/assets/Combination-DvcGEJik.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-DlECK5RS.js'],'css':[]},'routes/_auth.auth.remember':{'id':'routes/_auth.auth.remember','parentId':'routes/_auth','path':'auth/remember','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.remember-DxUaOtpW.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CiWcYZp3.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Bw8K3xe8.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-GLUz8c6s.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CiWcYZp3.js','/assets/checkbox-zMoVUd6a.js','/assets/submit-field-C-hs90dx.js','/assets/components-Bw8K3xe8.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-_i_4rKMj.js','/assets/index-MB7iY2e5.js','/assets/react-icons.esm-B40aDW1s.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.verify':{'id':'routes/_auth.auth.verify','parentId':'routes/_auth','path':'auth/verify','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.verify-CeSPlM6O.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CiWcYZp3.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Bw8K3xe8.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-CfhO2O5c.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/label-BdRVc-Go.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Bw8K3xe8.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/index-29UXrhUA.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CGy82LQq.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CiWcYZp3.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Bw8K3xe8.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/audio.transcribe':{'id':'routes/audio.transcribe','parentId':'root','path':'audio/transcribe','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/audio.transcribe-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-DY_NlQxH.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/input-CVFQA-es.js','/assets/label-BdRVc-Go.js','/assets/dialog-DWNjOBLw.js','/assets/index-z_6t8hgT.js','/assets/components-Bw8K3xe8.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-29UXrhUA.js','/assets/index-DkGC76cP.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.cb':{'id':'routes/_auth.auth.cb','parentId':'routes/_auth','path':'auth/cb','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.cb-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-CRR9doBl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BzUl0XDW.js','/assets/users-round-CELzP7-z.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-Drja37_b.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/card-b0vSRkw8.js','/assets/components-Bw8K3xe8.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-C-pq09hd.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-FmZYA4ba.js','/assets/button-7RhbRVm-.js','/assets/sheet-Cm18KfJy.js','/assets/scroll-area-CrpnatIp.js','/assets/components-Bw8K3xe8.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/index-R_5LapDR.js','/assets/index-DzK6_lIe.js','/assets/table-Besi7jw5.js','/assets/progress-CadnIgti.js','/assets/index-BLD_4dua.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-C-hs90dx.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-29UXrhUA.js','/assets/index-DkGC76cP.js','/assets/react-icons.esm-B40aDW1s.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js','/assets/loader-circle-gVrWrBVl.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-BOw7pp3n.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-B40aDW1s.js','/assets/dialog-DWNjOBLw.js','/assets/sidebar-D-582pA1.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js','/assets/components-Bw8K3xe8.js','/assets/index-DkGC76cP.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/separator-DlECK5RS.js','/assets/sheet-Cm18KfJy.js','/assets/skeleton-DivTniFP.js','/assets/floating-ui.react-dom-DDsewUdg.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-DYYXYXFE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CVFQA-es.js','/assets/table-Besi7jw5.js','/assets/components-Bw8K3xe8.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/scroll-area-CrpnatIp.js','/assets/index-29UXrhUA.js','/assets/index-Ci7t80ag.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-B-Zm-AQE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-DWNjOBLw.js','/assets/input-CiWcYZp3.js','/assets/label-BdRVc-Go.js','/assets/textarea-_nxwdXwg.js','/assets/submit-field-C-hs90dx.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/components-Bw8K3xe8.js','/assets/index-DkGC76cP.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/input-CVFQA-es.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-xd2vk-tX.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-Dl2_XlUv.js','/assets/components-Bw8K3xe8.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/x-cwrx78xb.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-BrwIzzJh.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/table-Besi7jw5.js','/assets/progress-CadnIgti.js','/assets/components-Bw8K3xe8.js','/assets/plus-D0z1o2bi.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/scroll-area-CrpnatIp.js','/assets/index-29UXrhUA.js','/assets/index-Ci7t80ag.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-CAjFnYty.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-Cm18KfJy.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/components-Bw8K3xe8.js','/assets/arrow-right-DNdxeF8t.js','/assets/index-DkGC76cP.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-Clqhl-ZF.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-Bw8K3xe8.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-BnpIpGnN.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-D-582pA1.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-BRu-uIsO.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/users-round-CELzP7-z.js','/assets/components-Bw8K3xe8.js','/assets/button-7RhbRVm-.js','/assets/loader-circle-gVrWrBVl.js','/assets/bell-C_47a_f0.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/input-CVFQA-es.js','/assets/separator-DlECK5RS.js','/assets/sheet-Cm18KfJy.js','/assets/index-DkGC76cP.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/skeleton-DivTniFP.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-29UXrhUA.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/index-MB7iY2e5.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-G758M3Eo.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/submit-field-C-hs90dx.js','/assets/index-z_6t8hgT.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-Bof-jOhR.js','/assets/components-Bw8K3xe8.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-BRxMK_tR.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-FujvN6cF.js','/assets/avatar-FmZYA4ba.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-29UXrhUA.js','/assets/components-Bw8K3xe8.js','/assets/index-z_6t8hgT.js','/assets/dropdown-menu-BRu-uIsO.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-MB7iY2e5.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/skeleton-DivTniFP.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-CGO8Neic.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-CadnIgti.js','/assets/index-z_6t8hgT.js','/assets/layout-FujvN6cF.js','/assets/button-7RhbRVm-.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/index-R_5LapDR.js','/assets/checkbox-zMoVUd6a.js','/assets/label-BdRVc-Go.js','/assets/loader-circle-gVrWrBVl.js','/assets/separator-DlECK5RS.js','/assets/textarea-_nxwdXwg.js','/assets/components-Bw8K3xe8.js','/assets/x-cwrx78xb.js','/assets/submit-field-C-hs90dx.js','/assets/index-DzK6_lIe.js','/assets/chevron-right-DPfqaxnT.js','/assets/scroll-area-CrpnatIp.js','/assets/avatar-FmZYA4ba.js','/assets/index-BLD_4dua.js','/assets/input-CVFQA-es.js','/assets/dialog-DWNjOBLw.js','/assets/plus-D0z1o2bi.js','/assets/arrow-right-DNdxeF8t.js','/assets/bell-C_47a_f0.js','/assets/index-tUIF4Hk4.js','/assets/index-29UXrhUA.js','/assets/dropdown-menu-BRu-uIsO.js','/assets/index-Ci7t80ag.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-MB7iY2e5.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/skeleton-DivTniFP.js','/assets/user-D4pQVfP0.js','/assets/index-D3JQEnQH.js','/assets/index-DkGC76cP.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-45787d15.js','version':'45787d15'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
@@ -10746,13 +10925,21 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           caseSensitive: undefined,
           module: route3
         },
+  "routes/_auth.auth.remember": {
+          id: "routes/_auth.auth.remember",
+          parentId: "routes/_auth",
+          path: "auth/remember",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route4
+        },
   "routes/_auth.auth.consent": {
           id: "routes/_auth.auth.consent",
           parentId: "routes/_auth",
           path: "auth/consent",
           index: undefined,
           caseSensitive: undefined,
-          module: route4
+          module: route5
         },
   "routes/_auth.auth.verify": {
           id: "routes/_auth.auth.verify",
@@ -10760,7 +10947,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "auth/verify",
           index: undefined,
           caseSensitive: undefined,
-          module: route5
+          module: route6
         },
   "routes/_auth.auth.login": {
           id: "routes/_auth.auth.login",
@@ -10768,7 +10955,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "auth/login",
           index: undefined,
           caseSensitive: undefined,
-          module: route6
+          module: route7
         },
   "routes/_auth.auth.reset": {
           id: "routes/_auth.auth.reset",
@@ -10776,7 +10963,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "auth/reset",
           index: undefined,
           caseSensitive: undefined,
-          module: route7
+          module: route8
         },
   "routes/audio.transcribe": {
           id: "routes/audio.transcribe",
@@ -10784,7 +10971,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "audio/transcribe",
           index: undefined,
           caseSensitive: undefined,
-          module: route8
+          module: route9
         },
   "routes/dash.user.create": {
           id: "routes/dash.user.create",
@@ -10792,7 +10979,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "create",
           index: undefined,
           caseSensitive: undefined,
-          module: route9
+          module: route10
         },
   "routes/outcomes.$action": {
           id: "routes/outcomes.$action",
@@ -10800,7 +10987,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "outcomes/:action",
           index: undefined,
           caseSensitive: undefined,
-          module: route10
+          module: route11
         },
   "routes/_auth.auth.cb": {
           id: "routes/_auth.auth.cb",
@@ -10808,7 +10995,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "auth/cb",
           index: undefined,
           caseSensitive: undefined,
-          module: route11
+          module: route12
         },
   "routes/dash.overview": {
           id: "routes/dash.overview",
@@ -10816,7 +11003,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "overview",
           index: undefined,
           caseSensitive: undefined,
-          module: route12
+          module: route13
         },
   "routes/dash.settings": {
           id: "routes/dash.settings",
@@ -10824,7 +11011,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route13
+          module: route14
         },
   "routes/dash.user.$id": {
           id: "routes/dash.user.$id",
@@ -10832,7 +11019,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: ":id",
           index: undefined,
           caseSensitive: undefined,
-          module: route14
+          module: route15
         },
   "routes/app.settings": {
           id: "routes/app.settings",
@@ -10840,7 +11027,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route15
+          module: route16
         },
   "routes/dash.license": {
           id: "routes/dash.license",
@@ -10848,7 +11035,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "license",
           index: undefined,
           caseSensitive: undefined,
-          module: route16
+          module: route17
         },
   "routes/app.contact": {
           id: "routes/app.contact",
@@ -10856,7 +11043,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "contact",
           index: undefined,
           caseSensitive: undefined,
-          module: route17
+          module: route18
         },
   "routes/app.alert": {
           id: "routes/app.alert",
@@ -10864,7 +11051,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "alert",
           index: undefined,
           caseSensitive: undefined,
-          module: route18
+          module: route19
         },
   "routes/dash.user": {
           id: "routes/dash.user",
@@ -10872,7 +11059,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "user",
           index: undefined,
           caseSensitive: undefined,
-          module: route19
+          module: route20
         },
   "routes/nav-user": {
           id: "routes/nav-user",
@@ -10880,7 +11067,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "nav-user",
           index: undefined,
           caseSensitive: undefined,
-          module: route20
+          module: route21
         },
   "routes/join.wh": {
           id: "routes/join.wh",
@@ -10888,7 +11075,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "wh",
           index: undefined,
           caseSensitive: undefined,
-          module: route21
+          module: route22
         },
   "routes/_index": {
           id: "routes/_index",
@@ -10896,7 +11083,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: undefined,
           index: true,
           caseSensitive: undefined,
-          module: route22
+          module: route23
         },
   "routes/logout": {
           id: "routes/logout",
@@ -10904,7 +11091,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "logout",
           index: undefined,
           caseSensitive: undefined,
-          module: route23
+          module: route24
         },
   "routes/mobile": {
           id: "routes/mobile",
@@ -10912,7 +11099,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "mobile",
           index: undefined,
           caseSensitive: undefined,
-          module: route24
+          module: route25
         },
   "routes/_auth": {
           id: "routes/_auth",
@@ -10920,7 +11107,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: undefined,
           index: undefined,
           caseSensitive: undefined,
-          module: route25
+          module: route26
         },
   "routes/files": {
           id: "routes/files",
@@ -10928,7 +11115,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "files",
           index: undefined,
           caseSensitive: undefined,
-          module: route26
+          module: route27
         },
   "routes/score": {
           id: "routes/score",
@@ -10936,7 +11123,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "score",
           index: undefined,
           caseSensitive: undefined,
-          module: route27
+          module: route28
         },
   "routes/dash": {
           id: "routes/dash",
@@ -10944,7 +11131,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "dash",
           index: undefined,
           caseSensitive: undefined,
-          module: route28
+          module: route29
         },
   "routes/join": {
           id: "routes/join",
@@ -10952,7 +11139,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "join",
           index: undefined,
           caseSensitive: undefined,
-          module: route29
+          module: route30
         },
   "routes/test": {
           id: "routes/test",
@@ -10960,7 +11147,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "test",
           index: undefined,
           caseSensitive: undefined,
-          module: route30
+          module: route31
         },
   "routes/app": {
           id: "routes/app",
@@ -10968,7 +11155,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "app",
           index: undefined,
           caseSensitive: undefined,
-          module: route31
+          module: route32
         },
   "routes/sse": {
           id: "routes/sse",
@@ -10976,7 +11163,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-DJBslN_S.js','im
           path: "sse",
           index: undefined,
           caseSensitive: undefined,
-          module: route32
+          module: route33
         }
       };
 
