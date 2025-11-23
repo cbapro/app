@@ -1,1 +1,1 @@
-import{Email as t}from"./index2.js";import"./email.js";import"nodemailer";import"./vars.server.js";import"dotenv/config";const o={to:"a@b.cd",subject:`TEST ${new Date().toJSON()}`,text:"Test text!"};await t({payload:o}),console.log("email has been sent!");
+import{Email as t}from"./index2.js";import"./email.js";import"resend";const o={to:"rasoulkarimi@live.com",subject:`TEST ${new Date().toJSON()}`,text:"Test text!"};await t({payload:o}),console.log("email has been sent!");
