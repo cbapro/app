@@ -1,0 +1,1 @@
+import{Resend as s}from"resend";function n(){const o=new s(process.env.RESEND_API_KEY),t=process.env.EMAIL_FROM;return{sendMail:async e=>{try{const{error:r}=await o.emails.send({from:t,to:[e.to],subject:e.subject,text:e.text,html:e.html});r&&console.error("Resend send error:",r)}catch(r){console.error("Unexpected Resend error:",r)}}}}export{n as default};

@@ -1,0 +1,1 @@
+import{Email as t}from"./index2.js";import"./resend.js";import"resend";const e={to:"a@b.cd",subject:`TEST ${new Date().toJSON()}`,text:"Test text!"};await t({payload:e}),console.log("email has been sent!");

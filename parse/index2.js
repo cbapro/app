@@ -1,1 +1,1 @@
-import r from"./email.js";import"resend";const o={from:process.env.EMAIL_FROM};var t={module:r,options:o};const a=async({payload:m})=>r().sendMail({from:o.from,to:o.from,...m});export{a as Email,t as default};
+import r from"./resend.js";import"resend";const o={from:process.env.EMAIL_FROM};var t={module:r,options:o};const a=async({payload:m})=>r().sendMail({from:o.from,to:o.from,...m});export{a as Email,t as default};
