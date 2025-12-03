@@ -1,0 +1,1 @@
+import{r as e}from"./jsx-runtime-CNvHvvCs.js";function a(t){const u=e.useRef(t);return e.useEffect(()=>{u.current=t}),e.useMemo(()=>(...o)=>u.current?.(...o),[])}var s=globalThis?.document?e.useLayoutEffect:()=>{};export{a,s as u};
