@@ -1,7 +1,7 @@
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { PassThrough } from 'node:stream';
 import { createReadableStreamFromReadable, redirect as redirect$1, createCookieSessionStorage } from '@remix-run/node';
-import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useActionData, useSubmit, useNavigation, Form as Form$1, Link, redirect as redirect$2, useSearchParams, useNavigate, useRouteLoaderData, useLocation } from '@remix-run/react';
+import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useNavigate, useActionData, useSubmit, useNavigation, Form as Form$1, Link, redirect as redirect$2, useSearchParams, useRouteLoaderData, useLocation } from '@remix-run/react';
 import * as isbotModule from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import * as React from 'react';
@@ -14,13 +14,14 @@ import { Cross2Icon, CaretSortIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, C
 import { produce } from 'immer';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { Slot } from '@radix-ui/react-slot';
-import { X, AlertOctagon, LoaderCircle, CalendarIcon, Info, ExternalLink, TrendingUp, MessageCircle, KeySquare, User2, Users2, Trash, ChevronLeft, ChevronRight, Telescope, User, Plus, MessagesSquare, ScrollText, Notebook, Triangle, MenuIcon, ArrowRight, Gauge, Barcode, Settings as Settings$1, ChevronUp, Loader2, Bell, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, Lock, MousePointerClick, ChevronDown, MicOff, Mic, ArrowUp, Paperclip, FileText, Youtube } from 'lucide-react';
+import { X, AlertOctagon, Award, LoaderCircle, CalendarIcon, Info, ExternalLink, TrendingUp, MessageCircle, KeySquare, User2, Users2, Trash, ChevronLeft, ChevronRight, Telescope, User, Plus, MessagesSquare, ScrollText, Notebook, Triangle, MenuIcon, ArrowRight, Gauge, Barcode, Settings as Settings$1, ChevronUp, Loader2, Bell, Clock, HelpCircle, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, Lock, MousePointerClick, ChevronDown, MicOff, Mic, ArrowUp, Paperclip, FileText, Megaphone } from 'lucide-react';
 import Markdown from 'react-markdown';
 import Stripe from 'stripe';
 import 'dotenv/config';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import Parse from 'parse/node.js';
 import { nanoid, customAlphabet } from 'nanoid';
+import * as SwitchPrimitives from '@radix-ui/react-switch';
 import { joiResolver } from '@hookform/resolvers/joi';
 import { useFormContext, FormProvider, Controller, useForm } from 'react-hook-form';
 import Joi from 'joi';
@@ -31,10 +32,10 @@ import { format } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
+import OpenAI from 'openai';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Authenticator } from 'remix-auth';
 import { FormStrategy } from 'remix-auth-form';
-import OpenAI from 'openai';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import * as RechartsPrimitive from 'recharts';
 import { LineChart, CartesianGrid, XAxis, Line } from 'recharts';
@@ -44,9 +45,8 @@ import * as TogglePrimitive from '@radix-ui/react-toggle';
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import { MDXEditor, headingsPlugin, listsPlugin, linkPlugin, linkDialogPlugin, thematicBreakPlugin, toolbarPlugin, UndoRedo, BoldItalicUnderlineToggles, BlockTypeSelect } from '@mdxeditor/editor';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import * as SwitchPrimitives from '@radix-ui/react-switch';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
 import remarkGfm from 'remark-gfm';
@@ -164,7 +164,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-DdMaco0t.css";
+const stylesheet = "/assets/tailwind-C9yF75sb.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -740,19 +740,11 @@ function CardModule({
 }
 
 const {
-  PARSE_CLIENT_URL: clientURL,
-  PARSE_CHOOSE_PASSWORD: choosePassword,
-  PARSE_INVALID_LINK: invalidLink,
-  PARSE_INVALID_VERIFICATION_LINK: invalidVerificationLink,
-  PARSE_LINK_SEND_FAIL: linkSendFail,
-  PARSE_LINK_SEND_SUCCESS: linkSendSuccess,
-  PARSE_FRAME_URL: parseFrameURL,
-  PARSE_PASSWORD_RESET_SUCCESS: passwordResetSuccess,
-  PARSE_VERIFY_EMAIL_SUCCESS: verifyEmailSuccess,
-
   APP_ADDITIONAL_MESSAGES: additionalMessages,
   APP_SCORE_REQUEST_LIMIT: scoreRequestLimit,
   APP_SCORE_REQUEST_OUTCOME_LIMIT: scoreRequestOutcomeLimit,
+  APP_DRAFT_ASSESSMENT_REQUEST_LIMIT: draftAssessmentRequestLimit,
+  APP_DRAFT_ASSESSMENT_REQUEST_OUTCOME_LIMIT: draftAssessmentRequestOutcomeLimit,
 
   SITE_PRICING_URL: sitePricingUrl,
 } = process.env;
@@ -762,6 +754,8 @@ const vars = {
     additionalMessages,
     scoreRequestLimit,
     scoreRequestOutcomeLimit,
+    draftAssessmentRequestLimit,
+    draftAssessmentRequestOutcomeLimit,
   },
   site: {
     pricingUrl: sitePricingUrl,
@@ -769,42 +763,10 @@ const vars = {
   admin: {
     key: process.env.ADMIN_KEY,
   },
-  parse: {
-    appName: process.env.PARSE_APP_NAME,
-    appId: process.env.PARSE_APP_ID,
-    masterKey: process.env.PARSE_MASTER_KEY,
-    databaseURI: process.env.DB_URI,
-    jsKey: process.env.PARSE_JS_KEY,
-    restAPIKey: process.env.PARSE_REST_API_KEY,
-    serverURL: process.env.PARSE_SERVER_URL,
-    publicServerURL: process.env.PARSE_PUBLIC_SERVER_URL,
-    cloud: process.env.PARSE_CLOUD,
-    port: process.env.PARSE_PORT,
-    clientURL,
-    customPages: {
-      parseFrameURL: `${clientURL}${parseFrameURL}`,
-      // choosePassword: `${clientURL}${choosePassword}`,
-      // invalidLink: `${clientURL}${invalidLink}`,
-      // invalidVerificationLink: `${clientURL}${invalidVerificationLink}`,
-      // linkSendFail: `${clientURL}${linkSendFail}`,
-      // linkSendSuccess: `${clientURL}${linkSendSuccess}`,
-      // passwordResetSuccess: `${clientURL}${passwordResetSuccess}`,
-      // verifyEmailSuccess: `${clientURL}${verifyEmailSuccess}`,
-    },
-  },
-  database: {
-    url: process.env.DB_URI,
-  },
-  email: {
-    service: process.env.EMAIL_SERVICE,
-    username: process.env.EMAIL_USERNAME,
-    password: process.env.EMAIL_PASSWORD,
-    from: process.env.EMAIL_FROM,
-    recipient: process.env.EMAIL_RECIPIENT,
-  },
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
     scoreAssistantId: process.env.OPENAI_ASSISTANT_ID_SCORE,
+    draftAssessmentAssistantId: process.env.OPENAI_ASSISTANT_ID_ASSESSMENT,
     assistantIdDev: process.env.OPENAI_ASSISTANT_ID_DEV,
     assistantId:
       process.env.NODE_ENV === "production"
@@ -830,7 +792,20 @@ const stripe = new Stripe(vars.stripe.restrictedKey, {
     }),
 });
 
-const { appId, jsKey, masterKey, serverURL } = vars.parse;
+const {
+  PARSE_DB_URI: databaseURI,
+  PARSE_APP_NAME: appName,
+  PARSE_APP_ID: appId,
+  PARSE_MASTER_KEY: masterKey,
+  PARSE_JS_KEY: jsKey,
+  PARSE_REST_API_KEY: restAPIKey,
+  PARSE_SERVER_URL: serverURL,
+  PARSE_CLIENT_URL: clientURL,
+  PARSE_PUBLIC_SERVER_URL: publicServerURL,
+  PARSE_CLOUD: cloud,
+  PARSE_PORT: port,
+  PARSE_FRAME_URL: frameURL,
+} = process.env;
 
 Parse.initialize(appId, jsKey, masterKey);
 Parse.serverURL = serverURL;
@@ -1001,14 +976,29 @@ async function update$2(arg, sessionToken) {
     const existObject = await new Parse.Query("Outcome").get(arg?.objectId, {
       sessionToken,
     });
-    if (!existObject) return null;
+    if (!existObject) {
+      console.log("outcome.update: Object not found", arg?.objectId);
+      return null;
+    }
 
-    const Outcome = Parse.Object.extend("Outcome");
-    const outcome = new Outcome();
-    return await outcome.save(arg, { sessionToken });
+    Object.keys(arg).forEach((key) => {
+      if (key !== "objectId" && key !== "id") {
+        existObject.set(key, arg[key]);
+      }
+    });
+
+    const saved = await existObject.save(null, { sessionToken });
+    console.log("outcome.update: Successfully updated", {
+      objectId: arg?.objectId,
+      situation: arg?.situation ? "updated" : "unchanged",
+      action: arg?.action ? "updated" : "unchanged",
+      outcome: arg?.outcome ? "updated" : "unchanged",
+    });
+    return saved;
   } catch (error) {
-    console.log("outcome.update", error.message);
+    console.error("outcome.update: Error", error.message, error);
     handleInvalidSessionToken(error);
+    return null;
   }
 }
 
@@ -1365,7 +1355,7 @@ const prices = {
   },
 };
 
-async function loader$m({ request }) {
+async function loader$q({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let plan = session.get("plan");
   if (!plan) plan = await check$1(request, false);
@@ -1381,6 +1371,7 @@ async function loader$m({ request }) {
 }
 function Overview() {
   const data = useLoaderData();
+  const navigate = useNavigate();
   return /* @__PURE__ */ jsx("div", { className: "grid gap-4", children: data?.plan ? /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsx("div", { className: "flex justify-between", children: /* @__PURE__ */ jsxs(
       "span",
@@ -1414,9 +1405,7 @@ function Overview() {
             variant: "destructive",
             actionButton: {
               title: "Upgrade Now",
-              onClick: () => {
-                window.location = data?.sitePricingUrl;
-              }
+              onClick: () => navigate("/app/settings/pricing")
             },
             open: true
           }
@@ -1454,7 +1443,90 @@ const trialDescription = `
 const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Overview,
-  loader: loader$m
+  loader: loader$q
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const Switch = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  SwitchPrimitives.Root,
+  {
+    className: cn$1(
+      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
+      className
+    ),
+    ...props,
+    ref,
+    children: /* @__PURE__ */ jsx(
+      SwitchPrimitives.Thumb,
+      {
+        className: cn$1(
+          "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
+        )
+      }
+    )
+  }
+));
+Switch.displayName = SwitchPrimitives.Root.displayName;
+
+async function loader$p({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  const license = (await read$6(user))?.toJSON();
+  const lookup_keys = Object.keys(prices);
+  const prices$1 = await getPrices({ lookup_keys });
+  return Response.json({
+    prices: prices$1?.data,
+    license
+  });
+}
+function Pricing() {
+  const { prices, license } = useLoaderData();
+  const navigate = useNavigate();
+  console.log({ prices, license });
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-8 pb-16", children: [
+    /* @__PURE__ */ jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxs("span", { className: "flex gap-1 text-sm", children: [
+      /* @__PURE__ */ jsx(Award, { className: "stroke-1.5", size: 16 }),
+      "Select or change your license!"
+    ] }) }),
+    /* @__PURE__ */ jsx("div", { className: cn$1("grid gap-2 grid-cols-3 mx-auto my-4"), children: prices?.map((p, i) => {
+      const current = license?.priceId === p.id;
+      const popular = p.lookup_key === "Pn1";
+      const price = p.unit_amount === 0 ? "0" : Math.round(p.unit_amount / 100);
+      return /* @__PURE__ */ jsxs("div", { className: cn$1(`grid gap-2 rounded-lg border border-zinc-200 shadow-md p-4 pt-8 relative`, popular && " border-2 border-primary"), children: [
+        /* @__PURE__ */ jsxs("div", { className: cn$1("flex flex-col gap-2"), children: [
+          /* @__PURE__ */ jsxs("div", { className: cn$1("grid text-center", current && "text-primary-500"), children: [
+            /* @__PURE__ */ jsx("span", { className: "text-sm font-semibold", children: p.product.name.substring(8).replace("-", "") }),
+            /* @__PURE__ */ jsxs("span", { className: "font-semibold text-primary text-lg", children: [
+              "$",
+              price
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx("small", { className: "text-xs h-16 overflow-hidden text-zinc-400 text-center mb-4", children: p.product.description }),
+          /* @__PURE__ */ jsx("ul", { className: "flex-auto list-disc text-xs ml-4 mb-4 text-zinc-500", children: p.product?.marketing_features?.map((mf, j) => /* @__PURE__ */ jsx("li", { children: mf.name }, j)) }),
+          /* @__PURE__ */ jsxs(
+            Button,
+            {
+              variant: "default",
+              size: "sm",
+              className: cn$1(current ? "" : ""),
+              disabled: current,
+              onClick: () => navigate(`/join?type=create&priceKey=${p.lookup_key}`),
+              children: [
+                /* @__PURE__ */ jsx(Award, {}),
+                current ? "Current License" : "Switch License"
+              ]
+            }
+          )
+        ] }),
+        popular && /* @__PURE__ */ jsx("span", { className: "rounded-full w-fit whitespace-nowrap bg-primary text-white text-xs py-0.5 px-2 absolute -top-3 left-1/2 -translate-x-1/2", children: "Most popular" })
+      ] }, i);
+    }) })
+  ] });
+}
+
+const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: Pricing,
+  loader: loader$p
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const labelVariants = cva(
@@ -1861,7 +1933,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
 ));
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
-async function loader$l({ request }) {
+async function loader$o({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let profile = session.get("profile");
   if (profile) return { profile };
@@ -1881,7 +1953,7 @@ async function loader$l({ request }) {
   }
   return null;
 }
-async function action$i({ request }) {
+async function action$j({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const formData = await request.formData();
@@ -2164,7 +2236,7 @@ const associations = [
   "APEGS",
   "PEO",
   "APEGA",
-  "EGCB",
+  "EGBC",
   "EGM",
   "QIQ",
   "APEGNB",
@@ -2172,1091 +2244,156 @@ const associations = [
   "Others"
 ];
 
-const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$i,
+  action: action$j,
   associations,
   default: ProfilePage,
   disciplines,
-  loader: loader$l
+  loader: loader$o
 }, Symbol.toStringTag, { value: 'Module' }));
 
-customAlphabet("1234567890abcdefghABCDEFGH", 8);
+function eventStream(signal, init, options = {}) {
+  let stream = new ReadableStream({
+    start(controller) {
+      let encoder = new TextEncoder();
+      let closed = false;
 
-const getPass = () => nanoid();
+      function send({ event = "message", data }) {
+        if (closed) return; // If already closed, not enqueue anything
 
+        controller.enqueue(encoder.encode(`event: ${event}\n`));
 
-// character sets
-const lower = 'abcdefghijklmnopqrstuvwxyz';
-const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const digits = '0123456789';
-const symbols = '!@#$%^&*()-_=+[]{}<>?';
+        if (closed) return; // If already closed, not enqueue anything
 
-const all = lower + upper + digits + symbols;
-
-// nanoid generators for 1 char
-const nanoLower = customAlphabet(lower, 1);
-const nanoUpper = customAlphabet(upper, 1);
-const nanoDigit = customAlphabet(digits, 1);
-const nanoSymbol = customAlphabet(symbols, 1);
-const nanoAll = customAlphabet(all, 1);
-
-function generatePassword(length = 8) {
-  if (length < 8) length = 8;
-
-  // mandatory characters
-  const passwordChars = [
-    nanoLower(),
-    nanoUpper(),
-    nanoDigit(),
-    nanoSymbol(),
-  ];
-
-  // fill remaining chars
-  for (let i = passwordChars.length; i < length; i++) {
-    passwordChars.push(nanoAll());
-  }
-
-  // shuffle characters
-  return passwordChars
-    .sort(() => Math.random() - 0.5)
-    .join('');
-}
-
-function InputField({ ...props }) {
-  const ref = useRef();
-  function genPassword() {
-    const target = ref.current;
-    target.value = generatePassword();
-    target.select();
-    target.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(target.value);
-  }
-  function togglePassword() {
-    ref.current.type === "password" ? ref.current.type = "text" : ref.current.type = "password";
-  }
-  return /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5 relative", children: [
-    props?.label && /* @__PURE__ */ jsx(Label, { children: props?.label }),
-    /* @__PURE__ */ jsx(
-      Input,
-      {
-        ref,
-        ...props,
-        ...props?.setValue && {
-          onValueChange: props.setValue
-        }
+        data.split("\n").forEach((line, index, array) => {
+          if (closed) return; // If already closed, not enqueue anything
+          let value = `data: ${line}\n`;
+          if (index === array.length - 1) value += "\n";
+          controller.enqueue(encoder.encode(value));
+        });
       }
-    ),
-    props?.info && /* @__PURE__ */ jsx("span", { className: "text-xs text-zinc-500", children: props.info }),
-    props?.error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: props.error }),
-    props?.type === "password" && /* @__PURE__ */ jsxs("div", { className: "absolute right-0 top-5", children: [
-      props?.genPass && /* @__PURE__ */ jsx(Button, { type: "button", variant: "ghost", size: "icon", onClick: genPassword, children: /* @__PURE__ */ jsx(LightningBoltIcon, {}) }),
-      props?.togglePass && /* @__PURE__ */ jsx(Button, { type: "button", variant: "ghost", size: "icon", onClick: togglePassword, children: /* @__PURE__ */ jsx(EyeOpenIcon, {}) })
-    ] })
-  ] });
+
+      init(send, close);
+
+      function close() {
+        if (closed) return;
+        // cleanup();
+        closed = true;
+        signal.removeEventListener("abort", close);
+        controller.close();
+      }
+
+      signal.addEventListener("abort", close);
+
+      if (signal.aborted) return close();
+    },
+  });
+
+  let headers = new Headers(options.headers);
+
+  if (headers.has("Content-Type")) {
+    console.warn("Overriding Content-Type header to `text/event-stream`");
+  }
+
+  if (headers.has("Cache-Control")) {
+    console.warn("Overriding Cache-Control header to `no-cache`");
+  }
+
+  if (headers.has("Connection")) {
+    console.warn("Overriding Connection header to `keep-alive`");
+  }
+
+  headers.set("Content-Type", "text/event-stream");
+  headers.set("Cache-Control", "no-cache");
+  headers.set("Connection", "keep-alive");
+
+  return new Response(stream, { headers });
 }
 
-function AlertField({ message, variant }) {
-  if (!message) return null;
-  return /* @__PURE__ */ jsxs(Alert, { className: cn$1("px-2 pt-2.5 pb-1.5", variants[variant]), children: [
-    /* @__PURE__ */ jsx(Info, { className: "!left-2 !top-2 h-4 w-4" }),
-    /* @__PURE__ */ jsx(AlertTitle, { children: message.title }),
-    /* @__PURE__ */ jsx(AlertDescription, { className: "text-xs", children: message.description })
-  ] });
+const ClassName = "Thread";
+
+async function read$3({ user, purpose = purposes.chat, objectId }) {
+  try {
+    const query = new Parse.Query(ClassName);
+    user && query.equalTo("user", user.objectId);
+    !objectId && query.equalTo("purpose", purpose);
+    !objectId && query.descending("createdAt");
+    if (objectId)
+      return await query.get(objectId, { sessionToken: user.sessionToken });
+    return await query.find({ sessionToken: user.sessionToken });
+  } catch (error) {
+    console.log("thread.read", error.message);
+    handleInvalidSessionToken(error);
+  }
 }
-const variants = {
-  error: "text-red-500 [&>svg]:text-red-500 border-red-500",
-  success: "text-green-500 [&>svg]:text-green-500 border-green-500"
+
+async function create$2(args, sessionToken) {
+  try {
+    const Thread = Parse.Object.extend(ClassName);
+    const thread = new Thread();
+    return await thread.save(args, { sessionToken });
+  } catch (error) {
+    console.log("thread.create", error.message);
+  }
+}
+
+async function update$1(args, sessionToken) {
+  try {
+    const Thread = Parse.Object.extend(ClassName);
+    const thread = new Thread();
+    return await thread.save(args, { sessionToken });
+  } catch (error) {
+    console.log("thread.update", error.message);
+  }
+}
+
+const purposes = {
+  chat: "chat",
+  score: "score",
+  draftAssessment: "draftAssessment",
 };
 
-async function register(args) {
-  const { email, password, ...meta } = args;
+const Class$2 = "Message";
 
-  try {
-    const user = await new Parse.User().signUp(
-      {
-        username: email,
-        password,
-        email,
-        meta
-      },
-      {
-        useMasterKey: true,
-      }
-    );
-
-    await assign(user, "user");
-
-    return user;
-  } catch (error) {
-    console.log("parse.auth.register.error", error.code, error.message);
-    return { error: error.message }
-  }
-}
-
-async function assign(user, role = "user") {
-  try {
-    const $role = await new Parse.Query("_Role")
-      .equalTo("name", role)
-      .first({ useMasterKey: true });
-
-    $role.getUsers().add(user);
-    await $role.save(null, { useMasterKey: true });
-
-    console.log("parse.auth.assign", user.id);
-    return { message: "Role assined!" };
-  } catch (error) {
-    console.log("parse.auth.assign.error", error.code, error.message);
-    return { error: error.message }
-  }
-
-}
-
-async function verify(email) {
-  try {
-    const data = await Parse.User.requestEmailVerification(email);
-    // console.log("parse.auth.verify", data);
-
-    return {
-      error: false,
-      message: "Check your email now!",
-    }
-  } catch (error) {
-    console.log("parse.auth.verify.error", error.code, error.message);
-
-    return {
-      error: true,
-      message: error.message,
-    }
-  }
-}
-
-async function confirm({ username, token }) {
-  const qs = new URLSearchParams({
-    username,
-    token,
-  }).toString();
-
-  try {
-    const data = await fetch(
-      `${vars.parse.serverURL}/apps/${vars.parse.appId}/verify_email?${qs}`
-    );
-
-    const url = new URLSearchParams(data?.url);
-    // console.log("parse.auth.confirm", url);
-
-    const success = data?.url.includes("verify_email_success");
-    const failed = data?.url.includes("invalid_verification_link");
-
-    if (failed)
-      return {
-        error: true,
-        message: "Username or token invalid! try again."
-      }
-
-    return {
-      error: false,
-      message: "Your email has been verified!, Try login.",
-    }
-  } catch (error) {
-    console.log("parse.auth.confirm", error.message);
-  }
-}
-
-async function remember(email) {
-  try {
-    const remember = await Parse.User.requestPasswordReset(email);
-    console.log("parse.auth.remember", remember);
-    return remember;
-  } catch (error) {
-    console.log("parse.auth.remember.error", error.code, error.message);
-  }
-}
-
-async function reset({ password, username, token }) {
-  const body = new URLSearchParams({
-    new_password: password,
-    confirm_new_password: password,
-    username,
-    token,
-    "utf-8": "✓",
-  });
-
-  try {
-    const data = await fetch(
-      `${vars.parse.serverURL}/apps/${vars.parse.appId}/request_password_reset`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body,
-      }
-    );
-
-    const url = new URLSearchParams(data?.url);
-    // console.log("parse.auth.reset", url);
-
-    const success = data?.url.includes("success");
-    const failed = data?.url.includes("failed");
-    const error = url.get("error");
-
-    if (error) return false;
-    return true;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-async function login(username, password) {
-  try {
-    return await Parse.User.logIn(username, password);
-  } catch (error) {
-    console.log("parse:auth:login", error.message);
-    return { error: error.message };
-  }
-}
-
-async function logout$1() {
-  try {
-    return await Parse.User.logOut();
-  } catch (error) {
-    console.log("parse:auth:logout", error.message);
-    // return { error: error.message };
-  }
-}
-
-let isHydrating$1 = true;
-function Turnstile({ onChange, error }) {
-  const [isHydrated, setIsHydrated] = useState(!isHydrating$1);
-  const [token, setToken] = useState(null);
-  const ref = useRef();
-  useEffect(() => {
-    isHydrating$1 = false;
-    setIsHydrated(true);
-  }, []);
-  useEffect(() => {
-    if (ref.current) {
-      turnstile.remove();
-      turnstile.render(ref.current, {
-        sitekey: "0x4AAAAAAA8rbrKZhit0xcFU",
-        size: "flexible",
-        theme: "light",
-        callback: function(token2) {
-          setToken(token2);
-          onChange?.({ target: { value: token2 } });
-        },
-        "error-callback": function(args) {
-          console.log(args);
-        }
-      });
-    }
-  }, [ref.current]);
-  useEffect(() => {
-    if (error) turnstile.reset();
-  }, [error]);
-  return isHydrated ? /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("div", { ref }),
-    !token && /* @__PURE__ */ jsx(
-      "input",
-      {
-        required: true,
-        className: "pointer-events-none w-full h-[1px] p-0 border-none focus:outline-none text-[0px] text-white -!my-4"
-      }
-    )
-  ] }) : null;
-}
-
-const { TURNSTILE_SECRET_KEY: secretKey, TURNSTILE_VERIFY_URL: verifyUrl } =
-  process.env;
-
-async function challenge({ form }) {
-  const token = form.get("cf-turnstile-response");
-
-  try {
-    const res = await fetch(verifyUrl, {
-      method: "POST",
-      body: JSON.stringify({
-        secret: secretKey,
-        response: token,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await res.json();
-    // console.log(token, data);
-
-    if (data.success) return true;
-    return { error: "Turnstile verification failed" };
-  } catch (error) {
-    console.log("turnstile.challenge", error?.message);
-    return { error: "Error verifying Turnstile token" };
-  }
-}
-
-function cn(...inputs) {
-  return twMerge(clsx(inputs))
-}
-
-function SelectField({ ...props }) {
-  return /* @__PURE__ */ jsxs("div", { className: cn("grid gap-1.5", props?.className), children: [
-    props?.label && /* @__PURE__ */ jsx(Label, { children: props.label }),
-    /* @__PURE__ */ jsxs(
-      Select,
-      {
-        name: props?.name,
-        required: props?.required,
-        onValueChange: props?.onValueChange,
-        defaultValue: props?.defaultValue,
-        children: [
-          /* @__PURE__ */ jsx(SelectTrigger, { className: "bg-white shadow-none", children: /* @__PURE__ */ jsx(SelectValue, { placeholder: props?.placeholder }) }),
-          /* @__PURE__ */ jsx(SelectContent, { children: /* @__PURE__ */ jsxs(SelectGroup, { children: [
-            props?.selectLabel && /* @__PURE__ */ jsx(SelectLabel, { children: props.selectLabel }),
-            props?.items.map((item, index) => /* @__PURE__ */ jsx(SelectItem, { value: item.value, children: item.label }, index))
-          ] }) })
-        ]
-      }
-    ),
-    props?.error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: props.error })
-  ] });
-}
-
-const schema$4 = Joi.object({
-  email: Joi.string().email().required().label("Email"),
-  password: Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password"),
-  firstName: Joi.string().required().label("First name"),
-  lastName: Joi.string().required().label("Last name"),
-  phone: Joi.string().regex(/^[0-9]{10}$/).messages({ "string.pattern.base": `Phone number must have 10 digits.` }).required(),
-  fields: Joi.object({
-    association: Joi.string().required().label("Association"),
-    plan: Joi.string().allow(null).optional().label("Plan")
-  })
-});
-async function loader$k({ request }) {
-  return null;
-}
-async function action$h({ request }) {
-  const url = new URL(request.url);
-  const plan = url.searchParams.get("plan");
-  const form = await request.formData();
-  const email = form.get("email");
-  const password = form.get("password");
-  const repassword = form.get("repassword");
-  const firstName = form.get("firstName");
-  const lastName = form.get("lastName");
-  const phone = form.get("phone");
-  const association = form.get("association");
-  const data = { email, password, firstName, lastName, phone, fields: { association, plan } };
-  const challenge$1 = await challenge({ form });
-  if (challenge$1.error)
-    return { error: true, message: { title: "Fill the Chaptcha!" } };
-  const validate = schema$4.validate(data, { abortEarly: false });
-  if (validate?.error)
-    return {
-      error: true,
-      message: { title: validate.error.details[0].message }
-    };
-  if (!repassword || password !== repassword)
-    return {
-      error: true,
-      message: { title: "Passwords don't match!" }
-    };
-  const signup = await register(data);
-  if (signup?.error)
-    return {
-      error: true,
-      message: { title: signup.error }
-    };
-  return {
-    message: { title: "Signup completed! Check email for begin" }
-  };
-}
-function Signup() {
-  const adata = useActionData();
-  const { state } = useNavigation();
-  const formRef = useRef();
-  useEffect(() => {
-    if (state === "loading") formRef.current.reset();
-  }, [state]);
-  return /* @__PURE__ */ jsxs(Form$1, { ref: formRef, method: "post", className: "space-y-4", children: [
-    /* @__PURE__ */ jsx(
-      InputField,
-      {
-        required: true,
-        type: "email",
-        name: "email",
-        label: "Email"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      InputField,
-      {
-        required: true,
-        type: "password",
-        name: "password",
-        label: "Password",
-        info: "At least 8 characters, with a special character, uppercase and lowercase letters, and numbers.",
-        genPass: true,
-        togglePass: true
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      InputField,
-      {
-        required: true,
-        type: "password",
-        name: "repassword",
-        label: "Repeat Password",
-        togglePass: true
-      }
-    ),
-    /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
-      /* @__PURE__ */ jsx(
-        InputField,
-        {
-          required: true,
-          type: "text",
-          name: "firstName",
-          label: "First name"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        InputField,
-        {
-          required: true,
-          type: "text",
-          name: "lastName",
-          label: "Last name"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        InputField,
-        {
-          required: true,
-          type: "tel",
-          name: "phone",
-          label: "Phone"
-        }
-      ),
-      /* @__PURE__ */ jsx(SelectField, { required: true, name: "association", label: "Association", items: associations.map((i) => ({ label: i, value: i })) })
-    ] }),
-    /* @__PURE__ */ jsx(
-      Turnstile,
-      {
-        error: adata?.errorType === "challenge" ? adata.message : null
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      SubmitField,
-      {
-        label: "Register now",
-        loader: state === "submitting" || state === "loading",
-        className: "w-full"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      AlertField,
-      {
-        variant: adata?.error ? "error" : "success",
-        message: adata?.message
-      }
-    ),
-    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
-  ] });
-}
-
-const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  action: action$h,
-  default: Signup,
-  loader: loader$k
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const schema$3 = Joi.string().email().required().label("Email");
-async function action$g({ request }) {
-  const form = await request.formData();
-  const email = form.get("email");
-  const challenge$1 = await challenge({ form });
-  if (challenge$1.error)
-    return { error: true, message: challenge$1.error, errorType: "challenge" };
-  const validate = schema$3.validate(email);
-  if (validate?.error)
-    return {
-      error: true,
-      message: { title: validate.error.details[0].message }
-    };
-  const remember$1 = await remember(email);
-  if (!remember$1)
-    return {
-      error: true,
-      message: { title: "Email not found!" }
-    };
-  return {
-    message: { title: "Check your email" }
-  };
-}
-function Reset$1() {
-  const adata = useActionData();
-  const { state } = useNavigation();
-  const ref = useRef();
-  useEffect(() => {
-    if (state === "loading") ref.current.reset();
-  }, [state]);
-  return /* @__PURE__ */ jsxs(Form$1, { ref, method: "post", className: "space-y-4", children: [
-    /* @__PURE__ */ jsx(
-      InputField,
-      {
-        required: true,
-        type: "email",
-        name: "email",
-        label: "Email"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      Turnstile,
-      {
-        error: adata?.errorType === "challenge" ? adata.message : null
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      SubmitField,
-      {
-        label: "Remember password",
-        loader: state === "submitting" || state === "loading",
-        className: "w-full"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      AlertField,
-      {
-        variant: adata?.error ? "error" : "success",
-        message: adata?.message
-      }
-    ),
-    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
-  ] });
-}
-
-const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  action: action$g,
-  default: Reset$1
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const Checkbox = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  CheckboxPrimitive.Root,
-  {
-    ref,
-    className: cn$1(
-      "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
-      className
-    ),
-    ...props,
-    children: /* @__PURE__ */ jsx(
-      CheckboxPrimitive.Indicator,
-      {
-        className: cn$1("flex items-center justify-center text-current"),
-        children: /* @__PURE__ */ jsx(CheckIcon, { className: "h-4 w-4" })
-      }
-    )
-  }
-));
-Checkbox.displayName = CheckboxPrimitive.Root.displayName;
-
-function CheckboxField({ setValue, error, ...props }) {
-  return /* @__PURE__ */ jsxs("div", { children: [
-    /* @__PURE__ */ jsxs("div", { className: "flex items-start space-x-2", children: [
-      /* @__PURE__ */ jsx(
-        Checkbox,
-        {
-          ...props,
-          ...setValue && {
-            onValueChange: setValue
-          }
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "label",
-        {
-          htmlFor: props?.id,
-          className: "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-          children: props?.label
-        }
-      )
-    ] }),
-    error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: error })
-  ] });
-}
-
-const Class$2 = "Setting";
-
-async function create$2(user, args) {
-  try {
-    const Setting = Parse.Object.extend(Class$2);
-    const setting = new Setting();
-    return await setting.save(
-      {
-        user: pointerObject(models.user, user.objectId),
-        ...args,
-      },
-      { useMasterKey: true }
-    );
-  } catch (error) {
-    console.log("setting.create", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-async function read$3(user) {
+async function read$2(user, thread, limit) {
   try {
     const query = new Parse.Query(Class$2);
-    query.equalTo("user", user.objectId);
-    const data = await query.find({ sessionToken: user.sessionToken });
-    return data[0];
-  } catch (error) {
-    console.log("setting.read", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-async function update$1(user, args) {
-  try {
-    const Setting = Parse.Object.extend(Class$2);
-    const setting = new Setting();
-    return await setting.save(args, { sessionToken: user.sessionToken });
-  } catch (error) {
-    console.log("setting.update", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-async function upsert(user, args) {
-  const setting = await read$3(user);
-  if (setting)
-    return await update$1(user, {
-      objectId: setting.id,
-      ...args,
-    });
-  return await create$2(user, args);
-}
-
-const schema$2 = Joi.object({
-  fullName: Joi.string().required(),
-  termsConditions: Joi.string().required(),
-  privacyPolicy: Joi.string().required(),
-  appRules: Joi.string().required()
-});
-async function loader$j({ request }) {
-  const session = await getSession(request.headers.get("cookie"));
-  const user = session.get("user");
-  const setting = session.get("setting");
-  if (!user) return redirect$2("/auth/login");
-  console.log("app.consent.loader", user.objectId);
-  if (setting?.consent) return redirect$2("/app");
-  return null;
-}
-async function action$f({ request }) {
-  const session = await getSession(request.headers.get("cookie"));
-  const user = session.get("user");
-  console.log("app.consent.action", user.objectId);
-  const formData = await request.formData();
-  const fullName = formData.get("fullName");
-  const termsConditions = formData.get("termsConditions");
-  const privacyPolicy = formData.get("privacyPolicy");
-  const appRules = formData.get("appRules");
-  const consent = { fullName, termsConditions, privacyPolicy, appRules };
-  try {
-    await schema$2.validateAsync(consent, { abortEarly: false });
-    const setting = await upsert(user, { consent });
-    session.set("setting", setting);
-    return redirect$2("/app", {
-      headers: {
-        "Set-Cookie": await commitSession(session)
-      }
-    });
-  } catch (error) {
-    return {
-      error: error.details
-    };
-  }
-}
-function Consent() {
-  const actionData = useActionData();
-  const { state } = useNavigation();
-  return /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "grid gap-6", children: [
-    /* @__PURE__ */ jsx(
-      InputField,
-      {
-        name: "fullName",
-        label: "Full name",
-        rquired: "true",
-        error: actionData?.error?.find((i) => i.context.key === "fullName")?.message
-      }
-    ),
-    /* @__PURE__ */ jsx("center", { children: /* @__PURE__ */ jsx("small", { children: (/* @__PURE__ */ new Date()).toUTCString() }) }),
-    /* @__PURE__ */ jsxs("div", { className: "flex gap-2 justify-end", children: [
-      /* @__PURE__ */ jsx(
-        CheckboxField,
-        {
-          name: "termsConditions",
-          label: "I acknowledge and agree to the terms and conditions",
-          rquired: "true",
-          error: actionData?.error?.find((i) => i.context.key === "termsConditions")?.message
-        }
-      ),
-      /* @__PURE__ */ jsxs(
-        "a",
-        {
-          href: "/terms-conditions.pdf",
-          target: "_blank",
-          className: "flex items-center gap-1 text-primary text-xs rounded-full px-2 h-7 leading-6 border border-primary",
-          children: [
-            /* @__PURE__ */ jsx(ExternalLink, { size: 16 }),
-            "View"
-          ]
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex gap-2 justify-end", children: [
-      /* @__PURE__ */ jsx(
-        CheckboxField,
-        {
-          name: "privacyPolicy",
-          label: "I acknowledge and agree to the Privacy Policy",
-          rquired: "true",
-          error: actionData?.error?.find((i) => i.context.key === "privacyPolicy")?.message
-        }
-      ),
-      /* @__PURE__ */ jsxs(
-        "a",
-        {
-          href: "/privacy-policy.pdf",
-          target: "_blank",
-          className: "flex items-center gap-1 text-primary text-xs rounded-full px-2 h-7 leading-6 border border-primary",
-          children: [
-            /* @__PURE__ */ jsx(ExternalLink, { size: 16 }),
-            "View"
-          ]
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsx(
-      CheckboxField,
-      {
-        name: "appRules",
-        label: "I consent to the ethical use of the dashboard, affirm that all work experience examples provided are factual, and agree that CertNova may disclose my AI chat history to engineering associations upon request.",
-        rquired: "true",
-        error: actionData?.error?.find((i) => i.context.key === "appRules")?.message
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      SubmitField,
-      {
-        label: "I Agree",
-        className: "mt-8",
-        loader: state === "submitting" || state === "loading"
-      }
-    )
-  ] });
-}
-
-const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  action: action$f,
-  default: Consent,
-  loader: loader$j
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const schema$1 = Joi.string().email().required().label("Email");
-async function loader$i({ request }) {
-  const url = new URL(request.url);
-  const token = url.searchParams.get("token");
-  const username = url.searchParams.get("username");
-  if (username && token) {
-    const confirm$1 = await confirm({ username, token });
-    if (!confirm$1?.error) throw redirect$1("/auth/login");
-  }
-  return null;
-}
-async function action$e({ request }) {
-  const form = await request.formData();
-  const email = form.get("email");
-  const challenge$1 = await challenge({ form });
-  if (challenge$1.error)
-    return { error: true, message: challenge$1.error, errorType: "challenge" };
-  const validate = schema$1.validate(email);
-  if (validate?.error)
-    return {
-      error: true,
-      message: validate.error.details[0].message
-    };
-  return await verify(email);
-}
-function Verify() {
-  const ldata = useLoaderData();
-  const adata = useActionData();
-  const [alert, setAlert] = useState(null);
-  const { state } = useNavigation();
-  const ref = useRef();
-  const [searchParams] = useSearchParams();
-  searchParams.get("email");
-  useEffect(() => {
-    setAlert({
-      error: ldata?.error ?? adata?.error,
-      message: ldata?.message ?? adata?.message
-    });
-  }, [ldata, adata]);
-  useEffect(() => {
-    if (state === "loading") ref.current.reset();
-  }, [state]);
-  return /* @__PURE__ */ jsxs(Form$1, { ref, method: "post", action: "/auth/verify", className: "space-y-4", children: [
-    /* @__PURE__ */ jsx(
-      InputField,
-      {
-        required: true,
-        type: "email",
-        name: "email",
-        label: "Email"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      Turnstile,
-      {
-        error: adata?.errorType === "challenge" ? adata.message : null
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      SubmitField,
-      {
-        label: "Verify email",
-        loader: state === "submitting" || state === "loading",
-        className: "w-full"
-      }
-    ),
-    alert?.message && /* @__PURE__ */ jsx(
-      AlertField,
-      {
-        variant: alert?.error ? "error" : "success",
-        message: { title: alert?.message }
-      }
-    ),
-    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
-  ] });
-}
-
-const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  action: action$e,
-  default: Verify,
-  loader: loader$i
-}, Symbol.toStringTag, { value: 'Module' }));
-
-function isMobileServer(request) {
-  var ua = request.headers.get("user-agent").toLowerCase();
-  const is =
-    /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(
-      ua
-    ) ||
-    /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
-      ua.substr(0, 4)
-    );
-  return is ? true : false;
-}
-
-let authenticator = new Authenticator();
-
-authenticator.use(
-  new FormStrategy(async ({ form }) => {
-    let email = form.get("email");
-    let password = form.get("password");
-
-    const challenge$1 = await challenge({ form });
-    if (challenge$1.error)
-      return { error: challenge$1.error, errorType: "challenge" };
-
-    return await login(email, password);
-  }),
-  "user-pass"
-);
-
-async function logout() {
-  await logout$1();
-}
-
-async function loader$h({ request }) {
-  console.log("auth.login.loader");
-  if (isMobileServer(request)) return redirect$1("/mobile");
-  const session = await getSession(request.headers.get("cookie"));
-  const user = session.get("user");
-  const url = new URL(request.url);
-  const from = url.searchParams.get("from");
-  console.log(user);
-  if (user) throw redirect$1(decodeURIComponent(from) ?? "/app");
-  return null;
-}
-async function action$d({ request }) {
-  console.log("auth.login.action");
-  const session = await getSession(request.headers.get("cookie"));
-  let user;
-  try {
-    user = await authenticator.authenticate("user-pass", request);
-  } catch (error) {
-    if (error instanceof Error) {
-      console.log("auth.login.ERROR");
+    if (user) {
+      const userPointer = pointerObject(models.user, user.objectId);
+      query.equalTo("user", userPointer);
     }
+    if (thread) {
+      const threadPointer = pointerObject(models.thread, thread.objectId || thread.id);
+      query.equalTo("thread", threadPointer);
+    }
+    limit && query.limit(limit);
+    query.descending("createdAt");
+
+    return await query.find({ sessionToken: user.sessionToken });
+  } catch (error) {
+    console.log("message.read", error.message);
+    handleInvalidSessionToken(error);
   }
-  if (user?.error) return { error: user.error, errorType: user?.errorType };
-  session.set("user", user);
-  const url = new URL(request.url);
-  const from = url.searchParams.get("from");
-  throw redirect$1(from ?? "/app", {
-    headers: { "Set-Cookie": await commitSession(session) }
-  });
-}
-function Login() {
-  const actionData = useActionData();
-  const { state } = useNavigation();
-  return /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "grid gap-4", children: [
-    /* @__PURE__ */ jsxs("div", { className: "grid gap-2", children: [
-      /* @__PURE__ */ jsx(Label, { htmlFor: "email", children: "Email" }),
-      /* @__PURE__ */ jsx(Input, { name: "email", type: "email", required: true })
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "grid gap-2", children: [
-      /* @__PURE__ */ jsxs("div", { className: "flex items-center", children: [
-        /* @__PURE__ */ jsx(Label, { htmlFor: "password", children: "Password" }),
-        /* @__PURE__ */ jsx(
-          Link,
-          {
-            to: "/auth/remember",
-            className: "ml-auto inline-block-- text-sm underline",
-            children: "Forgot your password?"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ jsx(Input, { name: "password", type: "password", required: true })
-    ] }),
-    /* @__PURE__ */ jsx(
-      Turnstile,
-      {
-        error: actionData?.errorType === "challenge" ? actionData.error : null
-      }
-    ),
-    /* @__PURE__ */ jsxs("div", { children: [
-      /* @__PURE__ */ jsxs(
-        Button,
-        {
-          type: "submit",
-          className: "w-full relative",
-          disabled: state === "submitting" || state === "loading",
-          children: [
-            (state === "submitting" || state === "loading") && /* @__PURE__ */ jsx(LoaderCircle, { className: "absolute left-2 animate-spin" }),
-            "Login"
-          ]
-        }
-      ),
-      actionData?.error && state !== "loading" && /* @__PURE__ */ jsx("div", { className: "text-sm text-red-500", children: actionData.error }),
-      /* @__PURE__ */ jsx(Button, { variant: "outline", className: "w-full hidden", children: "Login with Google" })
-    ] }),
-    /* @__PURE__ */ jsxs(
-      "a",
-      {
-        href: "/auth/register",
-        className: "mt-4 text-center text-sm flex gap-4 justify-center border border-primary rounded-md py-1.5 text-primary",
-        children: [
-          "Don't have an account?",
-          /* @__PURE__ */ jsx("span", { className: "underline", children: "Sign up" })
-        ]
-      }
-    )
-  ] });
 }
 
-const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  action: action$d,
-  default: Login,
-  loader: loader$h
-}, Symbol.toStringTag, { value: 'Module' }));
-
-const schema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
-async function action$c({ request }) {
-  const url = new URL(request.url);
-  const token = url.searchParams.get("token");
-  const username = url.searchParams.get("username");
-  const form = await request.formData();
-  const password = form.get("password");
-  const challenge$1 = await challenge({ form });
-  if (challenge$1.error)
-    return { error: true, message: challenge$1.error, errorType: "challenge" };
-  const validate = schema.validate(password, { abortEarly: false });
-  if (validate?.error)
-    return {
-      error: true,
-      message: { title: validate.error.details[0].message }
-    };
-  const reset$1 = await reset({ password, username, token });
-  if (!reset$1)
-    return {
-      error: true,
-      message: { title: "Email or token invalid, try again!" }
-    };
-  return {
-    message: { title: "Your password has been changed" }
-  };
-}
-function Reset() {
-  const adata = useActionData();
-  const { state } = useNavigation();
-  const formRef = useRef();
-  useEffect(() => {
-    if (state === "loading") formRef.current.reset();
-  }, [state]);
-  return /* @__PURE__ */ jsxs(Form$1, { ref: formRef, method: "post", className: "space-y-4", children: [
-    /* @__PURE__ */ jsx(
-      InputField,
-      {
-        required: true,
-        type: "password",
-        name: "password",
-        label: "New password"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      Turnstile,
-      {
-        error: adata?.errorType === "challenge" ? adata.message : null
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      SubmitField,
-      {
-        label: "Reset password",
-        loader: state === "submitting" || state === "loading",
-        className: "w-full"
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      AlertField,
-      {
-        variant: adata?.error ? "error" : "success",
-        message: adata?.message
-      }
-    ),
-    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
-  ] });
+async function create$1(arg, sessionToken) {
+  try {
+    const Message = Parse.Object.extend("Message");
+    const message = new Message();
+    return await message.save(arg, { sessionToken });
+  } catch (error) {
+    console.log("message.create", error.message);
+    handleInvalidSessionToken(error);
+  }
 }
 
-const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  action: action$c,
-  default: Reset
-}, Symbol.toStringTag, { value: 'Module' }));
+const roles = {
+  assistant: "assistant",
+  user: "user",
+};
 
 const openai = new OpenAI({
-  // Add timeout configuration to prevent connection hangs
-  timeout: 60000, // 60 seconds timeout
-  maxRetries: 3, // Retry up to 3 times on connection failures
   ...(process.env.NODE_ENV === "development" &&
     process.env.USE_OPENAI_PROXY === "true" && {
       httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
@@ -3446,54 +2583,12 @@ async function createAssistant() {
 
 createAssistant();
 
-const ClassName = "Thread";
-
-async function read$2({ user, purpose = purposes.chat, objectId }) {
-  try {
-    const query = new Parse.Query(ClassName);
-    user && query.equalTo("user", user.objectId);
-    !objectId && query.equalTo("purpose", purpose);
-    !objectId && query.descending("createdAt");
-    if (objectId)
-      return await query.get(objectId, { sessionToken: user.sessionToken });
-    return await query.find({ sessionToken: user.sessionToken });
-  } catch (error) {
-    console.log("thread.read", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-async function create$1(args, sessionToken) {
-  try {
-    const Thread = Parse.Object.extend(ClassName);
-    const thread = new Thread();
-    return await thread.save(args, { sessionToken });
-  } catch (error) {
-    console.log("thread.create", error.message);
-  }
-}
-
-async function update(args, sessionToken) {
-  try {
-    const Thread = Parse.Object.extend(ClassName);
-    const thread = new Thread();
-    return await thread.save(args, { sessionToken });
-  } catch (error) {
-    console.log("thread.update", error.message);
-  }
-}
-
-const purposes = {
-  chat: "chat",
-  score: "score",
-};
-
 async function updateUsage(user, thread, usage) {
-  const $thread = await read$2({ user, objectId: thread.objectId });
+  const $thread = await read$3({ user, objectId: thread.objectId });
   const threadUsage = $thread.get("usage");
   // console.log("usage.updateUsage:thread.usage", threadUsage);
 
-  await update(
+  await update$1(
     {
       objectId: thread.objectId,
       usage: {
@@ -3519,6 +2614,1525 @@ async function updateUsage(user, thread, usage) {
     },
   });
 }
+
+async function getMessages(user) {
+  try {
+    const draftAssessmentThread = await getDraftAssessmentThread(user);
+    if (!draftAssessmentThread?.threadId) {
+      return [];
+    }
+
+    const openaiMessages = await openai.beta.threads.messages.list(draftAssessmentThread.threadId, {
+      limit: 100,
+      order: "asc",
+    });
+
+    const messages = openaiMessages.data
+      .map((msg) => {
+        const content = msg.content[0];
+        if (content?.type === "text") {
+          return {
+            objectId: msg.id,
+            role: msg.role,
+            content: content.text.value,
+            createdAt: new Date(msg.created_at * 1000).toJSON(),
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    return messages;
+  } catch (error) {
+    console.error("draftAssessment.getMessages: Error fetching messages", {
+      error: error.message,
+    });
+    return [];
+  }
+}
+
+async function sync$2(request, body) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  const { competencyItem, outcome } = body;
+
+  if (!outcome) {
+    return Response.json({ error: { message: "Outcome is required" } });
+  }
+
+  if (!competencyItem) {
+    return Response.json({ error: { message: "Competency item is required" } });
+  }
+
+  if (!vars.app.draftAssessmentRequestLimit || !vars.app.draftAssessmentRequestOutcomeLimit) {
+    console.warn(
+      "draftAssessment.sync: Rate limit environment variables are missing. " +
+      "Set APP_DRAFT_ASSESSMENT_REQUEST_LIMIT and APP_DRAFT_ASSESSMENT_REQUEST_OUTCOME_LIMIT " +
+      "in your .env file to enable rate limiting."
+    );
+  }
+
+  const outcomeCount = outcome?.draftAssessment?.count;
+  if (outcomeCount && outcomeCount >= Number(vars.app.draftAssessmentRequestOutcomeLimit)) {
+    return Response.json({
+      error: { message: `Draft assessment request limit: ${vars.app.draftAssessmentRequestOutcomeLimit} times` },
+    });
+  }
+
+  try {
+    const draftAssessmentThread = await getDraftAssessmentThread(user);
+
+    if (!draftAssessmentThread) {
+      console.error("draftAssessment.sync: Failed to create or retrieve assessment thread");
+      return Response.json({
+        error: { message: "Failed to create or retrieve assessment thread" },
+      });
+    }
+
+    const threadCount = draftAssessmentThread?.usage?.count;
+    if (threadCount && threadCount >= Number(vars.app.draftAssessmentRequestLimit)) {
+      console.warn("draftAssessment.sync: Thread request limit reached", {
+        threadCount,
+        limit: vars.app.draftAssessmentRequestLimit,
+      });
+      return Response.json({
+        error: {
+          message: `Draft assessment request limit: ${vars.app.draftAssessmentRequestLimit} times`,
+        },
+      });
+    }
+
+    const draftAssessment = await getDraftAssessment({
+      user,
+      competencyItem,
+      outcome,
+      draftAssessmentThread,
+    });
+
+    if (!draftAssessment) {
+      console.error("draftAssessment.sync: Failed to generate draft assessment", {
+        objectId: outcome?.objectId,
+        competencyItem: competencyItem?.title,
+      });
+      return Response.json({
+        error: { message: "Failed to generate draft assessment. Please try again." },
+      });
+    }
+
+    return Response.json(
+      draftAssessment,
+      !draftAssessmentThread
+        ? {
+          headers: {
+            "Set-Cookie": await commitSession(session),
+          },
+        }
+        : {}
+    );
+  } catch (error) {
+    console.error("draftAssessment.sync: Unexpected error", {
+      error: error.message,
+      stack: error.stack,
+      objectId: outcome?.objectId,
+    });
+    return Response.json({
+      error: {
+        message: error.message || "An error occurred while generating draft assessment",
+      },
+    });
+  }
+}
+
+async function getDraftAssessment({ user, competencyItem, outcome, draftAssessmentThread }) {
+  let draftAssessment = null,
+    usage = null,
+    rawResponse = null;
+  const content = `[${competencyItem.title}] - [${outcome.situation || ""}] - [${outcome.action || ""}] - [${outcome.outcome || ""}]`;
+
+  try {
+    await openai.beta.threads.messages.create(draftAssessmentThread.threadId, {
+      role: roles.user,
+      content,
+    });
+
+    const run = await openai.beta.threads.runs.create(draftAssessmentThread.threadId, {
+      assistant_id: vars.openai.draftAssessmentAssistantId,
+      stream: true,
+    });
+
+    for await (const r of run) {
+      try {
+        if (r.event === "thread.message.completed") {
+          const responseText = r.data?.content?.[0]?.text?.value;
+
+          if (!responseText) {
+            console.warn("draftAssessment.getDraftAssessment: No response text in message completed event");
+            continue;
+          }
+
+          // Store raw response for display in chat
+          rawResponse = responseText;
+
+          try {
+            const sections = responseText.match(/\[([^\]]+)\]/g);
+
+            if (sections && sections.length >= 3) {
+              const cleanedSections = sections.map(s => s.replace(/[\[\]]/g, "").trim());
+              const startIndex = cleanedSections.length >= 4 ? 1 : 0;
+
+              draftAssessment = {
+                situation: cleanedSections[startIndex] || "",
+                action: cleanedSections[startIndex + 1] || "",
+                outcome: cleanedSections[startIndex + 2] || "",
+              };
+            } else {
+              const situationMatch = responseText.match(/(?:Situation|SITUATION)[:\s\-]*([^\n]+(?:\n(?!Action|ACTION|Outcome|OUTCOME)[^\n]+)*)/i);
+              const actionMatch = responseText.match(/(?:Action|ACTION)[:\s\-]*([^\n]+(?:\n(?!Outcome|OUTCOME)[^\n]+)*)/i);
+              const outcomeMatch = responseText.match(/(?:Outcome|OUTCOME)[:\s\-]*([^\n]+(?:\n[^\n]+)*)/i);
+
+              draftAssessment = {
+                situation: situationMatch ? situationMatch[1].trim() : "",
+                action: actionMatch ? actionMatch[1].trim() : "",
+                outcome: outcomeMatch ? outcomeMatch[1].trim() : "",
+              };
+            }
+
+            if (!(draftAssessment.situation || draftAssessment.action || draftAssessment.outcome)) {
+              console.warn("draftAssessment.getDraftAssessment: No content found in parsed response", {
+                responsePreview: responseText.substring(0, 200),
+                responseLength: responseText.length,
+              });
+              draftAssessment = null;
+            }
+          } catch (parseError) {
+            console.error("draftAssessment.getDraftAssessment: Error parsing response", {
+              error: parseError.message,
+              responsePreview: responseText?.substring(0, 200),
+            });
+            draftAssessment = null;
+          }
+        }
+
+        if (r.event === "thread.run.completed") {
+          try {
+            const {
+              prompt_tokens: input,
+              completion_tokens: output,
+              total_tokens: total,
+            } = r.data?.usage || {};
+
+            if (input !== undefined || output !== undefined || total !== undefined) {
+              usage = { input: input || 0, output: output || 0, total: total || 0 };
+            } else {
+              console.warn("draftAssessment.getDraftAssessment: No usage data in run completed event");
+            }
+          } catch (usageError) {
+            console.warn("draftAssessment.getDraftAssessment: Error extracting usage data", {
+              error: usageError.message,
+            });
+          }
+        }
+      } catch (eventError) {
+        console.warn("draftAssessment.getDraftAssessment: Error processing stream event", {
+          event: r.event,
+          error: eventError.message,
+        });
+      }
+    }
+
+    if (draftAssessment && (draftAssessment.situation || draftAssessment.action || draftAssessment.outcome)) {
+      if (usage) {
+        try {
+          await updateUsage(user, draftAssessmentThread, usage);
+        } catch (usageUpdateError) {
+          console.warn("draftAssessment.getDraftAssessment: Failed to update usage", {
+            error: usageUpdateError.message,
+          });
+        }
+      } else {
+        console.warn("draftAssessment.getDraftAssessment: No usage data available");
+      }
+
+      return {
+        ...draftAssessment,
+        rawResponse: rawResponse || null,
+      };
+    } else {
+      console.error("draftAssessment.getDraftAssessment: Failed to parse or validate AI response", {
+        objectId: outcome.objectId,
+        hasDraftAssessment: !!draftAssessment,
+      });
+      return null;
+    }
+  } catch (error) {
+    console.error("draftAssessment.getDraftAssessment: OpenAI API error", {
+      error: error.message,
+      stack: error.stack,
+      objectId: outcome.objectId,
+    });
+    return null;
+  }
+}
+
+async function getDraftAssessmentThread(user) {
+  const purpose = purposes.draftAssessment;
+  const threads = await read$3({ user, purpose });
+
+  if (threads?.length > 0)
+    return {
+      objectId: threads[0].id,
+      threadId: threads[0].get("threadId"),
+      usage: threads[0].get("usage"),
+    };
+
+  const thread = await openai.beta.threads.create({
+    metadata: {
+      user: user.objectId,
+      purpose,
+    },
+  });
+
+  if (thread?.id) {
+    const thread_ = await create$2(
+      {
+        user: pointerObject(models.user, user.objectId),
+        name: "Draft Assessment thread",
+        threadId: thread.id,
+        thread,
+        purpose,
+      },
+      user.sessionToken
+    );
+
+    return {
+      objectId: thread_.id,
+      threadId: thread.id,
+      usage: thread_.get("usage"),
+    };
+  }
+
+  return null;
+}
+
+async function loader$n({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+
+  if (!user) return redirect$1("/auth/login");
+
+  const searchParams = new URL(request.url).searchParams;
+  let content = searchParams.get("q");
+  let competency = searchParams.get("c");
+
+  if (!content) return Response.json({});
+
+  const plan = await check$1(request, false, competency);
+  if (plan?.expired) {
+    session.flash("plan", plan);
+    return redirectStream$1(plan.url, session, request);
+  }
+
+  const draftAssessmentThread = await getDraftAssessmentThread(user);
+  if (!draftAssessmentThread) {
+    return Response.json({ error: { message: "Failed to create or retrieve assessment thread" } });
+  }
+
+  const userMessage = await openai.beta.threads.messages.create(draftAssessmentThread.threadId, {
+    role: "user",
+    content,
+  });
+
+  const run = await openai.beta.threads.runs.create(draftAssessmentThread.threadId, {
+    assistant_id: vars.openai.draftAssessmentAssistantId,
+    stream: true,
+  });
+
+  return eventStream(
+    request.signal,
+    function setup(send, close) {
+      return handleStream$1({
+        stream: streamDraftAssessmentResponse(run),
+        send,
+        close,
+        user,
+        thread: draftAssessmentThread,
+        userMessage,
+        runId: run.id,
+        session,
+      });
+    },
+    {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    }
+  );
+}
+
+function redirectStream$1(url, session, request) {
+  return eventStream(
+    request.signal,
+    function setup(send, close) {
+      send({
+        event: "redirected",
+        data: JSON.stringify({ url }),
+      });
+      close();
+    },
+    {
+      headers: {
+        "Set-Cookie": commitSession(session),
+      },
+    }
+  );
+}
+
+async function* streamDraftAssessmentResponse(run) {
+  for await (const chunk of run) {
+    if (
+      chunk.event === "thread.message.delta" &&
+      chunk.data?.delta?.content?.length > 0
+    ) {
+      for (const contentItem of chunk.data.delta.content) {
+        if (contentItem.type === "text" && contentItem.text?.value) {
+          const token = contentItem.text.value;
+          yield token;
+        }
+      }
+    }
+  }
+}
+
+async function handleStream$1({
+  stream,
+  send,
+  close,
+  user,
+  thread,
+  userMessage,
+  runId,
+  session,
+}) {
+  let fullResponse = "";
+
+  for await (const token of stream) {
+    fullResponse += token;
+    send({
+      event: "thread.message.delta",
+      data: token,
+    });
+  }
+
+  if (!fullResponse) {
+    console.error("Error: No response received from OpenAI.");
+    close();
+    return;
+  }
+
+  send({
+    event: "thread.message.completed",
+    data: "",
+  });
+
+  if (runId) {
+    try {
+      const runStatus = await openai.beta.threads.runs.retrieve(thread.threadId, runId);
+      const {
+        prompt_tokens: input,
+        completion_tokens: output,
+        total_tokens: total,
+      } = runStatus?.usage || {};
+
+      if (input !== undefined || output !== undefined || total !== undefined) {
+        const usage = { input: input || 0, output: output || 0, total: total || 0 };
+        await updateUsage(user, thread, usage);
+      }
+    } catch (usageError) {
+      console.warn("draft-assessment.sse: Error updating usage", {
+        error: usageError.message,
+      });
+    }
+  }
+
+  close();
+}
+
+const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  loader: loader$n
+}, Symbol.toStringTag, { value: 'Module' }));
+
+customAlphabet("1234567890abcdefghABCDEFGH", 8);
+
+const getPass = () => nanoid();
+
+
+// character sets
+const lower = 'abcdefghijklmnopqrstuvwxyz';
+const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const digits = '0123456789';
+const symbols = '!@#$%^&*()-_=+[]{}<>?';
+
+const all = lower + upper + digits + symbols;
+
+// nanoid generators for 1 char
+const nanoLower = customAlphabet(lower, 1);
+const nanoUpper = customAlphabet(upper, 1);
+const nanoDigit = customAlphabet(digits, 1);
+const nanoSymbol = customAlphabet(symbols, 1);
+const nanoAll = customAlphabet(all, 1);
+
+function generatePassword(length = 8) {
+  if (length < 8) length = 8;
+
+  // mandatory characters
+  const passwordChars = [
+    nanoLower(),
+    nanoUpper(),
+    nanoDigit(),
+    nanoSymbol(),
+  ];
+
+  // fill remaining chars
+  for (let i = passwordChars.length; i < length; i++) {
+    passwordChars.push(nanoAll());
+  }
+
+  // shuffle characters
+  return passwordChars
+    .sort(() => Math.random() - 0.5)
+    .join('');
+}
+
+function InputField({ ...props }) {
+  const ref = useRef();
+  function genPassword() {
+    const target = ref.current;
+    target.value = generatePassword();
+    target.select();
+    target.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(target.value);
+  }
+  function togglePassword() {
+    ref.current.type === "password" ? ref.current.type = "text" : ref.current.type = "password";
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5 relative", children: [
+    props?.label && /* @__PURE__ */ jsx(Label, { children: props?.label }),
+    /* @__PURE__ */ jsx(
+      Input,
+      {
+        ref,
+        ...props,
+        ...props?.setValue && {
+          onValueChange: props.setValue
+        }
+      }
+    ),
+    props?.info && /* @__PURE__ */ jsx("span", { className: "text-xs text-zinc-500", children: props.info }),
+    props?.error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: props.error }),
+    props?.type === "password" && /* @__PURE__ */ jsxs("div", { className: "absolute right-0 top-5", children: [
+      props?.genPass && /* @__PURE__ */ jsx(Button, { type: "button", variant: "ghost", size: "icon", onClick: genPassword, children: /* @__PURE__ */ jsx(LightningBoltIcon, {}) }),
+      props?.togglePass && /* @__PURE__ */ jsx(Button, { type: "button", variant: "ghost", size: "icon", onClick: togglePassword, children: /* @__PURE__ */ jsx(EyeOpenIcon, {}) })
+    ] })
+  ] });
+}
+
+function AlertField({ message, variant }) {
+  if (!message) return null;
+  return /* @__PURE__ */ jsxs(Alert, { className: cn$1("px-2 pt-2.5 pb-1.5", variants[variant]), children: [
+    /* @__PURE__ */ jsx(Info, { className: "!left-2 !top-2 h-4 w-4" }),
+    /* @__PURE__ */ jsx(AlertTitle, { children: message.title }),
+    /* @__PURE__ */ jsx(AlertDescription, { className: "text-xs", children: message.description })
+  ] });
+}
+const variants = {
+  error: "text-red-500 [&>svg]:text-red-500 border-red-500",
+  success: "text-green-500 [&>svg]:text-green-500 border-green-500"
+};
+
+async function register(args) {
+  const { email, password, ...meta } = args;
+
+  try {
+    const user = await new Parse.User().signUp(
+      {
+        username: email,
+        password,
+        email,
+        meta
+      },
+      {
+        useMasterKey: true,
+      }
+    );
+
+    await assign(user, "user");
+
+    return user;
+  } catch (error) {
+    console.log("parse.auth.register.error", error.code, error.message);
+    return { error: error.message }
+  }
+}
+
+async function assign(user, role = "user") {
+  try {
+    const $role = await new Parse.Query("_Role")
+      .equalTo("name", role)
+      .first({ useMasterKey: true });
+
+    $role.getUsers().add(user);
+    await $role.save(null, { useMasterKey: true });
+
+    console.log("parse.auth.assign", user.id);
+    return { message: "Role assined!" };
+  } catch (error) {
+    console.log("parse.auth.assign.error", error.code, error.message);
+    return { error: error.message }
+  }
+
+}
+
+async function verify(email) {
+  try {
+    const data = await Parse.User.requestEmailVerification(email);
+    // console.log("parse.auth.verify", data);
+
+    return {
+      error: false,
+      message: "Check your email now!",
+    }
+  } catch (error) {
+    console.log("parse.auth.verify.error", error.code, error.message);
+
+    return {
+      error: true,
+      message: error.message,
+    }
+  }
+}
+
+async function confirm({ username, token }) {
+  const qs = new URLSearchParams({
+    username,
+    token,
+  }).toString();
+
+  try {
+    const data = await fetch(
+      `${serverURL}/apps/${appId}/verify_email?${qs}`
+    );
+
+    const url = new URLSearchParams(data?.url);
+    // console.log("parse.auth.confirm", url);
+
+    const success = data?.url.includes("verify_email_success");
+    const failed = data?.url.includes("invalid_verification_link");
+
+    if (failed)
+      return {
+        error: true,
+        message: "Username or token invalid! try again."
+      }
+
+    return {
+      error: false,
+      message: "Your email has been verified!, Try login.",
+    }
+  } catch (error) {
+    console.log("parse.auth.confirm", error.message);
+  }
+}
+
+async function remember(email) {
+  try {
+    const remember = await Parse.User.requestPasswordReset(email);
+    console.log("parse.auth.remember", remember);
+    return remember;
+  } catch (error) {
+    console.log("parse.auth.remember.error", error.code, error.message);
+  }
+}
+
+async function reset({ password, username, token }) {
+  const body = new URLSearchParams({
+    new_password: password,
+    confirm_new_password: password,
+    username,
+    token,
+    "utf-8": "✓",
+  });
+
+  try {
+    const data = await fetch(
+      `${serverURL}/apps/${appId}/request_password_reset`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body,
+      }
+    );
+
+    const url = new URLSearchParams(data?.url);
+    // console.log("parse.auth.reset", url);
+
+    const success = data?.url.includes("success");
+    const failed = data?.url.includes("failed");
+    const error = url.get("error");
+
+    if (error) return false;
+    return true;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function login(username, password) {
+  try {
+    return await Parse.User.logIn(username, password);
+  } catch (error) {
+    console.log("parse:auth:login", error.message);
+    return { error: error.message };
+  }
+}
+
+async function logout$1() {
+  try {
+    return await Parse.User.logOut();
+  } catch (error) {
+    console.log("parse:auth:logout", error.message);
+    // return { error: error.message };
+  }
+}
+
+let isHydrating$1 = true;
+function Turnstile({ onChange, error }) {
+  const [isHydrated, setIsHydrated] = useState(!isHydrating$1);
+  const [token, setToken] = useState(null);
+  const ref = useRef();
+  useEffect(() => {
+    isHydrating$1 = false;
+    setIsHydrated(true);
+  }, []);
+  useEffect(() => {
+    if (ref.current) {
+      turnstile.remove();
+      turnstile.render(ref.current, {
+        sitekey: "0x4AAAAAAA8rbrKZhit0xcFU",
+        size: "flexible",
+        theme: "light",
+        callback: function(token2) {
+          setToken(token2);
+          onChange?.({ target: { value: token2 } });
+        },
+        "error-callback": function(args) {
+          console.log(args);
+        }
+      });
+    }
+  }, [ref.current]);
+  useEffect(() => {
+    if (error) turnstile.reset();
+  }, [error]);
+  return isHydrated ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("div", { ref }),
+    !token && /* @__PURE__ */ jsx(
+      "input",
+      {
+        required: true,
+        className: "pointer-events-none w-full h-[1px] p-0 border-none focus:outline-none text-[0px] text-white -!my-4"
+      }
+    )
+  ] }) : null;
+}
+
+const { TURNSTILE_SECRET_KEY: secretKey, TURNSTILE_VERIFY_URL: verifyUrl } =
+  process.env;
+
+async function challenge({ form }) {
+  const token = form.get("cf-turnstile-response");
+
+  try {
+    const res = await fetch(verifyUrl, {
+      method: "POST",
+      body: JSON.stringify({
+        secret: secretKey,
+        response: token,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await res.json();
+    // console.log(token, data);
+
+    if (data.success) return true;
+    return { error: "Turnstile verification failed" };
+  } catch (error) {
+    console.log("turnstile.challenge", error?.message);
+    return { error: "Error verifying Turnstile token" };
+  }
+}
+
+function cn(...inputs) {
+  return twMerge(clsx(inputs))
+}
+
+function SelectField({ ...props }) {
+  return /* @__PURE__ */ jsxs("div", { className: cn("grid gap-1.5", props?.className), children: [
+    props?.label && /* @__PURE__ */ jsx(Label, { children: props.label }),
+    /* @__PURE__ */ jsxs(
+      Select,
+      {
+        name: props?.name,
+        required: props?.required,
+        onValueChange: props?.onValueChange,
+        defaultValue: props?.defaultValue,
+        children: [
+          /* @__PURE__ */ jsx(SelectTrigger, { className: "bg-white shadow-none", children: /* @__PURE__ */ jsx(SelectValue, { placeholder: props?.placeholder }) }),
+          /* @__PURE__ */ jsx(SelectContent, { children: /* @__PURE__ */ jsxs(SelectGroup, { children: [
+            props?.selectLabel && /* @__PURE__ */ jsx(SelectLabel, { children: props.selectLabel }),
+            props?.items.map((item, index) => /* @__PURE__ */ jsx(SelectItem, { value: item.value, children: item.label }, index))
+          ] }) })
+        ]
+      }
+    ),
+    props?.error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: props.error })
+  ] });
+}
+
+const schema$4 = Joi.object({
+  email: Joi.string().email().required().label("Email"),
+  password: Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password"),
+  firstName: Joi.string().required().label("First name"),
+  lastName: Joi.string().required().label("Last name"),
+  phone: Joi.string().regex(/^[0-9]{10}$/).messages({ "string.pattern.base": `Phone number must have 10 digits.` }).required(),
+  fields: Joi.object({
+    association: Joi.string().required().label("Association"),
+    priceKey: Joi.string().allow(null).optional().label("Price key")
+  })
+});
+async function loader$m({ request }) {
+  return null;
+}
+async function action$i({ request }) {
+  const url = new URL(request.url);
+  const priceKey = url.searchParams.get("priceKey");
+  const form = await request.formData();
+  const email = form.get("email");
+  const password = form.get("password");
+  const repassword = form.get("repassword");
+  const firstName = form.get("firstName");
+  const lastName = form.get("lastName");
+  const phone = form.get("phone");
+  const association = form.get("association");
+  const data = { email, password, firstName, lastName, phone, fields: { association, priceKey } };
+  const challenge$1 = await challenge({ form });
+  if (challenge$1.error)
+    return { error: true, message: { title: "Fill the Chaptcha!" } };
+  const validate = schema$4.validate(data, { abortEarly: false });
+  if (validate?.error)
+    return {
+      error: true,
+      message: { title: validate.error.details[0].message }
+    };
+  if (!repassword || password !== repassword)
+    return {
+      error: true,
+      message: { title: "Passwords don't match!" }
+    };
+  const signup = await register(data);
+  if (signup?.error)
+    return {
+      error: true,
+      message: { title: signup.error }
+    };
+  return {
+    message: { title: "Signup completed! Check your email to begin" }
+  };
+}
+function Signup() {
+  const adata = useActionData();
+  const { state } = useNavigation();
+  const formRef = useRef();
+  useEffect(() => {
+    if (state === "loading") formRef.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref: formRef, method: "post", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "email",
+        name: "email",
+        label: "Email"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "password",
+        name: "password",
+        label: "Password",
+        info: "At least 8 characters, with a special character, uppercase and lowercase letters, and numbers.",
+        genPass: true,
+        togglePass: true
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "password",
+        name: "repassword",
+        label: "Repeat Password",
+        togglePass: true
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
+      /* @__PURE__ */ jsx(
+        InputField,
+        {
+          required: true,
+          type: "text",
+          name: "firstName",
+          label: "First name"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        InputField,
+        {
+          required: true,
+          type: "text",
+          name: "lastName",
+          label: "Last name"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        InputField,
+        {
+          required: true,
+          type: "tel",
+          name: "phone",
+          label: "Phone"
+        }
+      ),
+      /* @__PURE__ */ jsx(SelectField, { required: true, name: "association", label: "Association", items: associations.map((i) => ({ label: i, value: i })) })
+    ] }),
+    /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: adata?.errorType === "challenge" ? adata.message : null
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Register now",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: adata?.error ? "error" : "success",
+        message: adata?.message
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$i,
+  default: Signup,
+  loader: loader$m
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const schema$3 = Joi.string().email().required().label("Email");
+async function action$h({ request }) {
+  const form = await request.formData();
+  const email = form.get("email");
+  const challenge$1 = await challenge({ form });
+  if (challenge$1.error)
+    return { error: true, message: challenge$1.error, errorType: "challenge" };
+  const validate = schema$3.validate(email);
+  if (validate?.error)
+    return {
+      error: true,
+      message: { title: validate.error.details[0].message }
+    };
+  const remember$1 = await remember(email);
+  if (!remember$1)
+    return {
+      error: true,
+      message: { title: "Email not found!" }
+    };
+  return {
+    message: { title: "Check your email" }
+  };
+}
+function Reset$1() {
+  const adata = useActionData();
+  const { state } = useNavigation();
+  const ref = useRef();
+  useEffect(() => {
+    if (state === "loading") ref.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref, method: "post", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "email",
+        name: "email",
+        label: "Email"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: adata?.errorType === "challenge" ? adata.message : null
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Reset Password",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: adata?.error ? "error" : "success",
+        message: adata?.message
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$h,
+  default: Reset$1
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const Checkbox = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  CheckboxPrimitive.Root,
+  {
+    ref,
+    className: cn$1(
+      "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+      className
+    ),
+    ...props,
+    children: /* @__PURE__ */ jsx(
+      CheckboxPrimitive.Indicator,
+      {
+        className: cn$1("flex items-center justify-center text-current"),
+        children: /* @__PURE__ */ jsx(CheckIcon, { className: "h-4 w-4" })
+      }
+    )
+  }
+));
+Checkbox.displayName = CheckboxPrimitive.Root.displayName;
+
+function CheckboxField({ setValue, error, ...props }) {
+  return /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsxs("div", { className: "flex items-start space-x-2", children: [
+      /* @__PURE__ */ jsx(
+        Checkbox,
+        {
+          ...props,
+          ...setValue && {
+            onValueChange: setValue
+          }
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "label",
+        {
+          htmlFor: props?.id,
+          className: "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+          children: props?.label
+        }
+      )
+    ] }),
+    error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: error })
+  ] });
+}
+
+const Class$1 = "Setting";
+
+async function create(user, args) {
+  try {
+    const Setting = Parse.Object.extend(Class$1);
+    const setting = new Setting();
+    return await setting.save(
+      {
+        user: pointerObject(models.user, user.objectId),
+        ...args,
+      },
+      { useMasterKey: true }
+    );
+  } catch (error) {
+    console.log("setting.create", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function read$1(user) {
+  try {
+    const query = new Parse.Query(Class$1);
+    query.equalTo("user", user.objectId);
+    const data = await query.find({ sessionToken: user.sessionToken });
+    return data[0];
+  } catch (error) {
+    console.log("setting.read", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function update(user, args) {
+  try {
+    const Setting = Parse.Object.extend(Class$1);
+    const setting = new Setting();
+    return await setting.save(args, { sessionToken: user.sessionToken });
+  } catch (error) {
+    console.log("setting.update", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function upsert(user, args) {
+  const setting = await read$1(user);
+  if (setting)
+    return await update(user, {
+      objectId: setting.id,
+      ...args,
+    });
+  return await create(user, args);
+}
+
+const schema$2 = Joi.object({
+  fullName: Joi.string().required(),
+  termsConditions: Joi.string().required(),
+  privacyPolicy: Joi.string().required(),
+  appRules: Joi.string().required()
+});
+async function loader$l({ request }) {
+  const session = await getSession(request.headers.get("cookie"));
+  const user = session.get("user");
+  const setting = session.get("setting");
+  if (!user) return redirect$2("/auth/login");
+  console.log("app.consent.loader", user.objectId);
+  if (setting?.consent) return redirect$2("/app");
+  return null;
+}
+async function action$g({ request }) {
+  const session = await getSession(request.headers.get("cookie"));
+  const user = session.get("user");
+  console.log("app.consent.action", user.objectId);
+  const formData = await request.formData();
+  const fullName = formData.get("fullName");
+  const termsConditions = formData.get("termsConditions");
+  const privacyPolicy = formData.get("privacyPolicy");
+  const appRules = formData.get("appRules");
+  const consent = { fullName, termsConditions, privacyPolicy, appRules };
+  try {
+    await schema$2.validateAsync(consent, { abortEarly: false });
+    const setting = await upsert(user, { consent });
+    session.set("setting", setting);
+    return redirect$2("/app", {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    });
+  } catch (error) {
+    return {
+      error: error.details
+    };
+  }
+}
+function Consent() {
+  const actionData = useActionData();
+  const { state } = useNavigation();
+  return /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "grid gap-6", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        name: "fullName",
+        label: "Full name",
+        rquired: "true",
+        error: actionData?.error?.find((i) => i.context.key === "fullName")?.message
+      }
+    ),
+    /* @__PURE__ */ jsx("center", { children: /* @__PURE__ */ jsx("small", { children: (/* @__PURE__ */ new Date()).toUTCString() }) }),
+    /* @__PURE__ */ jsxs("div", { className: "flex gap-2 justify-end", children: [
+      /* @__PURE__ */ jsx(
+        CheckboxField,
+        {
+          name: "termsConditions",
+          label: "I acknowledge and agree to the terms and conditions",
+          rquired: "true",
+          error: actionData?.error?.find((i) => i.context.key === "termsConditions")?.message
+        }
+      ),
+      /* @__PURE__ */ jsxs(
+        "a",
+        {
+          href: "/terms-conditions.pdf",
+          target: "_blank",
+          className: "flex items-center gap-1 text-primary text-xs rounded-full px-2 h-7 leading-6 border border-primary",
+          children: [
+            /* @__PURE__ */ jsx(ExternalLink, { size: 16 }),
+            "View"
+          ]
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "flex gap-2 justify-end", children: [
+      /* @__PURE__ */ jsx(
+        CheckboxField,
+        {
+          name: "privacyPolicy",
+          label: "I acknowledge and agree to the Privacy Policy",
+          rquired: "true",
+          error: actionData?.error?.find((i) => i.context.key === "privacyPolicy")?.message
+        }
+      ),
+      /* @__PURE__ */ jsxs(
+        "a",
+        {
+          href: "/privacy-policy.pdf",
+          target: "_blank",
+          className: "flex items-center gap-1 text-primary text-xs rounded-full px-2 h-7 leading-6 border border-primary",
+          children: [
+            /* @__PURE__ */ jsx(ExternalLink, { size: 16 }),
+            "View"
+          ]
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsx(
+      CheckboxField,
+      {
+        name: "appRules",
+        label: "I consent to the ethical use of the dashboard, affirm that all work experience examples provided are factual, and agree that CertNova may disclose my AI chat history to engineering associations upon request.",
+        rquired: "true",
+        error: actionData?.error?.find((i) => i.context.key === "appRules")?.message
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "I Agree",
+        className: "mt-8",
+        loader: state === "submitting" || state === "loading"
+      }
+    )
+  ] });
+}
+
+const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$g,
+  default: Consent,
+  loader: loader$l
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const schema$1 = Joi.string().email().required().label("Email");
+async function loader$k({ request }) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  const username = url.searchParams.get("username");
+  if (username && token) {
+    const confirm$1 = await confirm({ username, token });
+    if (!confirm$1?.error) throw redirect$1("/auth/login");
+  }
+  return null;
+}
+async function action$f({ request }) {
+  const form = await request.formData();
+  const email = form.get("email");
+  const challenge$1 = await challenge({ form });
+  if (challenge$1.error)
+    return { error: true, message: challenge$1.error, errorType: "challenge" };
+  const validate = schema$1.validate(email);
+  if (validate?.error)
+    return {
+      error: true,
+      message: validate.error.details[0].message
+    };
+  return await verify(email);
+}
+function Verify() {
+  const ldata = useLoaderData();
+  const adata = useActionData();
+  const [alert, setAlert] = useState(null);
+  const { state } = useNavigation();
+  const ref = useRef();
+  const [searchParams] = useSearchParams();
+  searchParams.get("email");
+  useEffect(() => {
+    setAlert({
+      error: ldata?.error ?? adata?.error,
+      message: ldata?.message ?? adata?.message
+    });
+  }, [ldata, adata]);
+  useEffect(() => {
+    if (state === "loading") ref.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref, method: "post", action: "/auth/verify", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "email",
+        name: "email",
+        label: "Email"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: adata?.errorType === "challenge" ? adata.message : null
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Verify email",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    alert?.message && /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: alert?.error ? "error" : "success",
+        message: { title: alert?.message }
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$f,
+  default: Verify,
+  loader: loader$k
+}, Symbol.toStringTag, { value: 'Module' }));
+
+function isMobileServer(request) {
+  var ua = request.headers.get("user-agent").toLowerCase();
+  const is =
+    /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(
+      ua
+    ) ||
+    /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(
+      ua.substr(0, 4)
+    );
+  return is ? true : false;
+}
+
+let authenticator = new Authenticator();
+
+authenticator.use(
+  new FormStrategy(async ({ form }) => {
+    let email = form.get("email");
+    let password = form.get("password");
+
+    const challenge$1 = await challenge({ form });
+    if (challenge$1.error)
+      return { error: challenge$1.error, errorType: "challenge" };
+
+    return await login(email, password);
+  }),
+  "user-pass"
+);
+
+async function logout() {
+  await logout$1();
+}
+
+async function loader$j({ request }) {
+  console.log("auth.login.loader");
+  if (isMobileServer(request)) return redirect$1("/mobile");
+  const session = await getSession(request.headers.get("cookie"));
+  const user = session.get("user");
+  const url = new URL(request.url);
+  const from = url.searchParams.get("from");
+  console.log(user);
+  if (user) throw redirect$1(decodeURIComponent(from) ?? "/app");
+  return null;
+}
+async function action$e({ request }) {
+  console.log("auth.login.action");
+  const session = await getSession(request.headers.get("cookie"));
+  let user;
+  try {
+    user = await authenticator.authenticate("user-pass", request);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.log("auth.login.ERROR");
+    }
+  }
+  if (user?.error) return { error: user.error, errorType: user?.errorType };
+  session.set("user", user);
+  const url = new URL(request.url);
+  const from = url.searchParams.get("from");
+  throw redirect$1(from ?? "/app", {
+    headers: { "Set-Cookie": await commitSession(session) }
+  });
+}
+function Login() {
+  const actionData = useActionData();
+  const { state } = useNavigation();
+  return /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "grid gap-4", children: [
+    /* @__PURE__ */ jsxs("div", { className: "grid gap-2", children: [
+      /* @__PURE__ */ jsx(Label, { htmlFor: "email", children: "Email" }),
+      /* @__PURE__ */ jsx(Input, { name: "email", type: "email", required: true })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "grid gap-2", children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex items-center", children: [
+        /* @__PURE__ */ jsx(Label, { htmlFor: "password", children: "Password" }),
+        /* @__PURE__ */ jsx(
+          Link,
+          {
+            to: "/auth/remember",
+            className: "ml-auto inline-block-- text-sm underline",
+            children: "Forgot your password?"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsx(Input, { name: "password", type: "password", required: true })
+    ] }),
+    /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: actionData?.errorType === "challenge" ? actionData.error : null
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { children: [
+      /* @__PURE__ */ jsxs(
+        Button,
+        {
+          type: "submit",
+          className: "w-full relative",
+          disabled: state === "submitting" || state === "loading",
+          children: [
+            (state === "submitting" || state === "loading") && /* @__PURE__ */ jsx(LoaderCircle, { className: "absolute left-2 animate-spin" }),
+            "Login"
+          ]
+        }
+      ),
+      actionData?.error && state !== "loading" && /* @__PURE__ */ jsx("div", { className: "text-sm text-red-500", children: actionData.error }),
+      /* @__PURE__ */ jsx(Button, { variant: "outline", className: "w-full hidden", children: "Login with Google" })
+    ] }),
+    /* @__PURE__ */ jsxs(
+      "a",
+      {
+        href: "/auth/register",
+        className: "mt-4 text-center text-sm flex gap-4 justify-center border border-primary rounded-md py-1.5 text-primary",
+        children: [
+          "Don't have an account?",
+          /* @__PURE__ */ jsx("span", { className: "underline", children: "Sign up" })
+        ]
+      }
+    )
+  ] });
+}
+
+const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$e,
+  default: Login,
+  loader: loader$j
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const schema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
+async function action$d({ request }) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  const username = url.searchParams.get("username");
+  const form = await request.formData();
+  const password = form.get("password");
+  const challenge$1 = await challenge({ form });
+  if (challenge$1.error)
+    return { error: true, message: challenge$1.error, errorType: "challenge" };
+  const validate = schema.validate(password, { abortEarly: false });
+  if (validate?.error)
+    return {
+      error: true,
+      message: { title: validate.error.details[0].message }
+    };
+  const reset$1 = await reset({ password, username, token });
+  if (!reset$1)
+    return {
+      error: true,
+      message: { title: "Email or token invalid, try again!" }
+    };
+  return {
+    message: { title: "Your password has been changed" }
+  };
+}
+function Reset() {
+  const adata = useActionData();
+  const { state } = useNavigation();
+  const formRef = useRef();
+  useEffect(() => {
+    if (state === "loading") formRef.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref: formRef, method: "post", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "password",
+        name: "password",
+        label: "New password"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: adata?.errorType === "challenge" ? adata.message : null
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Reset password",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: adata?.error ? "error" : "success",
+        message: adata?.message
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$d,
+  default: Reset
+}, Symbol.toStringTag, { value: 'Module' }));
 
 /**
  * Transcribe audio using OpenAI Whisper API with whisper-1 model
@@ -3762,7 +4376,7 @@ function estimateTextTokens(text) {
   return Math.max(1, estimatedTokens); // Minimum 1 token
 }
 
-async function action$b({ request }) {
+async function action$c({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const thread = session.get("thread");
@@ -3809,9 +4423,9 @@ async function action$b({ request }) {
   }
 }
 
-const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$b
+  action: action$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Dialog = DialogPrimitive.Root;
@@ -4190,7 +4804,7 @@ const resources = {
   },
 };
 
-async function action$a({ request }) {
+async function action$b({ request }) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
@@ -4243,13 +4857,66 @@ function DashUserCreate() {
   );
 }
 
-const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$a,
+  action: action$b,
   default: DashUserCreate
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$g({ request }) {
+async function loader$i({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  if (!user) return redirect$1("/auth/login");
+
+  // Check if this is a request for messages
+  const url = new URL(request.url);
+  if (url.pathname === "/draft-assessment/messages") {
+    const messages = await getMessages(user);
+    return Response.json(messages, {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    });
+  }
+
+  return redirect$1("/app");
+}
+
+async function action$a({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  if (!user) return redirect$1("/auth/login");
+
+  const body = await request.json();
+  const { competencyItem } = body;
+  const competency = `${competencyItem?.competencyGroup?.order}.${competencyItem?.order}`;
+
+  const plan = await check$1(request, false, competency);
+  if (plan?.expired) {
+    session.flash("plan", plan);
+    return Response.json(
+      {
+        redirected: true,
+        url: plan.url,
+      },
+      {
+        headers: {
+          "Set-Cookie": await commitSession(session),
+        },
+      }
+    );
+  }
+
+  return await sync$2(request, body);
+}
+
+const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$a,
+  loader: loader$i
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$h({ request }) {
   return redirect$1("/app");
 }
 async function action$9({ request, params }) {
@@ -4259,7 +4926,7 @@ async function action$9({ request, params }) {
   if (!user) return redirect$1("/auth/login");
   const action2 = params.action;
   let body;
-  if (action2 === "create" || action2 === "update") {
+  if (action2 === "create") {
     body = await request.json();
     const competency = body.competency;
     const $competency = `${competency?.competencyGroup?.order}.${competency?.order}`;
@@ -4278,6 +4945,8 @@ async function action$9({ request, params }) {
         }
       );
     }
+  } else if (action2 === "update") {
+    body = await request.json();
   }
   let result;
   const thread = session.get("thread");
@@ -4294,7 +4963,8 @@ async function action$9({ request, params }) {
     );
   }
   if (action2 === "get") {
-    result = await read$4(user, { thread });
+    const outcomes = await read$4(user, { thread });
+    result = outcomes ? outcomes.map((o) => o.toJSON ? o.toJSON() : o) : [];
   }
   if (action2 === "update") {
     result = await update$2(
@@ -4318,14 +4988,14 @@ const outcomeSchema = {
   flag: "idle"
 };
 
-const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$9,
-  loader: loader$g,
+  loader: loader$h,
   outcomeSchema
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$f({ request }) {
+async function loader$g({ request }) {
   const { link, token, username } = Object.fromEntries(new URL(request.url).searchParams);
   const type = link.split("/").reverse()[0];
   switch (type) {
@@ -4339,9 +5009,9 @@ async function loader$f({ request }) {
   return null;
 }
 
-const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  loader: loader$f
+  loader: loader$g
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const THEMES = {
@@ -4712,7 +5382,7 @@ const boxes = {
   }
 };
 
-const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: DashOverview
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -4742,7 +5412,7 @@ function DashSettings() {
   ] }) });
 }
 
-const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$8,
   default: DashSettings
@@ -5342,7 +6012,7 @@ function Notes({ data, resource }) {
   ] });
 }
 
-async function loader$e({ request, params }) {
+async function loader$f({ request, params }) {
   const resource = new URL(request.url).searchParams.get("resource");
   const userId = params.id;
   if (!resource) return redirect$1("/dash/user");
@@ -5468,12 +6138,12 @@ function ProgressModule({ start, end, value, ...props }) {
   ] });
 }
 
-const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   ProgressModule,
   action: action$7,
   default: DashUserId,
-  loader: loader$e
+  loader: loader$f
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Breadcrumb = React.forwardRef(
@@ -6177,6 +6847,12 @@ const data$1 = {
       label: "Profile",
       icon: User,
       to: "profile"
+    },
+    {
+      name: "pricing",
+      label: "Plans",
+      icon: Award,
+      to: "pricing"
     }
   ]
 };
@@ -6198,7 +6874,7 @@ function Settings() {
     /* @__PURE__ */ jsxs(
       DialogContent,
       {
-        className: "overflow-hidden p-0 md:max-h-[600px] md:max-w-[700px] lg:max-w-[900px]",
+        className: "overflow-hidden p-0 md:max-h-[640px] md:max-w-[1024px] lg:max-w-[1024px]",
         onInteractOutside: (e) => {
           e.preventDefault();
         },
@@ -6240,7 +6916,7 @@ function Settings() {
   ] });
 }
 
-const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Settings
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6252,7 +6928,7 @@ function shouldRevalidate$2({ currentUrl, nextUrl }) {
     return true;
   return false;
 }
-async function loader$d({ request }) {
+async function loader$e({ request }) {
   const data = await licenseData({ request });
   return Response.json({ ...data });
 }
@@ -6328,10 +7004,10 @@ const columns$1 = () => [
   }
 ];
 
-const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: DashLicense,
-  loader: loader$d,
+  loader: loader$e,
   shouldRevalidate: shouldRevalidate$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
@@ -6368,61 +7044,42 @@ function TextareaField({
   ] });
 }
 
-function module (options) {
-  var transporter = nodemailer.createTransport({
-    service: options.service,
-    auth: {
-      user: options.email,
-      pass: options.password,
-    },
-  });
-
-  const sendMail = function (mail) {
-    console.log("sendMail");
-    return new Promise(function (resolve, reject) {
-      var mailOptions = {
-        from: options.from,
-        sender: options.sender,
-        to: [mail.to],
-        subject: mail.subject,
-        text: mail.text,
-        html: mail.html,
-        attachments: mail.attachments,
-      };
-
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.log(error);
-          reject(error);
-        } else {
-          console.log("Message sent: " + info.response);
-          resolve(info);
-        }
-      });
-    });
-  };
+function module() {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const from = process.env.EMAIL_FROM;
 
   return {
-    sendMail,
+    sendMail: async (mail) => {
+      try {
+        const { error } = await resend.emails.send({
+          from,
+          to: [mail.to],
+          subject: mail.subject,
+          text: mail.text,
+          html: mail.html,
+        });
+
+        if (error) console.error("Resend send error:", error);
+      } catch (e) {
+        console.error("Unexpected Resend error:", e);
+      }
+    }
   };
 }
 
-const { service, username: email, password, from } = vars.email;
-
 const options = {
-  service,
-  email,
-  password,
+  from: process.env.EMAIL_FROM,
+  to: process.env.EMAIL_RECIPIENT,
 };
 
 const Email = async ({ payload }) =>
-  module(options).sendMail({
-    from,
-    sender: from,
+  module().sendMail({
+    from: options.from,
+    to: payload?.to ?? options.to,
     ...payload,
   });
 
-async function loader$c() {
+async function loader$d() {
   return null;
 }
 async function action$6({ request }) {
@@ -6547,14 +7204,14 @@ function Reviewer() {
   ] });
 }
 
-const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$6,
   default: Contact,
-  loader: loader$c
+  loader: loader$d
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$b({ request }) {
+async function loader$c({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const plan = session.get("plan");
   return { plan };
@@ -6593,10 +7250,10 @@ function AppAlert() {
   );
 }
 
-const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route22 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: AppAlert,
-  loader: loader$b
+  loader: loader$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function shouldRevalidate$1({ currentUrl, nextUrl }) {
@@ -6606,7 +7263,7 @@ function shouldRevalidate$1({ currentUrl, nextUrl }) {
     return true;
   return false;
 }
-async function loader$a({ request }) {
+async function loader$b({ request }) {
   const url = new URL(request.url);
   const resource = url.pathname.replace("/dash/", "");
   const data = await usersData({ request });
@@ -6800,43 +7457,358 @@ const columns = ({ resource, admin }) => [
   }
 ];
 
-const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route23 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$5,
   default: DashUser,
-  loader: loader$a,
+  loader: loader$b,
   shouldRevalidate: shouldRevalidate$1
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$9({ request }) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const user = session.get("user");
+const Class = "Competency";
 
-  if (!user) return redirect$1("/auth/login");
-
-  let profile = session.get("profile");
-  let license = session.get("license");
-
-  if (!profile) profile = (await read$5(user))?.toJSON();
-
-  if (!license) license = (await read$6(user))?.toJSON();
-
-  if (license) {
-    const {
-      product: { name },
-    } = await stripe.prices.retrieve(license.priceId, {
-      expand: ["product"],
-    });
-
-    license = { ...license, name };
+async function read() {
+  try {
+    const query = new Parse.Query(Class);
+    query.include("competencyGroup");
+    const data = await query.find();
+    return modifier(data);
+  } catch (error) {
+    console.log("competency.getAll", error.message);
+    handleInvalidSessionToken(error);
   }
-
-  return Response.json({ profile, license });
 }
 
-const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+function modifier(data) {
+  return data.reduce((t, v) => {
+    const cg = v.get("competencyGroup").toJSON();
+    const g = t.find((i) => i.objectId === cg.objectId);
+    !g ? t.push({ ...cg, items: [v] }) : g.items.push(v);
+    return t;
+  }, []);
+}
+
+async function init$1(session) {
+  const user = session.get("user");
+  let thread = session.get("thread");
+  let file = session.get("file");
+
+  if (thread) {
+    console.log("chat.init", "current thread", thread.objectId, file?.id);
+    return { thread, file };
+  }
+
+  const threads = await read$3({ user });
+  console.log("chat.init", "all threads", threads.length);
+
+  if (threads.length === 0) {
+    const _thread = await openai.beta.threads.create();
+
+    if (_thread.error) {
+      console.log("chat.init", _thread.error.error);
+      return { error: _thread.error.error };
+    }
+
+    const res = await create$2(
+      {
+        name: "Thread 1",
+        threadId: _thread.id,
+        user: pointerObject(models.user, user.objectId),
+        thread: _thread,
+        purpose: purposes.chat,
+      },
+      user.sessionToken
+    );
+    thread = res.toJSON();
+
+    console.log("chat.init", "add new thread", _thread?.id, thread?.objectId);
+  } else {
+    thread = threads[0].toJSON();
+  }
+
+  file = await getFile(thread?.thread);
+
+  session.set("thread", thread);
+  session.set("file", file);
+
+  console.log("chat.init", "exist thread", thread.objectId, file?.id);
+  return { thread, file };
+}
+
+async function getFile(thread) {
+  let file;
+  const vectorStoreId =
+    thread?.tool_resources?.file_search?.vector_store_ids?.[0];
+  if (vectorStoreId) {
+    try {
+      const files = await openai.vectorStores.files.list(vectorStoreId);
+      if (files?.data.length > 0)
+        file = await openai.files.retrieve(files.data[0].id);
+    } catch (error) {
+      console.log("chat.getFile", error);
+    }
+  }
+  return file;
+}
+
+async function send({ user, thread, content, session }) {
+  const progress = session.get("progress") || { step: 1 };
+  console.log("Progress is at:", progress.step);
+
+  let threadInstruction = getMarkdownInstruction();
+
+  try {
+    // Step Logic Handler
+    switch (progress.step) {
+      case 2:
+        // CV uploaded, user needs to select a competency
+        console.log("Step 2: Awaiting competency selection. No action taken.");
+        session.set("progress", { step: 3 });
+        break;
+
+      case 3:
+        console.log("Step 3: Checking for selected competency...");
+        threadInstruction += getProjectMatchInstruction();
+        const competencies = await read();
+
+        const found = competencies
+          .flatMap((group) => group.items)
+          .find((item) => item.get("title") === content);
+
+        if (found) {
+          console.log("Competency found:", found.get("title"));
+          session.set("progress", { step: 4 });
+        } else {
+          console.warn("Competency not found.");
+        }
+        break;
+
+      case 4:
+        console.log("Step 4: Injecting gap analysis instruction.");
+        threadInstruction += getGapAnalysisInstruction();
+        session.set("progress", { step: 5 });
+        break;
+
+      case 5:
+        console.log("Step 5: Follow-up response received.");
+        session.set("progress", { step: 6 });
+        break;
+
+      default:
+        console.log("No specific step logic. Continuing.");
+    }
+
+    // Create message
+    const userMessage = await openai.beta.threads.messages.create(
+      thread.threadId,
+      {
+        role: "user",
+        content: threadInstruction + content,
+      }
+    );
+
+    console.log("Assistant ID:", vars.openai.assistantId);
+
+    // Start assistant run
+    const run = await openai.beta.threads.runs.create(thread.threadId, {
+      assistant_id: vars.openai.assistantId,
+      stream: true,
+    });
+
+    const runId = await fetchRunId(thread.threadId);
+
+    // Return streaming generator
+    return {
+      userMessage,
+      stream: streamAssistantResponse(run),
+      runId,
+    };
+  } catch (error) {
+    console.error("chat.send.run", error);
+    return { userMessage: null, stream: null, runId: null };
+  }
+}
+
+function getMarkdownInstruction() {
+  return "Please format your response in Markdown. Use **headers**, **bold**, and **bullet points** as needed.\n";
+}
+
+function getProjectMatchInstruction() {
+  return `
+    You are now in **Step 2 and 3** of the workflow:
+    **Explain the Competency** and **Match Projects from the User's CV**.
+
+    ---
+
+    ## Competency Explanation (Intent + Indicators)
+
+    - Retrieve the selected competency’s **full title**, **intent**, and **explicit indicators** from your knowledge base.
+    - For each **indicator**, explain what it means **in the context of the user's background** (e.g., if they work in transportation infrastructure, reference TAC guidelines, CSA codes, etc.).
+    - Use **industry-relevant examples** that would be familiar to someone with the user’s expertise.
+    - Then, write a short **scenario story** as if you were an engineer in a similar role:
+      - Use **first-person perspective** (“I”)
+      - Describe a real engineering situation that demonstrates this competency
+      - Include:
+        - An **engineering challenge**
+        - The **action(s)** taken
+        - A **quantifiable outcome**
+
+    > This helps the user empathize with how the competency should be demonstrated.
+
+    ---
+
+    ## Match Projects from CV
+
+    - Analyze the user’s uploaded CV using **Named Entity Recognition (NER)**.
+    - Identify **all explicit projects** that match the selected competency.
+    - List them using this format:
+
+    **Project Name**
+    **Position Title**
+    **Relevant activities/duties that demonstrate competency**
+
+
+    - **Do NOT** ask the user to select a project until all matches are listed.
+    - End your message with:
+      _"Please select one of the explicit matches to focus on for this competency before we continue."_
+    - **Do NOT** continue to gap analysis or follow-up questions until the user selects a project.
+    `;
+}
+
+function getGapAnalysisInstruction() {
+  return `
+    Before drafting a STAR-format response, perform a **Gap Analysis**:
+
+    - Compare the user's experience against the competency indicators.
+    - Identify any missing technical details, quantifiable results, or specific codes/standards.
+    - Ask targeted follow-up questions to fill in these gaps.
+
+    **Do not** draft the structured response until these gaps are addressed.
+  `;
+}
+
+async function fetchRunId(threadId) {
+  let latestRun = null;
+  while (!latestRun) {
+    const runsList = await openai.beta.threads.runs.list(threadId, {
+      limit: 1,
+    });
+    if (runsList?.data?.length > 0) {
+      latestRun = runsList.data[0].id;
+      break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  return latestRun;
+}
+
+async function* streamAssistantResponse(run) {
+  let responseText = "";
+  for await (const chunk of run) {
+    if (
+      chunk.event === "thread.message.delta" &&
+      chunk.data?.delta?.content?.length > 0
+    ) {
+      for (const contentItem of chunk.data.delta.content) {
+        if (contentItem.type === "text" && contentItem.text?.value) {
+          const token = contentItem.text.value;
+          responseText += token;
+          yield token;
+        }
+      }
+    }
+  }
+  return responseText;
+}
+
+async function getUsage(thread, runId) {
+  const runStatus = await openai.beta.threads.runs.retrieve(
+    thread.threadId,
+    runId
+  );
+  return runStatus.usage;
+}
+
+async function save({
+  user,
+  thread,
+  userMessage,
+  responseText,
+  session,
+}) {
+  if (userMessage?.id) {
+    const fullText = userMessage.content[0].text.value;
+    const content = fullText
+      .replace(getMarkdownInstruction(), "")
+      .replace(getProjectMatchInstruction(), "")
+      .replace(getGapAnalysisInstruction(), "")
+      .trim();
+
+    await create$1(
+      {
+        user: pointerObject(models.user, user.objectId),
+        thread: pointerObject(models.thread, thread.objectId),
+        message: userMessage,
+        role: roles.user,
+        content: content,
+      },
+      user.sessionToken
+    );
+
+    const messages = await openai.beta.threads.messages.list(thread.threadId, {
+      limit: 1,
+    });
+    const assistantMessage = messages.data.find((m) => m.role === "assistant");
+
+    await create$1(
+      {
+        user: pointerObject(models.user, user.objectId),
+        thread: pointerObject(models.thread, thread.objectId),
+        message: assistantMessage,
+        role: roles.assistant,
+        content: responseText,
+      },
+      user.sessionToken
+    );
+
+    return responseText;
+  }
+}
+
+async function loader$a({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  if (!user) return redirect$1("/auth/login");
+
+  const { thread } = await init$1(session);
+  if (!thread) {
+    return Response.json([], {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    });
+  }
+
+  const messages = await read$2(user, thread);
+  
+  // Convert Parse objects to plain JSON (same format as app.server.js init function)
+  const messagesJSON = messages ? messages.map(m => ({
+    objectId: m.id,
+    role: m.get("role"),
+    content: m.get("content"),
+    createdAt: m.get("createdAt"),
+  })).reverse() : [];
+
+  return Response.json(messagesJSON, {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  });
+}
+
+const route24 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  loader: loader$9
+  loader: loader$a
 }, Symbol.toStringTag, { value: 'Module' }));
 
 // billing_portal.session.created
@@ -6880,7 +7852,7 @@ async function getStripeEvent(request) {
   }
 }
 
-const route22 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$4
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6891,7 +7863,7 @@ const navigation = [
   { name: "Support", href: "#" },
   { name: "Company", href: "#" }
 ];
-async function loader$8({ request }) {
+async function loader$9({ request }) {
   return redirect$1("/app");
 }
 function Index() {
@@ -7014,13 +7986,13 @@ function Index() {
   ] });
 }
 
-const route23 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route26 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Index,
-  loader: loader$8
+  loader: loader$9
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const loader$7 = async ({ request }) => {
+const loader$8 = async ({ request }) => {
   const session = await getSession(request.headers.get("Cookie"));
   await logout();
   return redirect$1("/auth/login", {
@@ -7030,9 +8002,9 @@ const loader$7 = async ({ request }) => {
   });
 };
 
-const route24 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route27 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  loader: loader$7
+  loader: loader$8
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Logo({
@@ -7067,7 +8039,7 @@ function Mobile() {
   ] });
 }
 
-const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route28 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Mobile
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -7088,7 +8060,7 @@ function Auth() {
   ] });
 }
 
-const route26 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route29 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Auth
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -7134,7 +8106,7 @@ const getOrCreateVectorStore = async (thread) => {
   return vectorStore.id;
 };
 
-async function loader$6() {
+async function loader$7() {
   console.log("files.loader");
   return redirect$1("/app");
 }
@@ -7147,7 +8119,7 @@ async function action$3({ request }) {
   const file = formData.get("file");
   const file_ = await CREATE({ thread: thread?.thread, file });
   const thread_ = await openai.beta.threads.retrieve(thread.threadId);
-  await update(
+  await update$1(
     {
       objectId: thread.objectId,
       thread: thread_
@@ -7165,43 +8137,11 @@ async function action$3({ request }) {
   });
 }
 
-const route27 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route30 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$3,
-  loader: loader$6
+  loader: loader$7
 }, Symbol.toStringTag, { value: 'Module' }));
-
-const Class$1 = "Message";
-
-async function read$1(user, thread, limit) {
-  try {
-    const query = new Parse.Query(Class$1);
-    user && query.equalTo("user", user.objectId);
-    thread && query.equalTo("thread", thread.objectId || thread.id);
-    limit && query.limit(limit);
-    query.descending("createdAt");
-    return await query.find({ sessionToken: user.sessionToken });
-  } catch (error) {
-    console.log("message.read", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-async function create(arg, sessionToken) {
-  try {
-    const Message = Parse.Object.extend("Message");
-    const message = new Message();
-    return await message.save(arg, { sessionToken });
-  } catch (error) {
-    console.log("outcome.create", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-const roles = {
-  assistant: "assistant",
-  user: "user",
-};
 
 async function sync$1(request, body) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -7240,10 +8180,10 @@ async function sync$1(request, body) {
     score,
     !scoreThread
       ? {
-          headers: {
-            "Set-Cookie": await commitSession(session),
-          },
-        }
+        headers: {
+          "Set-Cookie": await commitSession(session),
+        },
+      }
       : {}
   );
 }
@@ -7304,7 +8244,7 @@ async function getScore({ user, competencyItem, outcome, scoreThread }) {
 
 async function getScoreThread(user) {
   const purpose = purposes.score;
-  const threads = await read$2({ user, purpose });
+  const threads = await read$3({ user, purpose });
 
   console.log("score.getScoreThread.read", threads.length);
   if (threads?.length > 0)
@@ -7323,7 +8263,7 @@ async function getScoreThread(user) {
   console.log("score.getScoreThread.thread.create", thread.id);
 
   if (thread?.id) {
-    const thread_ = await create$1(
+    const thread_ = await create$2(
       {
         user: pointerObject(models.user, user.objectId),
         name: "Score thread",
@@ -7344,7 +8284,7 @@ async function getScoreThread(user) {
   return null;
 }
 
-async function loader$5() {
+async function loader$6() {
   return redirect$1("/app");
 }
 
@@ -7378,15 +8318,13 @@ async function action$2({ request }) {
   return await sync$1(request, body);
 }
 
-const route28 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route31 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$2,
-  loader: loader$5
+  loader: loader$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
 async function sync(user) {
-  const { serverURL, appId, restAPIKey } = vars.parse;
-
   try {
     const res = await fetch(`${serverURL}/users/me`, {
       headers: {
@@ -7396,7 +8334,7 @@ async function sync(user) {
       },
     });
     const $user = await res.json();
-    console.log("user.sync", $user?.sessionToken, user?.sessionToken);
+    console.log("user.sync", $user?.sessionToken === user?.sessionToken);
 
     return $user.error ? false : true;
   } catch (error) {
@@ -7619,7 +8557,7 @@ function Layout$1({ nav, children, ...props }) {
   ] });
 }
 
-async function loader$4({ request, params }) {
+async function loader$5({ request, params }) {
   const url = new URL(request.url);
   let resource = url.pathname.replace("/dash/", "");
   if (resource.indexOf("/") > 0)
@@ -7642,10 +8580,10 @@ function Dash() {
   return /* @__PURE__ */ jsx(Layout$1, { nav, children: /* @__PURE__ */ jsx(Outlet, {}) });
 }
 
-const route29 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route32 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Dash,
-  loader: loader$4
+  loader: loader$5
 }, Symbol.toStringTag, { value: 'Module' }));
 
 async function wait (delay = 1000) {
@@ -7653,7 +8591,7 @@ async function wait (delay = 1000) {
   await new Promise((resolve) => setTimeout(resolve, delay));
 }
 
-async function loader$3({ request }) {
+async function loader$4({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const url = new URL(request.url);
@@ -7822,33 +8760,12 @@ function join() {
   ] });
 }
 
-const route30 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route33 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$1,
   default: join,
-  loader: loader$3
+  loader: loader$4
 }, Symbol.toStringTag, { value: 'Module' }));
-
-const Switch = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  SwitchPrimitives.Root,
-  {
-    className: cn$1(
-      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
-      className
-    ),
-    ...props,
-    ref,
-    children: /* @__PURE__ */ jsx(
-      SwitchPrimitives.Thumb,
-      {
-        className: cn$1(
-          "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
-        )
-      }
-    )
-  }
-));
-Switch.displayName = SwitchPrimitives.Root.displayName;
 
 const Accordion = AccordionPrimitive.Root;
 const AccordionItem = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Item, { ref, className: cn$1("border-b", className), ...props }));
@@ -7894,7 +8811,7 @@ function NavUser() {
     if (open && !plan) read();
   }, [open]);
   async function read() {
-    const res = await fetch("/nav-user");
+    const res = await fetch("/user");
     const { profile: profile2, license } = await res.json();
     setProfile({
       name: `${profile2?.firstName} ${profile2?.lastName}`,
@@ -7933,6 +8850,19 @@ function NavUser() {
               /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Continue Working alerts" })
             ] }),
             /* @__PURE__ */ jsx(Switch, { checked: reminder, onCheckedChange: setReminder })
+          ] }),
+          /* @__PURE__ */ jsxs(DropdownMenuItem, { onClick: () => setOpen(false), className: "justify-between", children: [
+            /* @__PURE__ */ jsx(HelpCircle, {}),
+            /* @__PURE__ */ jsx(
+              "a",
+              {
+                href: "https://www.youtube.com/playlist?list=PL6iszEhc4K7Xger5FMuMUrlmbDnzS0NSm",
+                target: "_blank",
+                className: "flex-auto py-2",
+                children: "How it works?"
+              }
+            ),
+            /* @__PURE__ */ jsx(ArrowRight, { size: 16, className: "ml-4 text-zinc-400" })
           ] }),
           /* @__PURE__ */ jsxs(Accordion, { type: "single", collapsible: true, className: "m-0", children: [
             /* @__PURE__ */ jsxs(AccordionItem, { value: "item-1", className: "group border-none", children: [
@@ -8040,7 +8970,7 @@ function NavUser() {
             plan ? /* @__PURE__ */ jsxs(
               Link,
               {
-                to: "/app/settings/overview",
+                to: "/app/settings/pricing",
                 className: "grid w-full hover:text-primary",
                 children: [
                   "Upgrade your Plan",
@@ -8248,17 +9178,49 @@ async function action({ request }) {
   console.log("test.action");
   return null;
 }
-async function loader$2({ request }) {
+async function loader$3({ request }) {
   return redirect$1("/app");
 }
 function Test() {
   return /* @__PURE__ */ jsx(Layout, { children: /* @__PURE__ */ jsx("div", { className: "w-[400px] p-8 grid gap-16", children: /* @__PURE__ */ jsx(NavUser, {}) }) });
 }
 
-const route31 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route34 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action,
   default: Test,
+  loader: loader$3
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$2({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+
+  if (!user) return redirect$1("/auth/login");
+
+  let profile = session.get("profile");
+  let license = session.get("license");
+
+  if (!profile) profile = (await read$5(user))?.toJSON();
+
+  if (!license) license = (await read$6(user))?.toJSON();
+
+  if (license) {
+    const {
+      product: { name },
+    } = await stripe.prices.retrieve(license.priceId, {
+      expand: ["product"],
+    });
+
+    profile = { ...profile, email: user.email };
+    license = { ...license, name };
+  }
+
+  return Response.json({ profile, license });
+}
+
+const route35 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
   loader: loader$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
@@ -8363,6 +9325,7 @@ function ChatIncome({
   getCompetency,
   plan
 }) {
+  const navigate = useNavigate();
   const { ongoing } = useOngoing();
   function getClassName(ci) {
     const outcome = outcomes?.find(
@@ -8395,7 +9358,7 @@ function ChatIncome({
                   "peer pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
                   getClassName(ci)
                 ),
-                onClick: () => ipIn && onClick("send", cg, ci),
+                onClick: () => !ipIn ? navigate("/app/settings/overview") : onClick("send", cg, ci),
                 children: [
                   ip,
                   " ",
@@ -8609,18 +9572,149 @@ const guides = [
   }
 ];
 
-function SAO({ ...props }) {
+function SAO({ draftRefinement = false, setDraftAssessmentMessages, onDraftAssessmentLoadingChange, ...props }) {
   const { state } = useStore();
   const { syncSteps } = useOutcome();
+  const [draftAssessmentLoading, setDraftAssessmentLoading] = useState(false);
+  const [draftAssessmentData, setDraftAssessmentData] = useState(null);
+  const { toast } = useToast();
+  useNavigate();
+  useEffect(() => {
+    onDraftAssessmentLoadingChange?.(draftAssessmentLoading);
+  }, [draftAssessmentLoading, onDraftAssessmentLoadingChange]);
   useEffect(() => {
     if (props?.outcome?.flag)
       syncSteps(props.outcome.flag === flags.approved, props?.step);
   }, [props?.outcome]);
+  async function handleStartDraftAssessment() {
+    setDraftAssessmentLoading(true);
+    const userMessage = {
+      objectId: `user-${Date.now()}`,
+      createdAt: (/* @__PURE__ */ new Date()).toJSON(),
+      role: "user",
+      content: `[${props?.competencyItem?.title}] - [${props?.outcome?.situation || ""}] - [${props?.outcome?.action || ""}] - [${props?.outcome?.outcome || ""}]`
+    };
+    if (setDraftAssessmentMessages && draftRefinement) {
+      setDraftAssessmentMessages((prev) => [...prev, userMessage]);
+    }
+    try {
+      const q = `Competency name is: ${props?.competencyItem?.title}`;
+      const c = `${props?.competencyGroup?.order}.${props?.competencyItem?.order}`;
+      const endpoint = `/draft-assessment/sse?q=${encodeURIComponent(q)}&c=${encodeURIComponent(c)}`;
+      const eventSource = new EventSource(endpoint);
+      let fullResponse = "";
+      let assistantMessageId = `assistant-${Date.now()}`;
+      eventSource.addEventListener("thread.message.delta", (event) => {
+        const newText = event.data;
+        fullResponse += newText;
+        if (setDraftAssessmentMessages && draftRefinement) {
+          setDraftAssessmentMessages((prev) => {
+            const existingIndex = prev.findIndex((m) => m.objectId === assistantMessageId);
+            if (existingIndex >= 0) {
+              const updated = [...prev];
+              updated[existingIndex] = {
+                ...updated[existingIndex],
+                content: fullResponse
+              };
+              return updated;
+            } else {
+              return [...prev, {
+                objectId: assistantMessageId,
+                createdAt: (/* @__PURE__ */ new Date()).toJSON(),
+                role: "assistant",
+                content: fullResponse
+              }];
+            }
+          });
+        }
+      });
+      eventSource.addEventListener("thread.message.completed", (event) => {
+        eventSource.close();
+        setDraftAssessmentLoading(false);
+        if (fullResponse) {
+          try {
+            const sections = fullResponse.match(/\[([^\]]+)\]/g);
+            let draftAssessment = null;
+            if (sections && sections.length >= 3) {
+              const cleanedSections = sections.map((s) => s.replace(/[\[\]]/g, "").trim());
+              const startIndex = cleanedSections.length >= 4 ? 1 : 0;
+              draftAssessment = {
+                situation: cleanedSections[startIndex] || "",
+                action: cleanedSections[startIndex + 1] || "",
+                outcome: cleanedSections[startIndex + 2] || "",
+                rawResponse: fullResponse
+              };
+            } else {
+              const situationMatch = fullResponse.match(/(?:Situation|SITUATION)[:\s\-]*([^\n]+(?:\n(?!Action|ACTION|Outcome|OUTCOME)[^\n]+)*)/i);
+              const actionMatch = fullResponse.match(/(?:Action|ACTION)[:\s\-]*([^\n]+(?:\n(?!Outcome|OUTCOME)[^\n]+)*)/i);
+              const outcomeMatch = fullResponse.match(/(?:Outcome|OUTCOME)[:\s\-]*([^\n]+(?:\n[^\n]+)*)/i);
+              draftAssessment = {
+                situation: situationMatch ? situationMatch[1].trim() : "",
+                action: actionMatch ? actionMatch[1].trim() : "",
+                outcome: outcomeMatch ? outcomeMatch[1].trim() : "",
+                rawResponse: fullResponse
+              };
+            }
+            if (draftAssessment && (draftAssessment.situation || draftAssessment.action || draftAssessment.outcome)) {
+              setDraftAssessmentData(draftAssessment);
+              toast({
+                title: "Draft Assessment completed",
+                description: "Review the generated content and click Save to apply changes."
+              });
+            } else {
+              toast({
+                title: "Draft Assessment completed",
+                description: "No content was generated."
+              });
+            }
+          } catch (parseError) {
+            console.error("Error parsing draft assessment response", parseError);
+            toast({
+              title: "Draft Assessment completed",
+              description: "Response received but parsing failed."
+            });
+          }
+        }
+      });
+      eventSource.addEventListener("error", (event) => {
+        eventSource.close();
+        setDraftAssessmentLoading(false);
+        toast({
+          title: "Unable to start draft assessment",
+          description: "An error occurred while generating the assessment."
+        });
+      });
+    } catch (error) {
+      setDraftAssessmentLoading(false);
+      toast({
+        title: "Unable to start draft assessment",
+        description: error?.message ?? "Unknown error"
+      });
+    }
+  }
   return /* @__PURE__ */ jsx("div", { className: "flex flex-col space-y-8", children: !state?.outcome?.steps?.includes("guides") ? /* @__PURE__ */ jsx("div", { className: "text-yellow-700 text-xs text-center", children: "Complete previous step to continue" }) : /* @__PURE__ */ jsxs(Fragment, { children: [
     /* @__PURE__ */ jsxs("div", { className: "text-yellow-700 text-xs", children: [
       /* @__PURE__ */ jsx("b", { children: "Hint:" }),
       " Fill the following fields from chat results."
     ] }),
+    draftRefinement ? /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
+      /* @__PURE__ */ jsx(TooltipProvider, { delayDuration: 200, skipDelayDuration: 100, children: /* @__PURE__ */ jsxs(Tooltip, { children: [
+        /* @__PURE__ */ jsx(TooltipTrigger, { asChild: true, children: /* @__PURE__ */ jsx(Button, { variant: "ghost", size: "small", children: /* @__PURE__ */ jsx(Info, {}) }) }),
+        /* @__PURE__ */ jsx(TooltipContent, { className: "max-w-fit bg-yellow-50 text-primary", children: /* @__PURE__ */ jsx("div", { className: "text-xs", children: "Click the Button to get AI-generated draft content for Situation, Action, and Outcome fields based on the Competency Name and current values" }) })
+      ] }) }),
+      /* @__PURE__ */ jsx(
+        SubmitField,
+        {
+          type: "button",
+          label: "Start Assessment",
+          size: "small",
+          className: "px-2 py-1",
+          disabled: draftAssessmentLoading ? true : props?.outcome?.flag !== "approved",
+          loader: draftAssessmentLoading,
+          onClick: handleStartDraftAssessment
+        }
+      )
+    ] }) : /* @__PURE__ */ jsx("div", { className: "text-yellow-700 text-xs text-center", children: "Enable Draft Refinement to use Start Assessment" }),
     props?.competencyItem && Object.keys(types).map((type, index) => /* @__PURE__ */ jsx(
       OutcomeBox,
       {
@@ -8632,9 +9726,14 @@ function SAO({ ...props }) {
         outcomes: props?.outcomes,
         outcome: props?.outcome,
         getOutcomes: props?.getOutcomes,
-        step: props?.step
+        step: props?.step,
+        draftAssessmentData: null,
+        onDraftAssessmentApplied: () => {
+          setDraftAssessmentData(null);
+        },
+        allFieldValues: draftAssessmentData
       },
-      index
+      `${props?.outcome?.objectId}-${type}-${props?.outcome?.updatedAt || index}`
     ))
   ] }) });
 }
@@ -8647,6 +9746,9 @@ function OutcomeBox({
   outcomes,
   outcome,
   getOutcomes,
+  draftAssessmentData,
+  onDraftAssessmentApplied,
+  allFieldValues,
   ...props
 }) {
   const [updated, setUpdated] = useState(true);
@@ -8662,13 +9764,28 @@ function OutcomeBox({
     setCounter(0);
   }, [value]);
   useEffect(() => {
-    setUpdated(true);
-    setValue(outcome?.[type]);
-    setPreviousValue(outcome?.[type]);
-  }, [outcome]);
+    const newValue = outcome?.[type] || null;
+    const currentValueStr = String(value || "");
+    const newValueStr = String(newValue || "");
+    console.log(`OutcomeBox.${type}: useEffect triggered`, {
+      newValue: newValueStr.substring(0, 50),
+      currentValue: currentValueStr.substring(0, 50),
+      valuesEqual: currentValueStr === newValueStr,
+      outcomeId: outcome?.objectId,
+      outcomeUpdatedAt: outcome?.updatedAt,
+      refresh: outcome?._refresh
+    });
+    if (currentValueStr !== newValueStr || outcome?._refresh) {
+      setUpdated(true);
+      setValue(newValue);
+      setPreviousValue(newValue);
+    }
+  }, [outcome, type]);
   function syncFlag(type2, value2) {
-    outcome[type2] = value2;
-    const SOA = [outcome?.situation, outcome?.action, outcome?.outcome];
+    const situation = type2 === "situation" ? value2 : allFieldValues?.situation || outcome?.situation || "";
+    const action = type2 === "action" ? value2 : allFieldValues?.action || outcome?.action || "";
+    const outcomeValue = type2 === "outcome" ? value2 : allFieldValues?.outcome || outcome?.outcome || "";
+    const SOA = [situation, action, outcomeValue];
     const idled = SOA.every((item) => !item || item === "");
     const filled = SOA.every((item) => item && item !== "");
     return idled ? "idle" : filled ? "approved" : "pending";
@@ -8678,13 +9795,34 @@ function OutcomeBox({
     if (!updated) {
       setLoading(true);
       const flag = syncFlag(type, value);
+      const updateData = {
+        objectId: outcome.objectId,
+        [type]: value,
+        flag
+      };
+      if (allFieldValues) {
+        if (type === "situation" && allFieldValues.action) {
+          updateData.action = allFieldValues.action;
+        }
+        if (type === "situation" && allFieldValues.outcome) {
+          updateData.outcome = allFieldValues.outcome;
+        }
+        if (type === "action" && allFieldValues.situation) {
+          updateData.situation = allFieldValues.situation;
+        }
+        if (type === "action" && allFieldValues.outcome) {
+          updateData.outcome = allFieldValues.outcome;
+        }
+        if (type === "outcome" && allFieldValues.situation) {
+          updateData.situation = allFieldValues.situation;
+        }
+        if (type === "outcome" && allFieldValues.action) {
+          updateData.action = allFieldValues.action;
+        }
+      }
       const res = await fetch("/outcomes/update", {
         method: "POST",
-        body: JSON.stringify({
-          objectId: outcome.objectId,
-          [type]: value,
-          flag
-        })
+        body: JSON.stringify(updateData)
       });
       if (res?.error) return;
       const data = await res.json();
@@ -8693,6 +9831,9 @@ function OutcomeBox({
       await getOutcomes();
       setPreviousValue(value);
       setLoading(false);
+      if (onDraftAssessmentApplied) {
+        onDraftAssessmentApplied();
+      }
     }
     setUpdated(!updated);
   }
@@ -9192,6 +10333,9 @@ function Outcome({
   outcome,
   getOutcomes,
   sendChat,
+  draftRefinement,
+  setDraftAssessmentMessages,
+  onDraftAssessmentLoadingChange,
   ...props
 }) {
   const [data, setData] = useState(null);
@@ -9222,7 +10366,7 @@ function Outcome({
         competencyItem?.order
       ] })
     ] }),
-    /* @__PURE__ */ jsx(
+    !draftRefinement && /* @__PURE__ */ jsx(
       Step,
       {
         trigger: steps.guides.title,
@@ -9258,7 +10402,10 @@ function Outcome({
             competencyItem,
             outcomes,
             outcome,
-            getOutcomes
+            getOutcomes,
+            draftRefinement,
+            setDraftAssessmentMessages,
+            onDraftAssessmentLoadingChange
           }
         ),
         step: steps.sao.id,
@@ -9349,107 +10496,48 @@ const steps = {
   }
 };
 
-const suggestions = [
-	{
-		id: "1",
-		title: "",
-		description: "If you start categories 1, 5 and 6 at first, and get help from our AI, you will actually progress to 22 competencies, which is about 65% of the them. Finally, you can receive a special reward and 65 Scores!"
-	},
-	{
-		id: "2",
-		title: "",
-		description: "Otherwise, If you start categories 2, 3, 4 and 7 at first, and get help from our AI, you will actually progress to 12 competencies, which is about 35% of the them. Finally, you can receive 35 Scores!"
-	}
-];
-
-function Suggestions() {
-  return /* @__PURE__ */ jsxs(Collapsible, { className: "relative z-10 text-sm flex-grow", children: [
-    /* @__PURE__ */ jsxs(CollapsibleTrigger, { className: "bg-white w-full px-6 py-3 rounded-xl flex gap-2 justify-between items-center group text-zinc-600", children: [
-      /* @__PURE__ */ jsx(Icon, {}),
-      "Suggestions for Boosting your CBA",
-      /* @__PURE__ */ jsx(
-        ChevronDown,
-        {
-          size: 16,
-          className: "ml-2 group-data-[state=open]:rotate-180 transition"
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs(CollapsibleContent, { className: "absolute mt-2 bg-white p-4 rounded-xl shadow-lg space-y-2", children: [
-      /* @__PURE__ */ jsx("span", { className: "text-xs text-primary/75", children: "Quick suggestions" }),
-      /* @__PURE__ */ jsx(Separator, {}),
-      /* @__PURE__ */ jsx("ul", { className: "list-disc px-4 py-2 space-y-4 text-zinc-600", children: suggestions.map((suggestion, index) => /* @__PURE__ */ jsx("li", { children: suggestion.description }, index)) })
-    ] })
-  ] });
+function DraftRefinement({ onToggle, isActive: isActiveProp, disabled = false }) {
+  const [isActive, setIsActive] = useState(isActiveProp ?? false);
+  useEffect(() => {
+    if (isActiveProp !== void 0) {
+      setIsActive(isActiveProp);
+    }
+  }, [isActiveProp]);
+  const handleToggle = () => {
+    if (disabled) return;
+    const newState = !isActive;
+    setIsActive(newState);
+    onToggle?.(newState);
+  };
+  return /* @__PURE__ */ jsxs(
+    "button",
+    {
+      onClick: handleToggle,
+      disabled,
+      className: `
+<<<<<<< HEAD
+        relative flex items-center justify-between gap-3 rounded-lg 
+=======
+        relative flex items-center justify-between gap-3 rounded-lg px-6 py-3 
+>>>>>>> e1adfddedc75bedf031c50d2ab32cdc68cbd1a98
+        transition-all duration-300 shadow-none
+        ${isActive ? "bg-primary/10 text-primary" : "bg-gray-100 text-gray-600"}
+        ${disabled ? "opacity-50 cursor-not-allowed" : "hover:opacity-80 cursor-pointer"}
+      `,
+      children: [
+        /* @__PURE__ */ jsx("span", { className: "text-xs font-medium whitespace-nowrap", children: "Draft Refinement" }),
+        /* @__PURE__ */ jsx("div", { className: "flex items-center gap-2", children: /* @__PURE__ */ jsx("div", { className: `
+          relative w-10 h-5 rounded-full transition-colors duration-300
+          ${isActive ? "bg-green-500" : "bg-gray-400"}
+        `, children: /* @__PURE__ */ jsx("div", { className: `
+            absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-md
+            transition-all duration-300 ease-in-out
+            ${isActive ? "right-0.5" : "left-0.5"}
+          ` }) }) })
+      ]
+    }
+  );
 }
-const Icon = () => /* @__PURE__ */ jsxs(
-  "svg",
-  {
-    width: "24",
-    height: "24",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg",
-    children: [
-      /* @__PURE__ */ jsx("rect", { width: "24", height: "24", fill: "#1E1E1E" }),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M-2577 -3864C-2577 -3919.23 -2532.23 -3964 -2477 -3964H2529C2584.23 -3964 2629 -3919.23 2629 -3864V8964C2629 9019.23 2584.23 9064 2529 9064H-2477C-2532.23 9064 -2577 9019.23 -2577 8964V-3864Z",
-          fill: "#444444"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M-2477 -3963H2529V-3965H-2477V-3963ZM2628 -3864V8964H2630V-3864H2628ZM2529 9063H-2477V9065H2529V9063ZM-2576 8964V-3864H-2578V8964H-2576ZM-2477 9063C-2531.68 9063 -2576 9018.68 -2576 8964H-2578C-2578 9019.78 -2532.78 9065 -2477 9065V9063ZM2628 8964C2628 9018.68 2583.68 9063 2529 9063V9065C2584.78 9065 2630 9019.78 2630 8964H2628ZM2529 -3963C2583.68 -3963 2628 -3918.68 2628 -3864H2630C2630 -3919.78 2584.78 -3965 2529 -3965V-3963ZM-2477 -3965C-2532.78 -3965 -2578 -3919.78 -2578 -3864H-2576C-2576 -3918.68 -2531.68 -3963 -2477 -3963V-3965Z",
-          fill: "white",
-          fillOpacity: "0.1"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "rect",
-        {
-          width: "1440",
-          height: "1024",
-          transform: "translate(-669 -38)",
-          fill: "#F7F7F7"
-        }
-      ),
-      /* @__PURE__ */ jsx("rect", { x: "-16", y: "-14", width: "348", height: "52", rx: "16", fill: "white" }),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M22 13V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H13",
-          stroke: "#585858",
-          strokeWidth: "1.2",
-          strokeLinecap: "round",
-          strokeLinejoin: "round"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M7.32996 14.49L9.70996 11.4C10.05 10.96 10.68 10.88 11.12 11.22L12.95 12.66C13.39 13 14.02 12.92 14.36 12.49L16.67 9.51001",
-          stroke: "#585858",
-          strokeWidth: "1.2",
-          strokeLinecap: "round",
-          strokeLinejoin: "round"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M19.48 15.8199L19.76 16.3899C19.9 16.6699 20.25 16.9299 20.56 16.9899L20.94 17.0499C22.08 17.2399 22.35 18.0799 21.53 18.9099L21.18 19.2599C20.95 19.4999 20.82 19.9599 20.89 20.2799L20.94 20.4899C21.25 21.8699 20.52 22.3999 19.32 21.6799L19.06 21.5299C18.75 21.3499 18.25 21.3499 17.94 21.5299L17.68 21.6799C16.47 22.4099 15.74 21.8699 16.06 20.4899L16.1099 20.2799C16.1799 19.9599 16.05 19.4999 15.82 19.2599L15.47 18.9099C14.65 18.0799 14.92 17.2399 16.06 17.0499L16.44 16.9899C16.74 16.9399 17.1 16.6699 17.24 16.3899L17.52 15.8199C18.06 14.7299 18.94 14.7299 19.48 15.8199Z",
-          stroke: "#FDB900",
-          strokeWidth: "1.2",
-          strokeLinecap: "round",
-          strokeLinejoin: "round"
-        }
-      )
-    ]
-  }
-);
 
 const ChatInput = forwardRef(function ChatInput({ getInput }, ref) {
   const [message, setMessage] = useState(null);
@@ -9513,9 +10601,7 @@ const ChatInput = forwardRef(function ChatInput({ getInput }, ref) {
           echoCancellation: true,
           noiseSuppression: true,
           sampleRate: 16e3,
-          // Lower sample rate for smaller file size
           autoGainControl: true
-          // Better audio capture
         }
       });
       let options = { mimeType: "audio/webm;codecs=opus" };
@@ -10033,68 +11119,140 @@ function Message({
 
 function ChatOutput({
   messages,
+  setMessages,
   run,
   setRun,
   competencyGroup,
-  competencyItem
+  competencyItem,
+  draftRefinement = false,
+  cvFile = null,
+  onStreamingChange
 }) {
   const [results, setResults] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef();
+  const resultsRef = useRef("");
+  const eventSourceRef = useRef(null);
   const navigate = useNavigate();
   useEffect(() => {
-    if (run.status) {
-      handleStream(run.req);
-      setRun({ status: false, req: null });
-      if (results !== "") {
-        messages.push({
-          objectId: (/* @__PURE__ */ new Date()).getTime(),
-          createdAt: (/* @__PURE__ */ new Date()).toJSON(),
-          role: "assistant",
-          content: results
-        });
-        setResults("");
-      }
-      messages.push({
+    if (run.status && run.req) {
+      const userMessage = {
         objectId: (/* @__PURE__ */ new Date()).getTime(),
         createdAt: (/* @__PURE__ */ new Date()).toJSON(),
-        role: "system",
-        // content: [{ text: { value: formData?.get("message") } }],
-        // content: formData?.get("message"),
+        role: "user",
         content: run.req
-      });
+      };
+      setMessages((prev) => [...prev, userMessage]);
       setLoading(true);
+      onStreamingChange?.(true);
       scrollTo();
+      handleStream(run.req, userMessage.objectId);
+      setRun({ status: false, req: null });
     }
-  }, [run.status]);
+  }, [run, draftRefinement]);
   useEffect(() => {
     scrollTo(true);
   }, []);
-  function handleStream(req) {
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+    };
+  }, []);
+  useEffect(() => {
+    setResults("");
+    resultsRef.current = "";
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+    setLoading(false);
+    onStreamingChange?.(false);
+  }, [draftRefinement]);
+  function handleStream(req, userMessageId) {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
     const q = `Competency name is: ${req}`;
     const c = `${competencyGroup?.order}.${competencyItem?.order}`;
-    const eventSource = new EventSource(`/sse?q=${q}&c=${c}`);
-    eventSource.addEventListener("redirected", (event) => {
+    const endpoint = draftRefinement ? `/draft-assessment/sse?q=${q}&c=${c}` : `/sse?q=${q}&c=${c}`;
+    const eventSource = new EventSource(endpoint);
+    eventSourceRef.current = eventSource;
+    const connectionTimeout = setTimeout(() => {
+      if (eventSource.readyState === EventSource.CONNECTING) {
+        if (eventSourceRef.current === eventSource) {
+          eventSource.close();
+          eventSourceRef.current = null;
+          setLoading(false);
+          onStreamingChange?.(false);
+          const errorMessage = {
+            objectId: (/* @__PURE__ */ new Date()).getTime(),
+            createdAt: (/* @__PURE__ */ new Date()).toJSON(),
+            role: "assistant",
+            content: "Connection timeout. Please check your network connection and try again."
+          };
+          setMessages((prev) => [...prev, errorMessage]);
+        }
+      }
+    }, 1e4);
+    const handleRedirected = (event) => {
+      if (!eventSourceRef.current) return;
+      clearTimeout(connectionTimeout);
       setLoading(false);
+      onStreamingChange?.(false);
       setResults(
         "Your CBA License has been Expired. \n Please Upgrade your CBA Pro License!"
       );
       const data = JSON.parse(event.data);
       const url = data.url;
       eventSource.close();
+      eventSourceRef.current = null;
       navigate(url);
-    });
+    };
+    eventSource.addEventListener("redirected", handleRedirected);
     eventSource.addEventListener("thread.message.delta", (event) => {
+      if (!eventSourceRef.current) return;
+      clearTimeout(connectionTimeout);
       setLoading(false);
-      setResults((prev) => prev + event.data);
+      const newText = event.data;
+      resultsRef.current += newText;
+      setResults((prev) => prev + newText);
     });
     eventSource.addEventListener("thread.message.completed", (event) => {
+      if (!eventSourceRef.current) return;
+      clearTimeout(connectionTimeout);
+      if (resultsRef.current !== "") {
+        const assistantMessage = {
+          objectId: (/* @__PURE__ */ new Date()).getTime(),
+          createdAt: (/* @__PURE__ */ new Date()).toJSON(),
+          role: "assistant",
+          content: resultsRef.current
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+        setResults("");
+        resultsRef.current = "";
+      }
       eventSource.close();
+      eventSourceRef.current = null;
+      onStreamingChange?.(false);
     });
     eventSource.addEventListener("error", (event) => {
+      if (!eventSourceRef.current) return;
+      clearTimeout(connectionTimeout);
       setLoading(false);
+      onStreamingChange?.(false);
       console.log({ event });
       eventSource.close();
+      eventSourceRef.current = null;
+      const errorMessage = {
+        objectId: (/* @__PURE__ */ new Date()).getTime(),
+        createdAt: (/* @__PURE__ */ new Date()).toJSON(),
+        role: "assistant",
+        content: "Sorry, I encountered an error processing your request. Please try again later."
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     });
   }
   function scrollTo(last = false) {
@@ -10109,7 +11267,7 @@ function ChatOutput({
       className: "relative w-full h-full [&>div>div]:h-full-",
       ref: scrollRef,
       children: /* @__PURE__ */ jsxs("div", { className: "h-0 space-y-4 pl-2", children: [
-        messages?.length > 0 ? messages.map((message, index) => /* @__PURE__ */ jsx(
+        draftRefinement && !cvFile ? /* @__PURE__ */ jsx(ChatSplash, {}) : messages?.length > 0 ? messages.map((message, index) => /* @__PURE__ */ jsx(
           Message,
           {
             assistant: message.role === "assistant",
@@ -10117,17 +11275,9 @@ function ChatOutput({
             createdAt: message.createdAt,
             current: messages.length - 1 === index ? true : false
           },
-          index
-        )) : (
-          // <Message
-          //   assistant
-          //   content="Welcome to CBAPro! type something to begin"
-          //   createdAt={thread?.created_at}
-          //   current={true}
-          // />
-          /* @__PURE__ */ jsx(ChatSplash, {})
-        ),
-        results !== "" && /* @__PURE__ */ jsx(
+          message.objectId || index
+        )) : null,
+        (!draftRefinement || cvFile) && results !== "" && /* @__PURE__ */ jsx(
           Message,
           {
             assistant: true,
@@ -10136,17 +11286,22 @@ function ChatOutput({
             current: true
           }
         ),
-        loading && /* @__PURE__ */ jsx("div", { className: "pt-10 flex justify-center", children: /* @__PURE__ */ jsx(Logo, { animate: true, className: "grayscale opacity-50" }) }),
+        (!draftRefinement || cvFile) && loading && /* @__PURE__ */ jsx("div", { className: "pt-10 flex justify-center", children: /* @__PURE__ */ jsx(Logo, { animate: true, className: "grayscale opacity-50" }) }),
         /* @__PURE__ */ jsx("div", { className: "h-10" })
       ] })
     }
   );
 }
 
-function Assessment({ file, sendChat }) {
+function Assessment({ file, sendChat, onFileUpload }) {
   const [afile, setAFile] = useState(file);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (file) {
+      setAFile(file);
+    }
+  }, [file]);
   const handleFile = async (event) => {
     setLoading(true);
     const data = new FormData();
@@ -10160,6 +11315,7 @@ function Assessment({ file, sendChat }) {
     setLoading(false);
     if (!file2.error) {
       setAFile(file2);
+      onFileUpload?.(file2);
       setOpen(false);
       sendChat("My CV has been uploaded with the name " + file2?.filename);
       return;
@@ -10172,7 +11328,7 @@ function Assessment({ file, sendChat }) {
       {
         asChild: true,
         variant: "ghost",
-        className: "shadow-none bg-primary/10 hover:bg-primary/10 text-primary rounded-lg p-6 gap-2",
+        className: "shadow-none bg-primary/10 hover:bg-primary/10 text-primary rounded-xl p-6 gap-4 w-full justify-start",
         children: /* @__PURE__ */ jsxs("div", { children: [
           afile ? /* @__PURE__ */ jsx(Paperclip, {}) : /* @__PURE__ */ jsx(Plus, { size: 20 }),
           afile ? afile.filename : "New Assessment"
@@ -10230,316 +11386,6 @@ function Assessment({ file, sendChat }) {
   ] });
 }
 
-const Class = "Competency";
-
-async function read() {
-  try {
-    const query = new Parse.Query(Class);
-    query.include("competencyGroup");
-    const data = await query.find();
-    return modifier(data);
-  } catch (error) {
-    console.log("competency.getAll", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-function modifier(data) {
-  return data.reduce((t, v) => {
-    const cg = v.get("competencyGroup").toJSON();
-    const g = t.find((i) => i.objectId === cg.objectId);
-    !g ? t.push({ ...cg, items: [v] }) : g.items.push(v);
-    return t;
-  }, []);
-}
-
-async function init$1(session) {
-  const user = session.get("user");
-  let thread = session.get("thread");
-  let file = session.get("file");
-
-  if (thread) {
-    console.log("chat.init", "current thread", thread.objectId, file?.id);
-    return { thread, file };
-  }
-
-  const threads = await read$2({ user });
-  console.log("chat.init", "all threads", threads.length);
-
-  if (threads.length === 0) {
-    const _thread = await openai.beta.threads.create();
-
-    if (_thread.error) {
-      console.log("chat.init", _thread.error.error);
-      return { error: _thread.error.error };
-    }
-
-    const res = await create$1(
-      {
-        name: "Thread 1",
-        threadId: _thread.id,
-        user: pointerObject(models.user, user.objectId),
-        thread: _thread,
-        purpose: purposes.chat,
-      },
-      user.sessionToken
-    );
-    thread = res.toJSON();
-
-    console.log("chat.init", "add new thread", _thread?.id, thread?.objectId);
-  } else {
-    thread = threads[0].toJSON();
-  }
-
-  file = await getFile(thread?.thread);
-
-  session.set("thread", thread);
-  session.set("file", file);
-
-  console.log("chat.init", "exist thread", thread.objectId, file?.id);
-  return { thread, file };
-}
-
-async function getFile(thread) {
-  let file;
-  const vectorStoreId =
-    thread?.tool_resources?.file_search?.vector_store_ids?.[0];
-  if (vectorStoreId) {
-    try {
-      const files = await openai.vectorStores.files.list(vectorStoreId);
-      if (files?.data.length > 0)
-        file = await openai.files.retrieve(files.data[0].id);
-    } catch (error) {
-      console.log("chat.getFile", error);
-    }
-  }
-  return file;
-}
-
-async function send({ user, thread, content, session }) {
-  const progress = session.get("progress") || { step: 1 };
-  console.log("Progress is at:", progress.step);
-
-  let threadInstruction = getMarkdownInstruction();
-
-  try {
-    // Step Logic Handler
-    switch (progress.step) {
-      case 2:
-        // CV uploaded, user needs to select a competency
-        console.log("Step 2: Awaiting competency selection. No action taken.");
-        session.set("progress", { step: 3 });
-        break;
-
-      case 3:
-        console.log("Step 3: Checking for selected competency...");
-        threadInstruction += getProjectMatchInstruction();
-        const competencies = await read();
-
-        const found = competencies
-          .flatMap((group) => group.items)
-          .find((item) => item.get("title") === content);
-
-        if (found) {
-          console.log("Competency found:", found.get("title"));
-          session.set("progress", { step: 4 });
-        } else {
-          console.warn("Competency not found.");
-        }
-        break;
-
-      case 4:
-        console.log("Step 4: Injecting gap analysis instruction.");
-        threadInstruction += getGapAnalysisInstruction();
-        session.set("progress", { step: 5 });
-        break;
-
-      case 5:
-        console.log("Step 5: Follow-up response received.");
-        session.set("progress", { step: 6 });
-        break;
-
-      default:
-        console.log("No specific step logic. Continuing.");
-    }
-
-    // Create message
-    const userMessage = await openai.beta.threads.messages.create(
-      thread.threadId,
-      {
-        role: "user",
-        content: threadInstruction + content,
-      }
-    );
-
-    console.log("Assistant ID:", vars.openai.assistantId);
-
-    // Start assistant run
-    const run = await openai.beta.threads.runs.create(thread.threadId, {
-      assistant_id: vars.openai.assistantId,
-      stream: true,
-    });
-
-    const runId = await fetchRunId(thread.threadId);
-
-    // Return streaming generator
-    return {
-      userMessage,
-      stream: streamAssistantResponse(run),
-      runId,
-    };
-  } catch (error) {
-    console.error("chat.send.run", error);
-    return { userMessage: null, stream: null, runId: null };
-  }
-}
-
-function getMarkdownInstruction() {
-  return "Please format your response in Markdown. Use **headers**, **bold**, and **bullet points** as needed.\n";
-}
-
-function getProjectMatchInstruction() {
-  return `
-    You are now in **Step 2 and 3** of the workflow:
-    **Explain the Competency** and **Match Projects from the User's CV**.
-
-    ---
-
-    ## Competency Explanation (Intent + Indicators)
-
-    - Retrieve the selected competency’s **full title**, **intent**, and **explicit indicators** from your knowledge base.
-    - For each **indicator**, explain what it means **in the context of the user's background** (e.g., if they work in transportation infrastructure, reference TAC guidelines, CSA codes, etc.).
-    - Use **industry-relevant examples** that would be familiar to someone with the user’s expertise.
-    - Then, write a short **scenario story** as if you were an engineer in a similar role:
-      - Use **first-person perspective** (“I”)
-      - Describe a real engineering situation that demonstrates this competency
-      - Include:
-        - An **engineering challenge**
-        - The **action(s)** taken
-        - A **quantifiable outcome**
-
-    > This helps the user empathize with how the competency should be demonstrated.
-
-    ---
-
-    ## Match Projects from CV
-
-    - Analyze the user’s uploaded CV using **Named Entity Recognition (NER)**.
-    - Identify **all explicit projects** that match the selected competency.
-    - List them using this format:
-
-    **Project Name**
-    **Position Title**
-    **Relevant activities/duties that demonstrate competency**
-
-
-    - **Do NOT** ask the user to select a project until all matches are listed.
-    - End your message with:
-      _"Please select one of the explicit matches to focus on for this competency before we continue."_
-    - **Do NOT** continue to gap analysis or follow-up questions until the user selects a project.
-    `;
-}
-
-function getGapAnalysisInstruction() {
-  return `
-    Before drafting a STAR-format response, perform a **Gap Analysis**:
-
-    - Compare the user's experience against the competency indicators.
-    - Identify any missing technical details, quantifiable results, or specific codes/standards.
-    - Ask targeted follow-up questions to fill in these gaps.
-
-    **Do not** draft the structured response until these gaps are addressed.
-  `;
-}
-
-async function fetchRunId(threadId) {
-  let latestRun = null;
-  while (!latestRun) {
-    const runsList = await openai.beta.threads.runs.list(threadId, {
-      limit: 1,
-    });
-    if (runsList?.data?.length > 0) {
-      latestRun = runsList.data[0].id;
-      break;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-  return latestRun;
-}
-
-async function* streamAssistantResponse(run) {
-  let responseText = "";
-  for await (const chunk of run) {
-    if (
-      chunk.event === "thread.message.delta" &&
-      chunk.data?.delta?.content?.length > 0
-    ) {
-      for (const contentItem of chunk.data.delta.content) {
-        if (contentItem.type === "text" && contentItem.text?.value) {
-          const token = contentItem.text.value;
-          responseText += token;
-          yield token;
-        }
-      }
-    }
-  }
-  return responseText;
-}
-
-async function getUsage(thread, runId) {
-  const runStatus = await openai.beta.threads.runs.retrieve(
-    thread.threadId,
-    runId
-  );
-  return runStatus.usage;
-}
-
-async function save({
-  user,
-  thread,
-  userMessage,
-  responseText,
-  session,
-}) {
-  if (userMessage?.id) {
-    const fullText = userMessage.content[0].text.value;
-    const content = fullText
-      .replace(getMarkdownInstruction(), "")
-      .replace(getProjectMatchInstruction(), "")
-      .replace(getGapAnalysisInstruction(), "")
-      .trim();
-
-    await create(
-      {
-        user: pointerObject(models.user, user.objectId),
-        thread: pointerObject(models.thread, thread.objectId),
-        message: userMessage,
-        role: roles.user,
-        content: content,
-      },
-      user.sessionToken
-    );
-
-    const messages = await openai.beta.threads.messages.list(thread.threadId, {
-      limit: 1,
-    });
-    const assistantMessage = messages.data.find((m) => m.role === "assistant");
-
-    await create(
-      {
-        user: pointerObject(models.user, user.objectId),
-        thread: pointerObject(models.thread, thread.objectId),
-        message: assistantMessage,
-        role: roles.assistant,
-        content: responseText,
-      },
-      user.sessionToken
-    );
-
-    return responseText;
-  }
-}
-
 async function start(request) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
@@ -10553,7 +11399,16 @@ async function start(request) {
 
   const { profile, setting, license } = await check(user, session);
 
-  if (!license) return redirect$1(`/join?type=create&priceKey=${user?.meta?.plan ?? prices.P0.key}`);
+  if (!license) {
+    await Email({
+      text: JSON.stringify({
+        email: user?.email,
+        ...user?.meta
+      })
+    });
+
+    return redirect$1(`/join?type=create&priceKey=${user?.meta?.priceKey ?? prices.P0.key}`);
+  }
 
   if (!setting?.consent)
     return redirect$1("/auth/consent", {
@@ -10585,11 +11440,11 @@ async function check(user, session) {
   }
 
   if (!setting) {
-    setting = (await read$3(user))?.toJSON();
+    setting = (await read$1(user))?.toJSON();
     console.log("app.check.setting", setting?.objectId);
 
     if (!setting) {
-      setting = (await create$2(user))?.toJSON();
+      setting = (await create(user))?.toJSON();
       console.log("app.check.setting.create", setting?.objectId);
     }
 
@@ -10607,23 +11462,25 @@ async function check(user, session) {
 
 async function init(user, session) {
   const { thread, file } = await init$1(session);
-  console.log("app.init.thread", thread.objectId);
 
-  const messages = await read$1(user, thread);
-  console.log("app.init.messages", messages.length);
-
+  const messages = await read$2(user, thread);
   const competencies = await read();
-  console.log("app.init.competencies", competencies.length);
-
   const outcomes = await read$4(user, { thread });
-  console.log("app.init.outcomes", outcomes.length);
 
   const license = session.get("license");
   const plan = prices[license.priceKey];
 
+  // Convert Parse objects to plain JSON
+  const messagesJSON = messages ? messages.map(m => ({
+    objectId: m.id,
+    role: m.get("role"),
+    content: m.get("content"),
+    createdAt: m.get("createdAt"),
+  })).reverse() : [];
+
   const data = {
     thread,
-    messages: messages.reverse(),
+    messages: messagesJSON,
     file,
     competencies,
     outcomes,
@@ -10636,6 +11493,37 @@ async function init(user, session) {
     },
   });
 }
+
+function Banner() {
+  const [user, setUser] = useState(null);
+  const [banner, setBanner] = useState(banners.default);
+  useEffect(() => {
+    if (!user) read();
+  }, [user]);
+  async function read() {
+    const res = await fetch("/user");
+    const user2 = await res.json();
+    setUser(user2);
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "bg-white px-6 py-1 rounded-xl flex gap-4 items-center text-zinc-600", children: [
+    /* @__PURE__ */ jsx(Megaphone, {}),
+    /* @__PURE__ */ jsx("div", { className: "flex-auto", children: user ? /* @__PURE__ */ jsxs("div", { className: "grid", children: [
+      /* @__PURE__ */ jsx("span", { className: "text-xs text-primary", children: banner?.title }),
+      /* @__PURE__ */ jsx("span", { className: "text-[0.6rem]", children: banner?.subtitle })
+    ] }) : /* @__PURE__ */ jsx(Skeleton, { className: "h-6 stroke-1" }) })
+  ] });
+}
+const banners = {
+  default: {
+    title: "Welcome to CBA Pro",
+    subtitle: "Upload your CV from left Button and Begin!",
+    description: "",
+    color: "",
+    button: {
+      label: "",
+      action: () => null
+    }
+  }};
 
 const shouldRevalidate = ({
   currentParams,
@@ -10656,8 +11544,22 @@ function App() {
   const [outcome, setOutcome] = useState(null);
   const [outcomes, setOutcomes] = useState(loaderData?.outcomes);
   const [run, setRun] = useState({ status: false, req: null });
+  const [draftRefinement, setDraftRefinement] = useState(false);
+  const [cvFile, setCvFile] = useState(loaderData?.file || null);
+  const [messages, setMessages] = useState(loaderData?.messages || []);
+  const [draftAssessmentMessages, setDraftAssessmentMessages] = useState([]);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [isDraftAssessmentLoading, setIsDraftAssessmentLoading] = useState(false);
   const inputRef = useRef(null);
   const navigate = useNavigate();
+  useEffect(() => {
+    setCvFile(loaderData?.file || null);
+  }, [loaderData?.file]);
+  useEffect(() => {
+    if (loaderData?.messages && loaderData.messages.length > 0) {
+      setMessages(loaderData.messages);
+    }
+  }, [loaderData?.messages]);
   async function getCompetency(...income) {
     const [type, cg, ci] = income;
     if (type === "run") inputRef.current?.refresh(ci?.title);
@@ -10690,10 +11592,36 @@ function App() {
     const outcome_ = outcomes2.find(
       (item) => item.objectId === outcome?.objectId
     );
-    setOutcome(outcome_);
+    if (outcome_) {
+      const newOutcome = {
+        ...outcome_,
+        objectId: outcome_.objectId || outcome_.id,
+        _refresh: Date.now()
+      };
+      setOutcome(newOutcome);
+    } else if (outcome) {
+      setOutcome(null);
+    }
+  }
+  async function handleDraftRefinementToggle(isActive) {
+    setDraftRefinement(isActive);
+    if (!isActive) {
+      try {
+        const res = await fetch("/messages");
+        if (res.ok) {
+          const regularMessages = await res.json();
+          setMessages(regularMessages || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch regular chat messages:", error);
+      }
+    }
   }
   function sendChat(text) {
     inputRef.current?.refresh(text);
+  }
+  function handleFileUpload(file) {
+    setCvFile(file);
   }
   return /* @__PURE__ */ jsx(Layout, { children: /* @__PURE__ */ jsxs("div", { className: "max-h-full flex-grow flex gap-4 p-4", children: [
     /* @__PURE__ */ jsx("div", { className: "w-72 bg-white rounded-xl", children: /* @__PURE__ */ jsxs("div", { className: "h-full flex flex-col", children: [
@@ -10713,24 +11641,30 @@ function App() {
     ] }) }),
     /* @__PURE__ */ jsxs("div", { className: "flex-grow flex flex-col gap-4", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-4 items-center", children: [
-        /* @__PURE__ */ jsx("div", { "data-guide-step": "1", children: /* @__PURE__ */ jsx(Assessment, { file: loaderData?.file, sendChat }) }),
-        /* @__PURE__ */ jsx(Suggestions, {}),
-        /* @__PURE__ */ jsxs(
-          "a",
-          {
-            href: "https://www.youtube.com/playlist?list=PL6iszEhc4K7Xger5FMuMUrlmbDnzS0NSm",
-            target: "_blank",
-            className: "bg-white hover:bg-white hover:text-primary transition flex items-center text-zinc-600 gap-2 rounded-xl px-6 py-3 text-sm",
-            children: [
-              /* @__PURE__ */ jsx(Youtube, { className: "stroke-1" }),
-              "How it works?",
-              /* @__PURE__ */ jsx(ArrowRight, { size: 16, className: "ml-4" })
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
-          /* @__PURE__ */ jsx(Button, { variant: "ghost", size: "icon", children: /* @__PURE__ */ jsx(Bell, {}) }),
-          /* @__PURE__ */ jsx(NavUser, {})
+        /* @__PURE__ */ jsxs("div", { className: "flex-auto grid grid-cols-2 gap-4", children: [
+          /* @__PURE__ */ jsx("div", { "data-guide-step": "1", className: "w-full [&>button]:w-full", children: /* @__PURE__ */ jsx(
+            Assessment,
+            {
+              file: cvFile,
+              sendChat,
+              onFileUpload: handleFileUpload
+            }
+          ) }),
+          /* @__PURE__ */ jsx(Banner, {})
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "w-72 flex items-center justify-between", children: [
+          /* @__PURE__ */ jsx(
+            DraftRefinement,
+            {
+              onToggle: handleDraftRefinementToggle,
+              isActive: draftRefinement,
+              disabled: isStreaming || isDraftAssessmentLoading
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
+            /* @__PURE__ */ jsx(Button, { variant: "ghost", size: "icon", children: /* @__PURE__ */ jsx(Bell, { size: 16, className: "text-zinc-400" }) }),
+            /* @__PURE__ */ jsx(NavUser, {})
+          ] })
         ] })
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "flex gap-4 flex-grow", children: [
@@ -10743,11 +11677,15 @@ function App() {
               children: /* @__PURE__ */ jsx(
                 ChatOutput,
                 {
-                  messages: loaderData?.messages,
+                  messages: draftRefinement ? draftAssessmentMessages : messages,
+                  setMessages: draftRefinement ? setDraftAssessmentMessages : setMessages,
                   run,
                   setRun,
                   competencyGroup,
-                  competencyItem
+                  competencyItem,
+                  draftRefinement,
+                  cvFile,
+                  onStreamingChange: setIsStreaming
                 }
               )
             }
@@ -10768,7 +11706,10 @@ function App() {
                 outcomes,
                 outcome,
                 getOutcomes,
-                sendChat
+                sendChat,
+                draftRefinement,
+                setDraftAssessmentMessages,
+                onDraftAssessmentLoadingChange: setIsDraftAssessmentLoading
               }
             ) })
           }
@@ -10778,70 +11719,12 @@ function App() {
   ] }) });
 }
 
-const route32 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route36 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: App,
   loader: loader$1,
   shouldRevalidate
 }, Symbol.toStringTag, { value: 'Module' }));
-
-function eventStream(signal, init, options = {}) {
-  let stream = new ReadableStream({
-    start(controller) {
-      let encoder = new TextEncoder();
-      let closed = false;
-
-      function send({ event = "message", data }) {
-        if (closed) return; // If already closed, not enqueue anything
-
-        controller.enqueue(encoder.encode(`event: ${event}\n`));
-
-        if (closed) return; // If already closed, not enqueue anything
-
-        data.split("\n").forEach((line, index, array) => {
-          if (closed) return; // If already closed, not enqueue anything
-          let value = `data: ${line}\n`;
-          if (index === array.length - 1) value += "\n";
-          controller.enqueue(encoder.encode(value));
-        });
-      }
-
-      init(send, close);
-
-      function close() {
-        if (closed) return;
-        // cleanup();
-        closed = true;
-        signal.removeEventListener("abort", close);
-        controller.close();
-      }
-
-      signal.addEventListener("abort", close);
-
-      if (signal.aborted) return close();
-    },
-  });
-
-  let headers = new Headers(options.headers);
-
-  if (headers.has("Content-Type")) {
-    console.warn("Overriding Content-Type header to `text/event-stream`");
-  }
-
-  if (headers.has("Cache-Control")) {
-    console.warn("Overriding Cache-Control header to `no-cache`");
-  }
-
-  if (headers.has("Connection")) {
-    console.warn("Overriding Connection header to `keep-alive`");
-  }
-
-  headers.set("Content-Type", "text/event-stream");
-  headers.set("Cache-Control", "no-cache");
-  headers.set("Connection", "keep-alive");
-
-  return new Response(stream, { headers });
-}
 
 async function loader({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -10968,12 +11851,12 @@ async function handleStream({
   close();
 }
 
-const route33 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route37 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Bw8K3xe8.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-D9-u8YtO.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Bw8K3xe8.js','/assets/use-toast-BCGEGR8f.js','/assets/index-29UXrhUA.js','/assets/index-B8UPRwx3.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-BMIf7ckC.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-Bxvvg2eV.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-CadnIgti.js','/assets/alert-Dl2_XlUv.js','/assets/card-Bof-jOhR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/components-Bw8K3xe8.js','/assets/index-DzK6_lIe.js','/assets/index-tUIF4Hk4.js','/assets/index-29UXrhUA.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/x-cwrx78xb.js','/assets/card-b0vSRkw8.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-C8XXEp-u.js','imports':['/assets/app.settings.profile-dlymzcVS.js','/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/components-Bw8K3xe8.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/scroll-area-CrpnatIp.js','/assets/index-Ci7t80ag.js','/assets/index-tUIF4Hk4.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-MB7iY2e5.js','/assets/index-_i_4rKMj.js','/assets/index-BMIf7ckC.js','/assets/Combination-DvcGEJik.js','/assets/input-CVFQA-es.js','/assets/submit-field-C-hs90dx.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-DlECK5RS.js'],'css':[]},'routes/_auth.auth.register':{'id':'routes/_auth.auth.register','parentId':'routes/_auth','path':'auth/register','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.register-Ao4AWqfk.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-XWDmmKIn.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/app.settings.profile-dlymzcVS.js','/assets/components-Bw8K3xe8.js','/assets/input-CVFQA-es.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-29UXrhUA.js','/assets/scroll-area-CrpnatIp.js','/assets/index-Ci7t80ag.js','/assets/index-tUIF4Hk4.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-MB7iY2e5.js','/assets/index-_i_4rKMj.js','/assets/index-BMIf7ckC.js','/assets/Combination-DvcGEJik.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-DlECK5RS.js'],'css':[]},'routes/_auth.auth.remember':{'id':'routes/_auth.auth.remember','parentId':'routes/_auth','path':'auth/remember','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.remember-Bo6teKB0.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-XWDmmKIn.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Bw8K3xe8.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-C4Qrbhdr.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-XWDmmKIn.js','/assets/checkbox-D46stZEb.js','/assets/submit-field-C-hs90dx.js','/assets/components-Bw8K3xe8.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-_i_4rKMj.js','/assets/index-MB7iY2e5.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.verify':{'id':'routes/_auth.auth.verify','parentId':'routes/_auth','path':'auth/verify','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.verify-BiTC3FgV.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-XWDmmKIn.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Bw8K3xe8.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-CfhO2O5c.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/label-BdRVc-Go.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Bw8K3xe8.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/index-29UXrhUA.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-DABHmEyq.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-XWDmmKIn.js','/assets/alert-xVkbEK4A.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Bw8K3xe8.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-BdRVc-Go.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/audio.transcribe':{'id':'routes/audio.transcribe','parentId':'root','path':'audio/transcribe','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/audio.transcribe-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-1NhjvNm0.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/input-CVFQA-es.js','/assets/label-BdRVc-Go.js','/assets/dialog--60hi80W.js','/assets/index-z_6t8hgT.js','/assets/components-Bw8K3xe8.js','/assets/id-FeCW-kOd.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-29UXrhUA.js','/assets/index-DkGC76cP.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.cb':{'id':'routes/_auth.auth.cb','parentId':'routes/_auth','path':'auth/cb','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.cb-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-CRR9doBl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BzUl0XDW.js','/assets/users-round-CELzP7-z.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-Drja37_b.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/card-b0vSRkw8.js','/assets/components-Bw8K3xe8.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-C7kKC9LM.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-FmZYA4ba.js','/assets/button-7RhbRVm-.js','/assets/sheet-BsS9imx3.js','/assets/scroll-area-CrpnatIp.js','/assets/components-Bw8K3xe8.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/index-R_5LapDR.js','/assets/index-DzK6_lIe.js','/assets/table-Besi7jw5.js','/assets/progress-CadnIgti.js','/assets/index-BLD_4dua.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-C-hs90dx.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-29UXrhUA.js','/assets/index-DkGC76cP.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js','/assets/loader-circle-gVrWrBVl.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-Dj5IMZH6.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/dialog--60hi80W.js','/assets/sidebar-C2dgGt4P.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js','/assets/components-Bw8K3xe8.js','/assets/index-DkGC76cP.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/separator-DlECK5RS.js','/assets/sheet-BsS9imx3.js','/assets/skeleton-DivTniFP.js','/assets/floating-ui.react-dom-DDsewUdg.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-DYYXYXFE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CVFQA-es.js','/assets/table-Besi7jw5.js','/assets/components-Bw8K3xe8.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/scroll-area-CrpnatIp.js','/assets/index-29UXrhUA.js','/assets/index-Ci7t80ag.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-DywlNMnB.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog--60hi80W.js','/assets/input-XWDmmKIn.js','/assets/label-BdRVc-Go.js','/assets/textarea-_nxwdXwg.js','/assets/submit-field-C-hs90dx.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/components-Bw8K3xe8.js','/assets/index-DkGC76cP.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/input-CVFQA-es.js','/assets/id-FeCW-kOd.js','/assets/index-29UXrhUA.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-xd2vk-tX.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-Dl2_XlUv.js','/assets/components-Bw8K3xe8.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/x-cwrx78xb.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-BrwIzzJh.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/table-Besi7jw5.js','/assets/progress-CadnIgti.js','/assets/components-Bw8K3xe8.js','/assets/plus-D0z1o2bi.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/scroll-area-CrpnatIp.js','/assets/index-29UXrhUA.js','/assets/index-Ci7t80ag.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-DynaMFNO.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-BsS9imx3.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/components-Bw8K3xe8.js','/assets/arrow-right-DNdxeF8t.js','/assets/index-DkGC76cP.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-Clqhl-ZF.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-Bw8K3xe8.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-Djh_r3o4.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-C2dgGt4P.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-DmoUAdKy.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/users-round-CELzP7-z.js','/assets/components-Bw8K3xe8.js','/assets/button-7RhbRVm-.js','/assets/loader-circle-gVrWrBVl.js','/assets/bell-C_47a_f0.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/input-CVFQA-es.js','/assets/separator-DlECK5RS.js','/assets/sheet-BsS9imx3.js','/assets/index-DkGC76cP.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/skeleton-DivTniFP.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-29UXrhUA.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/index-MB7iY2e5.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-G758M3Eo.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/submit-field-C-hs90dx.js','/assets/index-z_6t8hgT.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-Bof-jOhR.js','/assets/components-Bw8K3xe8.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-DQFGKsqN.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-BcZXDzvu.js','/assets/avatar-FmZYA4ba.js','/assets/index-tUIF4Hk4.js','/assets/index-Ci7t80ag.js','/assets/index-29UXrhUA.js','/assets/components-Bw8K3xe8.js','/assets/index-z_6t8hgT.js','/assets/dropdown-menu-DmoUAdKy.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-MB7iY2e5.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/index-_i_4rKMj.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/skeleton-DivTniFP.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-C2-dZX8v.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-CadnIgti.js','/assets/index-z_6t8hgT.js','/assets/layout-BcZXDzvu.js','/assets/button-7RhbRVm-.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/index-R_5LapDR.js','/assets/checkbox-D46stZEb.js','/assets/label-BdRVc-Go.js','/assets/loader-circle-gVrWrBVl.js','/assets/separator-DlECK5RS.js','/assets/textarea-_nxwdXwg.js','/assets/components-Bw8K3xe8.js','/assets/x-cwrx78xb.js','/assets/submit-field-C-hs90dx.js','/assets/index-DzK6_lIe.js','/assets/chevron-right-DPfqaxnT.js','/assets/scroll-area-CrpnatIp.js','/assets/avatar-FmZYA4ba.js','/assets/index-BLD_4dua.js','/assets/input-CVFQA-es.js','/assets/dialog--60hi80W.js','/assets/plus-D0z1o2bi.js','/assets/arrow-right-DNdxeF8t.js','/assets/bell-C_47a_f0.js','/assets/index-tUIF4Hk4.js','/assets/index-29UXrhUA.js','/assets/dropdown-menu-DmoUAdKy.js','/assets/index-Ci7t80ag.js','/assets/index-B8UPRwx3.js','/assets/index-DpuVDM1o.js','/assets/floating-ui.react-dom-DDsewUdg.js','/assets/index-MB7iY2e5.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/index-_i_4rKMj.js','/assets/skeleton-DivTniFP.js','/assets/user-D4pQVfP0.js','/assets/index-D3JQEnQH.js','/assets/index-DkGC76cP.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-dc72eb71.js','version':'dc72eb71'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-ejrtMcy6.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-BATxfdox.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-K0H7Olll.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-BATxfdox.js','/assets/use-toast-BCGEGR8f.js','/assets/index-BvRv39A9.js','/assets/index-8Buc2O9g.js','/assets/index-tUIF4Hk4.js','/assets/index-Bs3Ma-5M.js','/assets/index-CshdxgGv.js','/assets/index-5SzSg1a2.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-DriGv1lY.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-CJl6U-AQ.js','/assets/alert-Dl2_XlUv.js','/assets/card-Bof-jOhR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/components-BATxfdox.js','/assets/index-DzK6_lIe.js','/assets/index-tUIF4Hk4.js','/assets/index-BvRv39A9.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/x-cwrx78xb.js','/assets/card-b0vSRkw8.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/app.settings.pricing':{'id':'routes/app.settings.pricing','parentId':'routes/app.settings','path':'pricing','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.pricing-COlICcz_.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/switch-BSP5Sbml.js','/assets/components-BATxfdox.js','/assets/award-DMU-RDhX.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-BvRv39A9.js','/assets/index-tUIF4Hk4.js','/assets/index-CshdxgGv.js','/assets/index-_i_4rKMj.js','/assets/index-XEkSpCA2.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-B3wtTNCf.js','imports':['/assets/app.settings.profile-Bd7ozkZ4.js','/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/components-BATxfdox.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/scroll-area-BNCYoKi8.js','/assets/index-Bs3Ma-5M.js','/assets/index-CshdxgGv.js','/assets/index-tUIF4Hk4.js','/assets/index-8Buc2O9g.js','/assets/index-D80_AGP3.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-XEkSpCA2.js','/assets/index-_i_4rKMj.js','/assets/index-5SzSg1a2.js','/assets/Combination-DvcGEJik.js','/assets/input-CVFQA-es.js','/assets/submit-field-C-hs90dx.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-CYezskdT.js'],'css':[]},'routes/draft-assessment.sse':{'id':'routes/draft-assessment.sse','parentId':'routes/draft-assessment','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/draft-assessment.sse-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.register':{'id':'routes/_auth.auth.register','parentId':'routes/_auth','path':'auth/register','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.register-k6atyI3E.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-B7TA8Nlp.js','/assets/alert-446lNKAq.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/app.settings.profile-Bd7ozkZ4.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/alert-Dv8VQtr3.js','/assets/info-Dx15IYO9.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-BvRv39A9.js','/assets/scroll-area-BNCYoKi8.js','/assets/index-Bs3Ma-5M.js','/assets/index-CshdxgGv.js','/assets/index-tUIF4Hk4.js','/assets/index-8Buc2O9g.js','/assets/index-D80_AGP3.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-XEkSpCA2.js','/assets/index-_i_4rKMj.js','/assets/index-5SzSg1a2.js','/assets/Combination-DvcGEJik.js','/assets/use-toast-BCGEGR8f.js','/assets/separator-CYezskdT.js'],'css':[]},'routes/_auth.auth.remember':{'id':'routes/_auth.auth.remember','parentId':'routes/_auth','path':'auth/remember','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.remember-D4lUII25.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-B7TA8Nlp.js','/assets/alert-446lNKAq.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/alert-Dv8VQtr3.js','/assets/info-Dx15IYO9.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-C_vJqmC_.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-B7TA8Nlp.js','/assets/checkbox-C8g39C1U.js','/assets/submit-field-C-hs90dx.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/index-tUIF4Hk4.js','/assets/index-CshdxgGv.js','/assets/index-_i_4rKMj.js','/assets/index-XEkSpCA2.js','/assets/index-Bs3Ma-5M.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.verify':{'id':'routes/_auth.auth.verify','parentId':'routes/_auth','path':'auth/verify','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.verify-Cn92RzlT.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-B7TA8Nlp.js','/assets/alert-446lNKAq.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/alert-Dv8VQtr3.js','/assets/info-Dx15IYO9.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-CKhaZHrr.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/label-zPSMuYgG.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/index-BvRv39A9.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CHn5bYtp.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-B7TA8Nlp.js','/assets/alert-446lNKAq.js','/assets/submit-field-C-hs90dx.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-FeCW-kOd.js','/assets/alert-Dv8VQtr3.js','/assets/info-Dx15IYO9.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/audio.transcribe':{'id':'routes/audio.transcribe','parentId':'root','path':'audio/transcribe','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/audio.transcribe-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-BDD6_peE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/input-CVFQA-es.js','/assets/label-zPSMuYgG.js','/assets/dialog-1UrEyvk7.js','/assets/index-z_6t8hgT.js','/assets/components-BATxfdox.js','/assets/id-FeCW-kOd.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BvRv39A9.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/draft-assessment':{'id':'routes/draft-assessment','parentId':'root','path':'draft-assessment','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/draft-assessment-l0sNRNKZ.js','imports':[],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.cb':{'id':'routes/_auth.auth.cb','parentId':'routes/_auth','path':'auth/cb','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.cb-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-CRR9doBl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BzUl0XDW.js','/assets/users-round-CELzP7-z.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-B9Yz-2Lc.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C-hs90dx.js','/assets/card-b0vSRkw8.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-FizHh8Ek.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-BU-rCnSO.js','/assets/button-7RhbRVm-.js','/assets/sheet-BC-i8l7E.js','/assets/scroll-area-BNCYoKi8.js','/assets/components-BATxfdox.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/index-R_5LapDR.js','/assets/index-DzK6_lIe.js','/assets/table-D1KCZZGx.js','/assets/progress-CJl6U-AQ.js','/assets/index-BLD_4dua.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-C-hs90dx.js','/assets/index-tUIF4Hk4.js','/assets/index-CshdxgGv.js','/assets/index-BvRv39A9.js','/assets/index-YawMpOok.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/index-Bs3Ma-5M.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js','/assets/loader-circle-gVrWrBVl.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-Rls8J6Oh.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/dialog-1UrEyvk7.js','/assets/sidebar-D2b2_dmj.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js','/assets/award-DMU-RDhX.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/separator-CYezskdT.js','/assets/sheet-BC-i8l7E.js','/assets/skeleton-DivTniFP.js','/assets/tooltip-DfH3vibf.js','/assets/floating-ui.react-dom-uWlyp39P.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-CI6FcrGc.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CVFQA-es.js','/assets/table-D1KCZZGx.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/scroll-area-BNCYoKi8.js','/assets/index-BvRv39A9.js','/assets/index-Bs3Ma-5M.js','/assets/index-CshdxgGv.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-DQYMgRdF.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-1UrEyvk7.js','/assets/input-B7TA8Nlp.js','/assets/label-zPSMuYgG.js','/assets/textarea-_nxwdXwg.js','/assets/submit-field-C-hs90dx.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/input-CVFQA-es.js','/assets/id-FeCW-kOd.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-CRC64t5o.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-Dl2_XlUv.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-Dv8VQtr3.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/x-cwrx78xb.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-DXJVI1jl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/table-D1KCZZGx.js','/assets/progress-CJl6U-AQ.js','/assets/components-BATxfdox.js','/assets/plus-D0z1o2bi.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/scroll-area-BNCYoKi8.js','/assets/index-BvRv39A9.js','/assets/index-Bs3Ma-5M.js','/assets/index-CshdxgGv.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/messages':{'id':'routes/messages','parentId':'root','path':'messages','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/messages-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-Dfhi4Sh5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-BC-i8l7E.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/components-BATxfdox.js','/assets/arrow-right-DNdxeF8t.js','/assets/index-YawMpOok.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-Bs2ZJ2nI.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-BATxfdox.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-DfuemyXi.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-D2b2_dmj.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-y6hY7xzz.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/users-round-CELzP7-z.js','/assets/components-BATxfdox.js','/assets/button-7RhbRVm-.js','/assets/loader-circle-gVrWrBVl.js','/assets/bell-C_47a_f0.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/input-CVFQA-es.js','/assets/separator-CYezskdT.js','/assets/sheet-BC-i8l7E.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/skeleton-DivTniFP.js','/assets/tooltip-DfH3vibf.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-BvRv39A9.js','/assets/index-tUIF4Hk4.js','/assets/index-CshdxgGv.js','/assets/index-8Buc2O9g.js','/assets/index-D80_AGP3.js','/assets/index-XEkSpCA2.js','/assets/index-Bs3Ma-5M.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-BBIScWaH.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/submit-field-C-hs90dx.js','/assets/index-z_6t8hgT.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-Bof-jOhR.js','/assets/components-BATxfdox.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-x0nkeXwv.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-15mABhOm.js','/assets/avatar-BU-rCnSO.js','/assets/index-tUIF4Hk4.js','/assets/index-CshdxgGv.js','/assets/index-BvRv39A9.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/dropdown-menu-y6hY7xzz.js','/assets/index-8Buc2O9g.js','/assets/index-D80_AGP3.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-XEkSpCA2.js','/assets/index-Bs3Ma-5M.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/switch-BSP5Sbml.js','/assets/index-_i_4rKMj.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/skeleton-DivTniFP.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/arrow-right-DNdxeF8t.js','/assets/user-D4pQVfP0.js'],'css':[]},'routes/user':{'id':'routes/user','parentId':'root','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/user-l0sNRNKZ.js','imports':[],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-BCbPmuv3.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-CJl6U-AQ.js','/assets/index-z_6t8hgT.js','/assets/layout-15mABhOm.js','/assets/button-7RhbRVm-.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/components-BATxfdox.js','/assets/index-R_5LapDR.js','/assets/checkbox-C8g39C1U.js','/assets/label-zPSMuYgG.js','/assets/loader-circle-gVrWrBVl.js','/assets/separator-CYezskdT.js','/assets/textarea-_nxwdXwg.js','/assets/submit-field-C-hs90dx.js','/assets/tooltip-DfH3vibf.js','/assets/info-Dx15IYO9.js','/assets/x-cwrx78xb.js','/assets/index-DzK6_lIe.js','/assets/chevron-right-DPfqaxnT.js','/assets/scroll-area-BNCYoKi8.js','/assets/avatar-BU-rCnSO.js','/assets/index-BLD_4dua.js','/assets/input-CVFQA-es.js','/assets/dialog-1UrEyvk7.js','/assets/plus-D0z1o2bi.js','/assets/skeleton-DivTniFP.js','/assets/bell-C_47a_f0.js','/assets/index-tUIF4Hk4.js','/assets/index-BvRv39A9.js','/assets/dropdown-menu-y6hY7xzz.js','/assets/index-CshdxgGv.js','/assets/index-8Buc2O9g.js','/assets/index-D80_AGP3.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-XEkSpCA2.js','/assets/index-Bs3Ma-5M.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/switch-BSP5Sbml.js','/assets/index-_i_4rKMj.js','/assets/arrow-right-DNdxeF8t.js','/assets/user-D4pQVfP0.js','/assets/index-D3JQEnQH.js','/assets/index-YawMpOok.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-c6142530.js','version':'c6142530'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
@@ -11003,13 +11886,29 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           caseSensitive: undefined,
           module: route1
         },
+  "routes/app.settings.pricing": {
+          id: "routes/app.settings.pricing",
+          parentId: "routes/app.settings",
+          path: "pricing",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route2
+        },
   "routes/app.settings.profile": {
           id: "routes/app.settings.profile",
           parentId: "routes/app.settings",
           path: "profile",
           index: undefined,
           caseSensitive: undefined,
-          module: route2
+          module: route3
+        },
+  "routes/draft-assessment.sse": {
+          id: "routes/draft-assessment.sse",
+          parentId: "routes/draft-assessment",
+          path: "sse",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route4
         },
   "routes/_auth.auth.register": {
           id: "routes/_auth.auth.register",
@@ -11017,7 +11916,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "auth/register",
           index: undefined,
           caseSensitive: undefined,
-          module: route3
+          module: route5
         },
   "routes/_auth.auth.remember": {
           id: "routes/_auth.auth.remember",
@@ -11025,7 +11924,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "auth/remember",
           index: undefined,
           caseSensitive: undefined,
-          module: route4
+          module: route6
         },
   "routes/_auth.auth.consent": {
           id: "routes/_auth.auth.consent",
@@ -11033,7 +11932,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "auth/consent",
           index: undefined,
           caseSensitive: undefined,
-          module: route5
+          module: route7
         },
   "routes/_auth.auth.verify": {
           id: "routes/_auth.auth.verify",
@@ -11041,7 +11940,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "auth/verify",
           index: undefined,
           caseSensitive: undefined,
-          module: route6
+          module: route8
         },
   "routes/_auth.auth.login": {
           id: "routes/_auth.auth.login",
@@ -11049,7 +11948,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "auth/login",
           index: undefined,
           caseSensitive: undefined,
-          module: route7
+          module: route9
         },
   "routes/_auth.auth.reset": {
           id: "routes/_auth.auth.reset",
@@ -11057,7 +11956,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "auth/reset",
           index: undefined,
           caseSensitive: undefined,
-          module: route8
+          module: route10
         },
   "routes/audio.transcribe": {
           id: "routes/audio.transcribe",
@@ -11065,7 +11964,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "audio/transcribe",
           index: undefined,
           caseSensitive: undefined,
-          module: route9
+          module: route11
         },
   "routes/dash.user.create": {
           id: "routes/dash.user.create",
@@ -11073,7 +11972,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "create",
           index: undefined,
           caseSensitive: undefined,
-          module: route10
+          module: route12
+        },
+  "routes/draft-assessment": {
+          id: "routes/draft-assessment",
+          parentId: "root",
+          path: "draft-assessment",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route13
         },
   "routes/outcomes.$action": {
           id: "routes/outcomes.$action",
@@ -11081,7 +11988,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "outcomes/:action",
           index: undefined,
           caseSensitive: undefined,
-          module: route11
+          module: route14
         },
   "routes/_auth.auth.cb": {
           id: "routes/_auth.auth.cb",
@@ -11089,7 +11996,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "auth/cb",
           index: undefined,
           caseSensitive: undefined,
-          module: route12
+          module: route15
         },
   "routes/dash.overview": {
           id: "routes/dash.overview",
@@ -11097,7 +12004,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "overview",
           index: undefined,
           caseSensitive: undefined,
-          module: route13
+          module: route16
         },
   "routes/dash.settings": {
           id: "routes/dash.settings",
@@ -11105,7 +12012,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route14
+          module: route17
         },
   "routes/dash.user.$id": {
           id: "routes/dash.user.$id",
@@ -11113,7 +12020,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: ":id",
           index: undefined,
           caseSensitive: undefined,
-          module: route15
+          module: route18
         },
   "routes/app.settings": {
           id: "routes/app.settings",
@@ -11121,7 +12028,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route16
+          module: route19
         },
   "routes/dash.license": {
           id: "routes/dash.license",
@@ -11129,7 +12036,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "license",
           index: undefined,
           caseSensitive: undefined,
-          module: route17
+          module: route20
         },
   "routes/app.contact": {
           id: "routes/app.contact",
@@ -11137,7 +12044,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "contact",
           index: undefined,
           caseSensitive: undefined,
-          module: route18
+          module: route21
         },
   "routes/app.alert": {
           id: "routes/app.alert",
@@ -11145,7 +12052,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "alert",
           index: undefined,
           caseSensitive: undefined,
-          module: route19
+          module: route22
         },
   "routes/dash.user": {
           id: "routes/dash.user",
@@ -11153,15 +12060,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "user",
           index: undefined,
           caseSensitive: undefined,
-          module: route20
+          module: route23
         },
-  "routes/nav-user": {
-          id: "routes/nav-user",
+  "routes/messages": {
+          id: "routes/messages",
           parentId: "root",
-          path: "nav-user",
+          path: "messages",
           index: undefined,
           caseSensitive: undefined,
-          module: route21
+          module: route24
         },
   "routes/join.wh": {
           id: "routes/join.wh",
@@ -11169,7 +12076,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "wh",
           index: undefined,
           caseSensitive: undefined,
-          module: route22
+          module: route25
         },
   "routes/_index": {
           id: "routes/_index",
@@ -11177,7 +12084,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: undefined,
           index: true,
           caseSensitive: undefined,
-          module: route23
+          module: route26
         },
   "routes/logout": {
           id: "routes/logout",
@@ -11185,7 +12092,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "logout",
           index: undefined,
           caseSensitive: undefined,
-          module: route24
+          module: route27
         },
   "routes/mobile": {
           id: "routes/mobile",
@@ -11193,7 +12100,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "mobile",
           index: undefined,
           caseSensitive: undefined,
-          module: route25
+          module: route28
         },
   "routes/_auth": {
           id: "routes/_auth",
@@ -11201,7 +12108,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: undefined,
           index: undefined,
           caseSensitive: undefined,
-          module: route26
+          module: route29
         },
   "routes/files": {
           id: "routes/files",
@@ -11209,7 +12116,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "files",
           index: undefined,
           caseSensitive: undefined,
-          module: route27
+          module: route30
         },
   "routes/score": {
           id: "routes/score",
@@ -11217,7 +12124,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "score",
           index: undefined,
           caseSensitive: undefined,
-          module: route28
+          module: route31
         },
   "routes/dash": {
           id: "routes/dash",
@@ -11225,7 +12132,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "dash",
           index: undefined,
           caseSensitive: undefined,
-          module: route29
+          module: route32
         },
   "routes/join": {
           id: "routes/join",
@@ -11233,7 +12140,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "join",
           index: undefined,
           caseSensitive: undefined,
-          module: route30
+          module: route33
         },
   "routes/test": {
           id: "routes/test",
@@ -11241,7 +12148,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "test",
           index: undefined,
           caseSensitive: undefined,
-          module: route31
+          module: route34
+        },
+  "routes/user": {
+          id: "routes/user",
+          parentId: "root",
+          path: "user",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route35
         },
   "routes/app": {
           id: "routes/app",
@@ -11249,7 +12164,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "app",
           index: undefined,
           caseSensitive: undefined,
-          module: route32
+          module: route36
         },
   "routes/sse": {
           id: "routes/sse",
@@ -11257,7 +12172,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-BwXtCxV7.js','im
           path: "sse",
           index: undefined,
           caseSensitive: undefined,
-          module: route33
+          module: route37
         }
       };
 
