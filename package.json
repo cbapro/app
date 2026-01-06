@@ -45,7 +45,7 @@
     "isbot": "^4.4.0",
     "joi": "^17.13.3",
     "joi-password": "^4.2.0",
-    "lucide-react": "^0.510.0",
+    "lucide-react": "^0.562.0",
     "markdown-to-jsx": "^7.7.2",
     "nanoid": "^5.1.5",
     "nodemailer": "^6.9.16",
