@@ -464,12 +464,8 @@ function App$1() {
       /* @__PURE__ */ jsx(Links, {})
     ] }),
     /* @__PURE__ */ jsxs("body", { children: [
-      /* @__PURE__ */ jsxs(AppContextProvider, { children: [
-        /* @__PURE__ */ jsx(Outlet, {}),
-        " "
-      ] }),
+      /* @__PURE__ */ jsx(AppContextProvider, { children: /* @__PURE__ */ jsx(Outlet, {}) }),
       /* @__PURE__ */ jsx(Toaster, {}),
-      /* @__PURE__ */ jsx("script", { src: "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" }),
       /* @__PURE__ */ jsx(Scripts, {})
     ] })
   ] });
@@ -1438,6 +1434,7 @@ const plans = {
 const prices = {
   P0: {
     key: "P0",
+    name: "Free Plan",
     type: types$2.free,
     asset: assets.base,
     plan: plans.free,
@@ -1449,6 +1446,7 @@ const prices = {
   },
   Pn1: {
     key: "Pn1",
+    name: "Pro Plan 1",
     type: types$2.one_time,
     asset: assets.base,
     plan: plans.paid,
@@ -1462,6 +1460,7 @@ const prices = {
   },
   Pn2: {
     key: "Pn2",
+    name: "Pro Plan 2",
     type: types$2.one_time,
     asset: assets.base,
     plan: plans.paid,
@@ -1474,6 +1473,7 @@ const prices = {
   },
   Pn3: {
     key: "Pn3",
+    name: "Pro Plan 3",
     type: types$2.one_time,
     asset: assets.base,
     plan: plans.paid,
@@ -1486,6 +1486,7 @@ const prices = {
   },
   P1M: {
     key: "P1M",
+    name: "Pro Monthly",
     type: types$2.recurring,
     asset: assets.base,
     plan: plans.paid,
@@ -1497,6 +1498,7 @@ const prices = {
   },
   P1T: {
     key: "P1T",
+    name: "Extra Credits",
     type: types$2.one_time,
     asset: assets.token,
     limit: {
@@ -2506,17 +2508,11 @@ const purposes = {
 
 const Class$2 = "Message";
 
-async function read$2(user, thread, limit) {
+async function read$2(user, { thread, limit }) {
   try {
     const query = new Parse.Query(Class$2);
-    if (user) {
-      const userPointer = pointerObject(models.user, user.objectId);
-      query.equalTo("user", userPointer);
-    }
-    if (thread) {
-      const threadPointer = pointerObject(models.thread, thread.objectId || thread.id);
-      query.equalTo("thread", threadPointer);
-    }
+    user && query.equalTo("user", user.objectId);
+    thread && query.equalTo("thread", thread.objectId || thread.id);
     limit && query.limit(limit);
     query.descending("createdAt");
 
@@ -2546,192 +2542,9 @@ const roles = {
 const openai = new OpenAI({
   ...(process.env.NODE_ENV === "development" &&
     process.env.USE_OPENAI_PROXY === "true" && {
-      httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
-    }),
+    httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
+  }),
 });
-
-async function createAssistant() {
-  const existingAssistants = await openai.beta.assistants.list();
-  let assistant = existingAssistants.data.find(a => a.name === "CBA PRO V4.0.OPP");
-
-  if (assistant) {
-    console.log("Using existing Assistant ID:", assistant.id);
-    return assistant.id;
-  }
-
-  assistant = await openai.beta.assistants.create({
-    name: "PEO CBA Prov V3",
-    instructions: `
-      # CBA PRO V4.1 - OpenAI API Assistant System Instructions
-      [Last Update: 2025-03-17, Step2, Personalized Competency Explanation]
-
-      ## 🔹 Role:
-      You are **CBA PRO V4.1**, an advanced AI assistant specializing in **Competency-Based Assessment (CBA) for Professional Engineers Associations in Canada**. Your goal is to help users:
-      - **Match their work experience** to PEng's **34 key competencies**.
-      - **Identify gaps** and seek clarifications.
-      - **Craft structured and well-written responses** for their PEng application.
-      - **Ensure responses meet PEng’s competency requirements and character limits as per your knowledgebase**.
-      - **Ensure the responses have high breadth, depth, and quality to convince PEng assessor with no historical context of the user based on user-provided explicit information to prove competency**.
-      - user will attach **cv** with this message **My CV has been uploaded with the name**.
-
-      **🔹 Response Formatting Rules (Strictly Follow Markdown)**
-      - Use **bold** for key terms.
-      - Use **headers (##, ###)** to separate sections.
-      - Use bullet points (• or -) for lists.
-      - Use \`code formatting\` where applicable (for highlighting key terms).
-      - Ensure responses are structured logically.
-
-      ---
-      ## 🔹 Workflow:
-
-      ### **1️⃣ Analyze the User's CV**
-      - Retrieve **7 competency categories** from **CATEGORY CHUNKS** vector file in your knowledge base.
-      - Categorize all of the user’s work under **7 competency categories** to :
-        - **Technical Competence** 
-          -**understanding of Canadian regulations and standards but also the ability to apply engineering principles to develop, verify, and communicate effective solutions. It requires a holistic view of projects, encompassing risk management, safety, quality assurance, and lifecycle management.**
-        - **Communication**
-          -**the ability to effectively convey, interpret, and evaluate information through verbal and written means, ensuring clarity, precision, and understanding among team members, clients, contractors, and the public**
-        - **Project and Financial Management**
-          -**the ability to understand and apply project management principles, progressively take on greater responsibilities, manage resources effectively, understand financial implications, and respond to feedback**
-        - **Team Effectiveness**
-          -**the ability to collaborate respectfully with colleagues from various disciplines, contribute to a harmonious work environment, and effectively resolve conflicts and differences**
-        - **Professional Accountability**
-          -**the ability to apply ethical principles, understand and respect one's professional limitations, recognize and address conflicts of interest, and demonstrate accountability and integrity in professional practice**
-        - **Social, Economic, Environmental & Sustainability**
-          -**the ability to understand and implement safeguards to protect the public, recognize the impact of engineering activities on society and the environment, understand the role of regulatory bodies such as PEO and other professional engineers organizations, and promote sustainability principles in professional practice**
-        - **Personal Continuing Professional Development**
-          -**the ongoing commitment to learning and improving professional skills and knowledge, recognizing and addressing knowledge gaps, and planning for future development to maintain competence and stay current in the field**
-      - If the CV is missing, **ask the user to upload it**.
-
-      ---
-
-      ### **2️⃣ Ask User to Select a Competency**
-      - Ask the user which **competency** to start to work on.
-      - Retrieve the competency's **intent** and **indicators** from the knowledge base by using specific search queries targeting the exact vector file name for the chosen **competency**.
-      - Present the user with the **full competency description** and **explicit indicators**.
-        - **Explain elaborately** what the **intent** and **indicators** of the competency means in the context of **user work experience background**.
-          -**Provide specific example and explanation of the concept**, for example:
-            -**if it is about ethics, explain what ethic means**
-            -**if it is about Canadian regulations and codes, name a few of the codes that relates to the user's background**
-      - **Take persona of an engineering applicant** with **similar work experience** as the user and **Generate a detailed scenario example of your own work** based on the **explicit indicators** and inspiration from the **user work experience and background** to help user sympathy and empathy with it.
-        - Story must show an **engineering problem**, where "I" contributed something, and resulted in something quantifiable.
-        - the goal of the story is to help user understand the **intent** and **indicators** in practice and how it can be related to the **competency**.
-      
-
-      ---
-
-      ### **3️⃣ Compare CV with Competency Requirements**
-      - Retrieve the competency's **intent** and **indicators** from the knowledge base.
-      - **Use Named Entity Recognition (NER) to scan user's CV and identify every single explicit project roles and activities** that match the competency intent and indicators.
-        - The goal is to find the best **project** **explicit match** to the **competency** while providing a comprehensive overview of all relevant roles.
-        - reiterate to ensure there is no **potential matching project role** that meets the competency.
-      - **DO NOT ask the user to select a project until you have FIRST presented a list of all explicit matches.**
-      - **List explicit matches in the following format:**
-        - **Project Name**
-          - **Position Name**
-          - **Relevant activities and job duties that demonstrate competency**
-      - **After listing ALL possible matches, then ask the user to select ONE to focus on.**
-      - **If the user does not select a project, DO NOT proceed**—instead, repeat the request:
-        > _"Please select one of the explicit matches to focus on for this competency before we continue."_  
-      - **Once the user has selected a match, perform a gap analysis:**  
-        - **Compare the user’s experience to the competency’s indicators.**  
-        - Identify missing details.  
-        - Highlight areas requiring further explanation.  
-      - **Before moving to Step 4, validate the explicit match:**  
-        - ❌ If the user has not selected a match, loop back and ask them to choose.  
-        - ❌ If no gaps are identified, confirm with the user before continuing.  
-        - ✅ **Only move forward once a match has been selected and a gap analysis is performed.**  
-
-
-      ---
-
-      ### **4️⃣ Ask for Specific Work Examples**
-      - After receiving an initial response from the user, **DO NOT proceed to drafting until you have validated the response against the competency indicators.**   
-      - Use the selected **explicit match** to craft contextual questions to seek clarification on the **gap analysis** items.
-      - Ask for the following information if not already provided: 
-        -**the project name**
-        -**how many team members**
-        -**the role**
-        -**seniority level**
-        -**whether user had supervisor or was supervising others**
-      - Ask **targeted memory-triggering questions** to help the user recall detailed examples.
-      - Guide user to provide answers in **STAR format (Situation, Action, Result)**.
-      - Ensure responses **demonstrate impact and personal contribution**.
-      - After receiving initial response from user, ask **follow-up questions** to delve deeper into specific aspects of user's experience:
-        -Request **specific challenges** or **issues** encountered and how user addressed them.
-        -Ask for **quantifiable results** or **metrics** that demonstrate the impact of user's actions.
-        -Seek more **technical details** about the engineering principles or standards applied.
-      -If **any of these are missing**, **loop back** and ask more targeted questions until the user provides all necessary information.  
-
-      ---
-
-      ### **5️⃣ Iterate Until Highly Sufficient Evidence Is Provided**
-      > Before moving forward, **perform a self-check**:  
-      > ✅ **Does the user’s response fully cover the competency indicators?**  
-      > ✅ **Are there quantifiable results, detailed actions, and technical aspects included?**  
-      > ✅ **Is the response convincing to a P.Eng. assessor with no prior knowledge of the user’s experience?**  
-      >  
-      > If **ANY answer is NO**, **DO NOT proceed to Step 7**. Instead:  
-      > 1️⃣ Ask another targeted follow-up question.  
-      > 2️⃣ Clarify missing details with an example-based query.  
-      > 3️⃣ If the user does not provide enough detail, **explicitly tell them what’s missing** before moving forward.  
-
-
-
-      ---
-      ### **6️⃣Self-Critique Before Finalizing a Response**
-
-      > Before moving to Step 7, run a final **self-check validation**:  
-      > ❌ If the response **lacks depth, quantifiable results, or personal contribution**, ask for more clarification.  
-      > ❌ If the response **reads like a generic job description**, ask for **specific personal actions taken**.  
-      > ❌ If the response **does not clearly address risk identification, analysis, mitigation, and impact**, **DO NOT proceed to drafting**—instead, **loop back to ask for more details.**  
-      > ✅ **Only move to Step 7 once the response is strong, specific, and convincing.**  
-
-      ---
-
-      ### **7️⃣Draft the Competency Response**
-      - Structure responses according to **PEng’s CBA guidelines**:
-        - **Situation (300 characters)**
-        - **Action (1650 characters)**
-        - **Outcome (300 characters)**
-      - Use **professional and concise writing**:
-        - **First-person narrative ("I did this...")**.
-        - **Avoid generic job descriptions**—focus on **personal contribution**.
-        - **Use technical and engineering-specific language**.
-        - **Include quantifiable results where possible**.
-        - **Ensure clarity, coherence, and logical flow**.
-
-      ---
-
-      ### **8 Review & Finalize**
-      - Check if the response meets **PEO’s expectations**: 
-        -**Does this response fully address the **competency's indicators**?**
-        -**Are there missing details or incorrect assumptions?**
-        -**Could the answer be more structured, concise, or logical?**
-        -**Does the structured response provides sufficient **breadth**, **depth**, and **quality** to convince PEng assessor is competent?**
-      - If any issue is detected within above, ask for more clarification, refine and improve the response before presenting it in the next step.
-
-
-      ---
-
-      ## 🔹 Writing Guidelines:
-      ✅ Use **first-person perspective ("I")** to highlight **personal contributions**.  
-      ✅ Avoid **vague job descriptions**—focus on **specific actions**.  
-      ✅ Use **concise, professional language**.  
-      ✅ Incorporate **real-world examples & measurable impact**.  
-      ✅ Ensure the response is **well-structured and logical**.  
-      ✅ Adhere to **PEO’s character limits** for responses.
-    `,
-    model: "gpt-4o",
-    temperature: 0.2,
-    top_p: 0.9
-  });
-
-  console.log("Created new Assistant ID:", assistant.id);
-  return assistant.id;
-}
-
-createAssistant();
 
 async function updateUsage(user, thread, usage) {
   const $thread = await read$3({ user, objectId: thread.objectId });
@@ -3494,7 +3307,8 @@ function Turnstile({ onChange, error }) {
         required: true,
         className: "pointer-events-none w-full h-[1px] p-0 border-none focus:outline-none text-[0px] text-white -!my-4"
       }
-    )
+    ),
+    /* @__PURE__ */ jsx("script", { src: "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" })
   ] }) : null;
 }
 
@@ -4132,7 +3946,6 @@ async function loader$k({ request }) {
   const user = session.get("user");
   const url = new URL(request.url);
   const from = url.searchParams.get("from");
-  console.log(user);
   if (user) throw redirect$1(decodeURIComponent(from) ?? "/app");
   return Response.json(vars.client);
 }
@@ -7640,6 +7453,7 @@ async function read() {
     const query = new Parse.Query(Class);
     query.include("competencyGroup");
     const data = await query.find();
+
     return modifier(data);
   } catch (error) {
     console.log("competency.getAll", error.message);
@@ -7649,9 +7463,11 @@ async function read() {
 
 function modifier(data) {
   return data.reduce((t, v) => {
-    const cg = v.get("competencyGroup").toJSON();
+    // const cg = v.get("competencyGroup").toJSON();
+    const ci = v.toJSON();
+    const cg = ci.competencyGroup;
     const g = t.find((i) => i.objectId === cg.objectId);
-    !g ? t.push({ ...cg, items: [v] }) : g.items.push(v);
+    !g ? t.push({ ...cg, items: [ci] }) : g.items.push(ci);
     return t;
   }, []);
 }
@@ -8607,14 +8423,16 @@ const route31 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
 
 async function sync(user) {
   try {
-    const res = await fetch(`${serverURL}/users/me`, {
+    /* const res = await fetch(`${serverURL}/users/me`, {
       headers: {
         "X-Parse-Application-Id": appId,
         "X-Parse-REST-API-Key": restAPIKey,
         "X-Parse-Session-Token": user.sessionToken,
       },
     });
-    const $user = await res.json();
+    const $user = await res.json();*/
+
+    const $user = await current(user.objectId);
     console.log("user.sync", $user?.sessionToken === user?.sessionToken);
 
     return $user.error ? false : true;
@@ -8641,6 +8459,10 @@ async function isAdmin(request) {
   } catch (error) {
     console.log("app.isAdmin", error?.message);
   }
+}
+
+async function current(objectId) {
+  return await new Parse.Query(Parse.User).get(objectId, { useMasterKey: true, json: true });
 }
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
@@ -9412,24 +9234,19 @@ async function loader$2({ request }) {
   let license = session.get("license");
 
   if (!profile) profile = (await read$5(user))?.toJSON();
+  profile = { ...profile, email: user.email };
 
   if (!license) license = (await read$7(user))?.toJSON();
 
   if (license) {
-    // const {
-    //   product: { name },
-    // } = await Stripe.prices.retrieve(license.priceId, {
-    //   expand: ["product"],
-    // });
+    let name = prices[license.priceKey].name;
 
-    const price = await stripe.prices.list({
-      lookup_keys: [license.priceKey],
-      expand: ["data.product"],
-    });
+    if (process.env.NODE_ENV === "production")
+      name = await stripe.prices.list({
+        lookup_keys: [license.priceKey],
+        expand: ["data.product"],
+      }).data[0].product.name;
 
-    const name = price.data[0].product.name;
-
-    profile = { ...profile, email: user.email };
     license = { ...license, name };
   }
 
@@ -9549,7 +9366,7 @@ function ChatIncome({
     const outcome = outcomes?.find(
       (item) => item.competency.objectId === ci.objectId
     );
-    return outcome ? flags$1[outcome.flag].className : "";
+    return outcome ? flags$1[outcome?.flag]?.className : "";
   }
   function onClick(type, cg, ci) {
     getCompetency?.(type, cg, ci);
@@ -9573,7 +9390,7 @@ function ChatIncome({
               "button",
               {
                 className: cn$1(
-                  "peer pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
+                  "peer w-full pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
                   getClassName(ci)
                 ),
                 onClick: () => !ipIn ? navigate("/app/settings/overview") : onClick("send", cg, ci),
@@ -11154,7 +10971,7 @@ function ChatOutput({
     {
       className: "relative w-full h-full [&>div>div]:h-full-",
       ref: scrollRef,
-      children: /* @__PURE__ */ jsxs("div", { className: "h-0 space-y-4 pl-2", children: [
+      children: /* @__PURE__ */ jsxs("div", { className: "h-0 space-y-4 pl-2 pt-2", children: [
         draftRefinement && !cvFile ? /* @__PURE__ */ jsx(ChatSplash, {}) : messages?.length > 0 ? messages.map((message, index) => /* @__PURE__ */ jsx(
           Message,
           {
@@ -11352,24 +11169,24 @@ async function check(user, session) {
 async function init(user, session) {
   const { thread, file } = await init$1(session);
 
-  const messages = await read$2(user, thread);
+  let messages = await read$2(user, { thread });
   const competencies = await read();
   const outcomes = await read$4(user, { thread });
 
   const license = session.get("license");
   const plan = prices[license.priceKey];
 
-  // Convert Parse objects to plain JSON
-  const messagesJSON = messages ? messages.map(m => ({
-    objectId: m.id,
-    role: m.get("role"),
-    content: m.get("content"),
-    createdAt: m.get("createdAt"),
-  })).reverse() : [];
+  if (messages?.length > 0)
+    messages = messages.map(m => ({
+      objectId: m.id,
+      role: m.get("role"),
+      content: m.get("content"),
+      createdAt: m.get("createdAt"),
+    })).reverse();
 
   const data = {
     thread,
-    messages: messagesJSON,
+    messages,
     file,
     competencies,
     outcomes,
@@ -11740,7 +11557,7 @@ const route37 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-ejrtMcy6.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-BATxfdox.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-BkFCO6Hu.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-BATxfdox.js','/assets/use-toast-BCGEGR8f.js','/assets/index-BvRv39A9.js','/assets/index-eKYCPr__.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-5SzSg1a2.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-BVRPgDFT.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-CJl6U-AQ.js','/assets/alert-Dv8VQtr3.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/card-DT7V15za.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/x-BjiBxalF.js','/assets/index-DzK6_lIe.js','/assets/index-tUIF4Hk4.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/index-D3JQEnQH.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/app.settings.pricing':{'id':'routes/app.settings.pricing','parentId':'routes/app.settings','path':'pricing','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.pricing-DaS0TYrT.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/components-BATxfdox.js','/assets/award-C__mY455.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-KYl8KItn.js','imports':['/assets/app.settings.profile-CW6qoPVL.js','/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/components-BATxfdox.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/scroll-area-BaISA_rz.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/index-_i_4rKMj.js','/assets/index-5SzSg1a2.js','/assets/Combination-DvcGEJik.js','/assets/input-CVFQA-es.js','/assets/submit-field-C9KupRvl.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/use-toast-BCGEGR8f.js','/assets/popover-BtL1-Rhz.js','/assets/separator-CYezskdT.js'],'css':[]},'routes/draft-assessment.sse':{'id':'routes/draft-assessment.sse','parentId':'routes/draft-assessment','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/draft-assessment.sse-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.register':{'id':'routes/_auth.auth.register','parentId':'routes/_auth','path':'auth/register','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.register-BmN8WG7E.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-C1CXXFuQ.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/app.settings.profile-CW6qoPVL.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js','/assets/index-BvRv39A9.js','/assets/scroll-area-BaISA_rz.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/index-_i_4rKMj.js','/assets/index-5SzSg1a2.js','/assets/Combination-DvcGEJik.js','/assets/use-toast-BCGEGR8f.js','/assets/popover-BtL1-Rhz.js','/assets/separator-CYezskdT.js'],'css':[]},'routes/_auth.auth.remember':{'id':'routes/_auth.auth.remember','parentId':'routes/_auth','path':'auth/remember','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.remember-DdT-tI2b.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BzW-kbDh.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/checkbox-D9KXyrQz.js','/assets/submit-field-C9KupRvl.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-_i_4rKMj.js','/assets/index-DGDZ2Sfm.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/_auth.auth.verify':{'id':'routes/_auth.auth.verify','parentId':'routes/_auth','path':'auth/verify','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.verify-Cu90zMf3.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-DPWgq4sr.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/label-zPSMuYgG.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/loader-circle-Dz8ArpyB.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/index-BvRv39A9.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-CX1e0XZx.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/audio.transcribe':{'id':'routes/audio.transcribe','parentId':'root','path':'audio/transcribe','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/audio.transcribe-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-D2k5lcs9.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C9KupRvl.js','/assets/input-CVFQA-es.js','/assets/label-zPSMuYgG.js','/assets/dialog-Cf7fxpbM.js','/assets/id-Cq0OFV5j.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-BvRv39A9.js','/assets/dialog-1UrEyvk7.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/draft-assessment':{'id':'routes/draft-assessment','parentId':'root','path':'draft-assessment','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/draft-assessment-l0sNRNKZ.js','imports':[],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.cb':{'id':'routes/_auth.auth.cb','parentId':'routes/_auth','path':'auth/cb','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.cb-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-rGSuMsHm.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-BzUl0XDW.js','/assets/users-round-DBeOHLD0.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-CZEQdx2S.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C9KupRvl.js','/assets/card-b0vSRkw8.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-CXnw2Vwe.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-_MYapN4y.js','/assets/button-7RhbRVm-.js','/assets/sheet-BC-i8l7E.js','/assets/scroll-area-BaISA_rz.js','/assets/components-BATxfdox.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/index-R_5LapDR.js','/assets/index-DzK6_lIe.js','/assets/table-0NyIWj0N.js','/assets/progress-CJl6U-AQ.js','/assets/index-BLD_4dua.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-C9KupRvl.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-BvRv39A9.js','/assets/index-YawMpOok.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/chevron-right-pBYPfUOY.js','/assets/loader-circle-Dz8ArpyB.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-CjZtScg6.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/dialog-1UrEyvk7.js','/assets/sidebar-POP6IXa5.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/user-DuO3WCZ6.js','/assets/award-C__mY455.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/separator-CYezskdT.js','/assets/sheet-BC-i8l7E.js','/assets/tooltip-B3pYNkcN.js','/assets/floating-ui.react-dom-uWlyp39P.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-D-OevotE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CVFQA-es.js','/assets/table-0NyIWj0N.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/scroll-area-BaISA_rz.js','/assets/index-BvRv39A9.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/chevron-right-pBYPfUOY.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-B_PbJBhB.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-1UrEyvk7.js','/assets/input-CAYGyy10.js','/assets/label-zPSMuYgG.js','/assets/textarea-_nxwdXwg.js','/assets/submit-field-C9KupRvl.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/input-CVFQA-es.js','/assets/id-Cq0OFV5j.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-C889WscB.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-Dv8VQtr3.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/x-BjiBxalF.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-R_5LapDR.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-CcS6nwb_.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/table-0NyIWj0N.js','/assets/progress-CJl6U-AQ.js','/assets/components-BATxfdox.js','/assets/plus-CA7M78hu.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/scroll-area-BaISA_rz.js','/assets/index-BvRv39A9.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-pBYPfUOY.js'],'css':[]},'routes/messages':{'id':'routes/messages','parentId':'root','path':'messages','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/messages-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-Btr-kLyw.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-BC-i8l7E.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-Bs2ZJ2nI.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-BATxfdox.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-j3tx8nET.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-POP6IXa5.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-D-QVTWP9.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/users-round-DBeOHLD0.js','/assets/components-BATxfdox.js','/assets/button-7RhbRVm-.js','/assets/loader-circle-Dz8ArpyB.js','/assets/bell-DkC4F-l8.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/input-CVFQA-es.js','/assets/separator-CYezskdT.js','/assets/sheet-BC-i8l7E.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/tooltip-B3pYNkcN.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-BvRv39A9.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/index-DGDZ2Sfm.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-Q4nU2O46.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-DT7V15za.js','/assets/components-BATxfdox.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-B2DK4qQW.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-xSdBtQuR.js','/assets/avatar-_MYapN4y.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-BvRv39A9.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/dropdown-menu-D-QVTWP9.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/tooltip-B3pYNkcN.js','/assets/user-DuO3WCZ6.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/user':{'id':'routes/user','parentId':'root','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/user-l0sNRNKZ.js','imports':[],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-DKWET8aK.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-CJl6U-AQ.js','/assets/index-z_6t8hgT.js','/assets/layout-xSdBtQuR.js','/assets/button-7RhbRVm-.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/components-BATxfdox.js','/assets/separator-CYezskdT.js','/assets/textarea-_nxwdXwg.js','/assets/x-BjiBxalF.js','/assets/popover-BtL1-Rhz.js','/assets/checkbox-D9KXyrQz.js','/assets/label-zPSMuYgG.js','/assets/loader-circle-Dz8ArpyB.js','/assets/index-DzK6_lIe.js','/assets/submit-field-C9KupRvl.js','/assets/dialog-Cf7fxpbM.js','/assets/chevron-right-pBYPfUOY.js','/assets/scroll-area-BaISA_rz.js','/assets/avatar-_MYapN4y.js','/assets/index-BLD_4dua.js','/assets/input-CVFQA-es.js','/assets/dialog-1UrEyvk7.js','/assets/plus-CA7M78hu.js','/assets/tooltip-B3pYNkcN.js','/assets/bell-DkC4F-l8.js','/assets/index-tUIF4Hk4.js','/assets/index-BvRv39A9.js','/assets/dropdown-menu-D-QVTWP9.js','/assets/index-Ckg_eGSq.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/user-DuO3WCZ6.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-_i_4rKMj.js','/assets/index-YawMpOok.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-e64a08e4.js','version':'e64a08e4'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-ejrtMcy6.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-BATxfdox.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-Ctt-UD5S.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-BATxfdox.js','/assets/use-toast-BCGEGR8f.js','/assets/index-BvRv39A9.js','/assets/index-eKYCPr__.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-5SzSg1a2.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-BVRPgDFT.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-CJl6U-AQ.js','/assets/alert-Dv8VQtr3.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/card-DT7V15za.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/x-BjiBxalF.js','/assets/index-DzK6_lIe.js','/assets/index-tUIF4Hk4.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/index-D3JQEnQH.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/app.settings.pricing':{'id':'routes/app.settings.pricing','parentId':'routes/app.settings','path':'pricing','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.pricing-DaS0TYrT.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/components-BATxfdox.js','/assets/award-C__mY455.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-KYl8KItn.js','imports':['/assets/app.settings.profile-CW6qoPVL.js','/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/components-BATxfdox.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/scroll-area-BaISA_rz.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/index-_i_4rKMj.js','/assets/index-5SzSg1a2.js','/assets/Combination-DvcGEJik.js','/assets/input-CVFQA-es.js','/assets/submit-field-C9KupRvl.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/use-toast-BCGEGR8f.js','/assets/popover-BtL1-Rhz.js','/assets/separator-CYezskdT.js'],'css':[]},'routes/draft-assessment.sse':{'id':'routes/draft-assessment.sse','parentId':'routes/draft-assessment','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/draft-assessment.sse-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.register':{'id':'routes/_auth.auth.register','parentId':'routes/_auth','path':'auth/register','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.register-wXy5d6ZF.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-DAZdaP2C.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/app.settings.profile-CW6qoPVL.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js','/assets/index-BvRv39A9.js','/assets/scroll-area-BaISA_rz.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/index-_i_4rKMj.js','/assets/index-5SzSg1a2.js','/assets/Combination-DvcGEJik.js','/assets/use-toast-BCGEGR8f.js','/assets/popover-BtL1-Rhz.js','/assets/separator-CYezskdT.js'],'css':[]},'routes/_auth.auth.remember':{'id':'routes/_auth.auth.remember','parentId':'routes/_auth','path':'auth/remember','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.remember-CjhzP_nj.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-DAZdaP2C.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BzW-kbDh.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/checkbox-D9KXyrQz.js','/assets/submit-field-C9KupRvl.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-_i_4rKMj.js','/assets/index-DGDZ2Sfm.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/_auth.auth.verify':{'id':'routes/_auth.auth.verify','parentId':'routes/_auth','path':'auth/verify','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.verify-ZBHWm_ei.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-DAZdaP2C.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-DtHoE4U6.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/label-zPSMuYgG.js','/assets/turnstile-DAZdaP2C.js','/assets/components-BATxfdox.js','/assets/loader-circle-Dz8ArpyB.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/index-BvRv39A9.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-B1-rTISo.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-DAZdaP2C.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/audio.transcribe':{'id':'routes/audio.transcribe','parentId':'root','path':'audio/transcribe','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/audio.transcribe-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-D2k5lcs9.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C9KupRvl.js','/assets/input-CVFQA-es.js','/assets/label-zPSMuYgG.js','/assets/dialog-Cf7fxpbM.js','/assets/id-Cq0OFV5j.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-BvRv39A9.js','/assets/dialog-1UrEyvk7.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/draft-assessment':{'id':'routes/draft-assessment','parentId':'root','path':'draft-assessment','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/draft-assessment-l0sNRNKZ.js','imports':[],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.cb':{'id':'routes/_auth.auth.cb','parentId':'routes/_auth','path':'auth/cb','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.cb-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-rGSuMsHm.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-BzUl0XDW.js','/assets/users-round-DBeOHLD0.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-CZEQdx2S.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C9KupRvl.js','/assets/card-b0vSRkw8.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-CXnw2Vwe.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-_MYapN4y.js','/assets/button-7RhbRVm-.js','/assets/sheet-BC-i8l7E.js','/assets/scroll-area-BaISA_rz.js','/assets/components-BATxfdox.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/index-R_5LapDR.js','/assets/index-DzK6_lIe.js','/assets/table-0NyIWj0N.js','/assets/progress-CJl6U-AQ.js','/assets/index-BLD_4dua.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-C9KupRvl.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-BvRv39A9.js','/assets/index-YawMpOok.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/chevron-right-pBYPfUOY.js','/assets/loader-circle-Dz8ArpyB.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-CjZtScg6.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/dialog-1UrEyvk7.js','/assets/sidebar-POP6IXa5.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/user-DuO3WCZ6.js','/assets/award-C__mY455.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/separator-CYezskdT.js','/assets/sheet-BC-i8l7E.js','/assets/tooltip-B3pYNkcN.js','/assets/floating-ui.react-dom-uWlyp39P.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-D-OevotE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CVFQA-es.js','/assets/table-0NyIWj0N.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/scroll-area-BaISA_rz.js','/assets/index-BvRv39A9.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/chevron-right-pBYPfUOY.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-B_PbJBhB.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-1UrEyvk7.js','/assets/input-CAYGyy10.js','/assets/label-zPSMuYgG.js','/assets/textarea-_nxwdXwg.js','/assets/submit-field-C9KupRvl.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/input-CVFQA-es.js','/assets/id-Cq0OFV5j.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-C889WscB.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-Dv8VQtr3.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/x-BjiBxalF.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-R_5LapDR.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-CcS6nwb_.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/table-0NyIWj0N.js','/assets/progress-CJl6U-AQ.js','/assets/components-BATxfdox.js','/assets/plus-CA7M78hu.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/scroll-area-BaISA_rz.js','/assets/index-BvRv39A9.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-pBYPfUOY.js'],'css':[]},'routes/messages':{'id':'routes/messages','parentId':'root','path':'messages','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/messages-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-Btr-kLyw.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-BC-i8l7E.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-Bs2ZJ2nI.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-BATxfdox.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-j3tx8nET.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-POP6IXa5.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-D-QVTWP9.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/users-round-DBeOHLD0.js','/assets/components-BATxfdox.js','/assets/button-7RhbRVm-.js','/assets/loader-circle-Dz8ArpyB.js','/assets/bell-DkC4F-l8.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/input-CVFQA-es.js','/assets/separator-CYezskdT.js','/assets/sheet-BC-i8l7E.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/tooltip-B3pYNkcN.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-BvRv39A9.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/index-DGDZ2Sfm.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-Q4nU2O46.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-DT7V15za.js','/assets/components-BATxfdox.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-B2DK4qQW.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-xSdBtQuR.js','/assets/avatar-_MYapN4y.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-BvRv39A9.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/dropdown-menu-D-QVTWP9.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/tooltip-B3pYNkcN.js','/assets/user-DuO3WCZ6.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/user':{'id':'routes/user','parentId':'root','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/user-l0sNRNKZ.js','imports':[],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-CH_BPHyJ.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-CJl6U-AQ.js','/assets/index-z_6t8hgT.js','/assets/layout-xSdBtQuR.js','/assets/button-7RhbRVm-.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/components-BATxfdox.js','/assets/separator-CYezskdT.js','/assets/textarea-_nxwdXwg.js','/assets/x-BjiBxalF.js','/assets/popover-BtL1-Rhz.js','/assets/checkbox-D9KXyrQz.js','/assets/label-zPSMuYgG.js','/assets/loader-circle-Dz8ArpyB.js','/assets/index-DzK6_lIe.js','/assets/submit-field-C9KupRvl.js','/assets/dialog-Cf7fxpbM.js','/assets/chevron-right-pBYPfUOY.js','/assets/scroll-area-BaISA_rz.js','/assets/avatar-_MYapN4y.js','/assets/index-BLD_4dua.js','/assets/input-CVFQA-es.js','/assets/dialog-1UrEyvk7.js','/assets/plus-CA7M78hu.js','/assets/tooltip-B3pYNkcN.js','/assets/bell-DkC4F-l8.js','/assets/index-tUIF4Hk4.js','/assets/index-BvRv39A9.js','/assets/dropdown-menu-D-QVTWP9.js','/assets/index-Ckg_eGSq.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/user-DuO3WCZ6.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-_i_4rKMj.js','/assets/index-YawMpOok.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-3351bef5.js','version':'3351bef5'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
