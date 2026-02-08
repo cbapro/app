@@ -46,6 +46,7 @@ import { MDXEditor, headingsPlugin, listsPlugin, linkPlugin, linkDialogPlugin, t
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { Resend } from 'resend';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
+import * as SwitchPrimitives from '@radix-ui/react-switch';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import remarkGfm from 'remark-gfm';
 
@@ -8423,16 +8424,14 @@ const route31 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
 
 async function sync(user) {
   try {
-    /* const res = await fetch(`${serverURL}/users/me`, {
+    const res = await fetch(`${serverURL}/users/me`, {
       headers: {
         "X-Parse-Application-Id": appId,
         "X-Parse-REST-API-Key": restAPIKey,
         "X-Parse-Session-Token": user.sessionToken,
       },
     });
-    const $user = await res.json();*/
-
-    const $user = await current(user.objectId);
+    const $user = await res.json();
     console.log("user.sync", $user?.sessionToken === user?.sessionToken);
 
     return $user.error ? false : true;
@@ -8459,10 +8458,6 @@ async function isAdmin(request) {
   } catch (error) {
     console.log("app.isAdmin", error?.message);
   }
-}
-
-async function current(objectId) {
-  return await new Parse.Query(Parse.User).get(objectId, { useMasterKey: true, json: true });
 }
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
@@ -8819,6 +8814,27 @@ const route33 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   default: join,
   loader: loader$4
 }, Symbol.toStringTag, { value: 'Module' }));
+
+const Switch = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
+  SwitchPrimitives.Root,
+  {
+    className: cn$1(
+      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
+      className
+    ),
+    ...props,
+    ref,
+    children: /* @__PURE__ */ jsx(
+      SwitchPrimitives.Thumb,
+      {
+        className: cn$1(
+          "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
+        )
+      }
+    )
+  }
+));
+Switch.displayName = SwitchPrimitives.Root.displayName;
 
 const Accordion = AccordionPrimitive.Root;
 const AccordionItem = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Item, { ref, className: cn$1("border-b", className), ...props }));
