@@ -11042,13 +11042,12 @@ async function start(request) {
   const { profile, setting, license } = await check(user, session);
 
   if (!license) {
-    // await Email({
-    //   subject: "CBA Pro - New user ✨",
-    //   text: JSON.stringify({
-    //     email: user?.email,
-    //     ...user?.meta
-    //   })
-    // })
+    await Email({
+      text: JSON.stringify({
+        email: user?.email,
+        ...user?.meta
+      })
+    });
 
     return redirect$1(`/join?type=create&priceKey=${user?.meta?.priceKey ?? prices.P0.key}`);
   }
