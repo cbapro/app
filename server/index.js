@@ -1,7 +1,7 @@
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { PassThrough } from 'node:stream';
 import { createReadableStreamFromReadable, redirect as redirect$1, createCookieSessionStorage } from '@remix-run/node';
-import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useActionData, useSubmit, useNavigation, Form as Form$1, redirect as redirect$2, Link, useSearchParams, useNavigate, useRouteLoaderData, useLocation } from '@remix-run/react';
+import { RemixServer, Meta, Links, Outlet, Scripts, useLoaderData, useNavigate, useActionData, useSubmit, useNavigation, Form as Form$1, Link, redirect as redirect$2, useSearchParams, useRouteLoaderData, useLocation } from '@remix-run/react';
 import * as isbotModule from 'isbot';
 import { renderToPipeableStream } from 'react-dom/server';
 import * as React from 'react';
@@ -10,17 +10,16 @@ import * as ToastPrimitives from '@radix-ui/react-toast';
 import { cva } from 'class-variance-authority';
 import clsx$1, { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Cross2Icon, CaretSortIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, ChevronRightIcon, ChevronLeftIcon, ViewVerticalIcon, DotFilledIcon } from '@radix-ui/react-icons';
+import { Cross2Icon, CaretSortIcon, ChevronUpIcon, ChevronDownIcon, CheckIcon, ChevronRightIcon, ChevronLeftIcon, LightningBoltIcon, EyeOpenIcon, ViewVerticalIcon, DotFilledIcon } from '@radix-ui/react-icons';
 import { produce } from 'immer';
 import * as ProgressPrimitive from '@radix-ui/react-progress';
 import { Slot } from '@radix-ui/react-slot';
-import { X, AlertOctagon, LoaderCircle, CalendarIcon, ExternalLink, Info, TrendingUp, MessageCircle, KeySquare, User2, Users2, Trash, ChevronLeft, ChevronRight, Telescope, User, Plus, MessagesSquare, ScrollText, Notebook, Triangle, MenuIcon, ArrowRight, Gauge, Barcode, Settings as Settings$1, ChevronUp, Loader2, Bell, Clock, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, Lock, MousePointerClick, ChevronDown, ArrowUp, Paperclip, FileText, Youtube } from 'lucide-react';
+import { X, Check, Award, LoaderCircle, CalendarIcon, Info, ExternalLink, TrendingUp, MessageCircle, KeySquare, User2, Users2, Trash, ChevronLeft, ChevronRight, Telescope, User, AlertOctagon, Plus, MessagesSquare, ScrollText, Notebook, Triangle, MenuIcon, ArrowRight, Gauge, Barcode, Settings as Settings$1, ChevronUp, Loader2, Bell, UserPen, BatteryCharging, BadgeHelp, MessageSquareText, MessageSquareDot, MessageSquareX, Glasses, CircleFadingArrowUp, LogOut, Play as Play$1, Lock, ClipboardList, CircleStar, CircleCheckBig, MousePointerClick, MicOff, Mic, ArrowUp, Paperclip, FileText, Megaphone, Video } from 'lucide-react';
 import Markdown from 'react-markdown';
 import Stripe from 'stripe';
 import 'dotenv/config';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import Parse from 'parse/node.js';
-import { nanoid, customAlphabet } from 'nanoid';
 import { joiResolver } from '@hookform/resolvers/joi';
 import { useFormContext, FormProvider, Controller, useForm } from 'react-hook-form';
 import Joi from 'joi';
@@ -31,6 +30,8 @@ import { format } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
+import OpenAI from 'openai';
+import { customAlphabet, nanoid } from 'nanoid';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Authenticator } from 'remix-auth';
 import { FormStrategy } from 'remix-auth-form';
@@ -43,12 +44,9 @@ import * as TogglePrimitive from '@radix-ui/react-toggle';
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import { MDXEditor, headingsPlugin, listsPlugin, linkPlugin, linkDialogPlugin, thematicBreakPlugin, toolbarPlugin, UndoRedo, BoldItalicUnderlineToggles, BlockTypeSelect } from '@mdxeditor/editor';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
-import nodemailer from 'nodemailer';
-import OpenAI from 'openai';
+import { Resend } from 'resend';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import * as SwitchPrimitives from '@radix-ui/react-switch';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
-import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
 import remarkGfm from 'remark-gfm';
 
 const ABORT_DELAY = 5e3;
@@ -164,7 +162,7 @@ const entryServer = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.definePropert
   default: handleRequest
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const stylesheet = "/assets/tailwind-DZP40Wjb.css";
+const stylesheet = "/assets/tailwind-d-ctZLWk.css";
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
@@ -309,7 +307,7 @@ function useToast() {
   };
 }
 
-function cn(...inputs) {
+function cn$1(...inputs) {
   return twMerge(clsx(inputs))
 }
 
@@ -318,7 +316,7 @@ const ToastViewport = React.forwardRef(({ className, ...props }, ref) => /* @__P
   ToastPrimitives.Viewport,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
       className
     ),
@@ -345,7 +343,7 @@ const Toast = React.forwardRef(({ className, variant, ...props }, ref) => {
     ToastPrimitives.Root,
     {
       ref,
-      className: cn(toastVariants({ variant }), className),
+      className: cn$1(toastVariants({ variant }), className),
       ...props
     }
   );
@@ -355,7 +353,7 @@ const ToastAction = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   ToastPrimitives.Action,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "inline-flex h-8 shrink-0 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium transition-colors hover:bg-secondary focus:outline-none focus:ring-1 focus:ring-ring disabled:pointer-events-none disabled:opacity-50 group-[.destructive]:border-muted/40 group-[.destructive]:hover:border-destructive/30 group-[.destructive]:hover:bg-destructive group-[.destructive]:hover:text-destructive-foreground group-[.destructive]:focus:ring-destructive",
       className
     ),
@@ -367,7 +365,7 @@ const ToastClose = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   ToastPrimitives.Close,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "absolute right-1 top-1 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-1 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600",
       className
     ),
@@ -381,12 +379,12 @@ const ToastTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   ToastPrimitives.Title,
   {
     ref,
-    className: cn("text-sm font-semibold [&+div]:text-xs", className),
+    className: cn$1("text-sm font-semibold [&+div]:text-xs", className),
     ...props
   }
 ));
 ToastTitle.displayName = ToastPrimitives.Title.displayName;
-const ToastDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(ToastPrimitives.Description, { ref, className: cn("text-sm opacity-90", className), ...props }));
+const ToastDescription = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(ToastPrimitives.Description, { ref, className: cn$1("text-sm opacity-90", className), ...props }));
 ToastDescription.displayName = ToastPrimitives.Description.displayName;
 
 function Toaster() {
@@ -466,10 +464,7 @@ function App$1() {
       /* @__PURE__ */ jsx(Links, {})
     ] }),
     /* @__PURE__ */ jsxs("body", { children: [
-      /* @__PURE__ */ jsxs(AppContextProvider, { children: [
-        /* @__PURE__ */ jsx(Outlet, {}),
-        " "
-      ] }),
+      /* @__PURE__ */ jsx(AppContextProvider, { children: /* @__PURE__ */ jsx(Outlet, {}) }),
       /* @__PURE__ */ jsx(Toaster, {}),
       /* @__PURE__ */ jsx("script", { src: "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" }),
       /* @__PURE__ */ jsx(Scripts, {})
@@ -488,7 +483,7 @@ const Progress = React.forwardRef(({ className, value, ...props }, ref) => /* @_
   ProgressPrimitive.Root,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative h-2 w-full overflow-hidden rounded-full bg-primary/20",
       className
     ),
@@ -504,12 +499,12 @@ const Progress = React.forwardRef(({ className, value, ...props }, ref) => /* @_
 ));
 Progress.displayName = ProgressPrimitive.Root.displayName;
 
-function UsageProgress({ total, tokens = 3e4 }) {
+function UsageProgress({ usedTokens = 0, totalTokens, baseTokens, extraTokens = 0 }) {
   const [value, setValue] = useState(0);
-  const rate = tokens / 100;
+  const rate = totalTokens / 100;
   useEffect(() => {
-    setValue(total >= tokens ? 100 : total / rate);
-  }, [total]);
+    setValue(usedTokens >= totalTokens ? 100 : usedTokens / rate);
+  }, [usedTokens]);
   return /* @__PURE__ */ jsxs("div", { className: "grid gap-4", children: [
     /* @__PURE__ */ jsxs("div", { className: "grid gap-1", children: [
       /* @__PURE__ */ jsxs("strong", { className: "text-sm text-zinc-400", children: [
@@ -519,13 +514,18 @@ function UsageProgress({ total, tokens = 3e4 }) {
       /* @__PURE__ */ jsx(Progress, { value })
     ] }),
     /* @__PURE__ */ jsxs("div", { className: "flex gap-4 justify-between text-sm", children: [
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Usage tokens: ",
-        /* @__PURE__ */ jsx("strong", { children: total })
+      /* @__PURE__ */ jsxs("div", { children: [
+        "Used tokens: ",
+        /* @__PURE__ */ jsx("strong", { children: usedTokens })
       ] }),
-      /* @__PURE__ */ jsxs("span", { children: [
-        "Limit tokens: ",
-        /* @__PURE__ */ jsx("strong", { children: tokens })
+      /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-1", children: [
+        "Total: ",
+        /* @__PURE__ */ jsx("strong", { children: totalTokens }),
+        /* @__PURE__ */ jsx("hr", { className: "col-span-2" }),
+        "Base: ",
+        /* @__PURE__ */ jsx("span", { children: baseTokens }),
+        "Extra: ",
+        /* @__PURE__ */ jsx("span", { children: extraTokens })
       ] })
     ] })
   ] });
@@ -550,7 +550,7 @@ const Alert = React.forwardRef(({ className, variant, ...props }, ref) => /* @__
   {
     ref,
     role: "alert",
-    className: cn(alertVariants({ variant }), className),
+    className: cn$1(alertVariants({ variant }), className),
     ...props
   }
 ));
@@ -559,7 +559,7 @@ const AlertTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   "h5",
   {
     ref,
-    className: cn("mb-1 font-medium leading-none tracking-tight", className),
+    className: cn$1("mb-1 font-medium leading-none tracking-tight", className),
     ...props
   }
 ));
@@ -568,7 +568,7 @@ const AlertDescription = React.forwardRef(({ className, ...props }, ref) => /* @
   "div",
   {
     ref,
-    className: cn("text-sm [&_p]:leading-relaxed", className),
+    className: cn$1("text-sm [&_p]:leading-relaxed", className),
     ...props
   }
 ));
@@ -604,7 +604,7 @@ const Button = React.forwardRef(({ className, variant, size, asChild = false, ..
   return /* @__PURE__ */ jsx(
     Comp,
     {
-      className: cn(buttonVariants({ variant, size, className })),
+      className: cn$1(buttonVariants({ variant, size, className })),
       ref,
       ...props
     }
@@ -614,10 +614,10 @@ Button.displayName = "Button";
 
 function AlertModule({ ...props }) {
   const [open, setOpen] = useState(props?.open ?? false);
-  return open ? /* @__PURE__ */ jsx("div", { className: cn(props?.className), children: /* @__PURE__ */ jsxs(
+  return open ? /* @__PURE__ */ jsx("div", { className: cn$1(props?.className), children: /* @__PURE__ */ jsxs(
     Alert,
     {
-      className: cn(
+      className: cn$1(
         props?.alerClassName,
         variants$1[props?.variant ?? "default"]
       ),
@@ -628,7 +628,7 @@ function AlertModule({ ...props }) {
         props?.actionButton && /* @__PURE__ */ jsxs(
           "div",
           {
-            className: cn(
+            className: cn$1(
               "flex gap-2",
               props?.inline ? "absolute top-1/2 -translate-y-1/2 right-4" : "justify-end pt-2"
             ),
@@ -678,7 +678,7 @@ const Card = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ 
   "div",
   {
     ref,
-    className: cn("rounded-xl border bg-card text-card-foreground shadow", className),
+    className: cn$1("rounded-xl border bg-card text-card-foreground shadow", className),
     ...props
   }
 ));
@@ -687,7 +687,7 @@ const CardHeader = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   "div",
   {
     ref,
-    className: cn("flex flex-col space-y-1.5 p-6", className),
+    className: cn$1("flex flex-col space-y-1.5 p-6", className),
     ...props
   }
 ));
@@ -696,7 +696,7 @@ const CardTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE_
   "div",
   {
     ref,
-    className: cn("font-semibold leading-none tracking-tight", className),
+    className: cn$1("font-semibold leading-none tracking-tight", className),
     ...props
   }
 ));
@@ -705,18 +705,18 @@ const CardDescription = React.forwardRef(({ className, ...props }, ref) => /* @_
   "div",
   {
     ref,
-    className: cn("text-sm text-muted-foreground", className),
+    className: cn$1("text-sm text-muted-foreground", className),
     ...props
   }
 ));
 CardDescription.displayName = "CardDescription";
-const CardContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("div", { ref, className: cn("p-6 pt-0", className), ...props }));
+const CardContent = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("div", { ref, className: cn$1("p-6 pt-0", className), ...props }));
 CardContent.displayName = "CardContent";
 const CardFooter = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   "div",
   {
     ref,
-    className: cn("flex items-center p-6 pt-0", className),
+    className: cn$1("flex items-center p-6 pt-0", className),
     ...props
   }
 ));
@@ -730,38 +730,36 @@ function CardModule({
   footer
 }) {
   return /* @__PURE__ */ jsxs(Card, { className, children: [
-    /* @__PURE__ */ jsxs(CardHeader, { children: [
+    /* @__PURE__ */ jsxs(CardHeader, { className: "p-4", children: [
       title && /* @__PURE__ */ jsx(CardTitle, { children: title }),
       description && /* @__PURE__ */ jsx(CardDescription, { children: description })
     ] }),
-    /* @__PURE__ */ jsx(CardContent, { children }),
-    footer && /* @__PURE__ */ jsx(CardFooter, { children: footer })
+    /* @__PURE__ */ jsx(CardContent, { className: "p-4", children }),
+    footer && /* @__PURE__ */ jsx(CardFooter, { className: "p-4", children: footer })
   ] });
 }
 
 const {
-  PARSE_CLIENT_URL: clientURL,
-  PARSE_CHOOSE_PASSWORD: choosePassword,
-  PARSE_INVALID_LINK: invalidLink,
-  PARSE_INVALID_VERIFICATION_LINK: invalidVerificationLink,
-  PARSE_LINK_SEND_FAIL: linkSendFail,
-  PARSE_LINK_SEND_SUCCESS: linkSendSuccess,
-  PARSE_FRAME_URL: parseFrameURL,
-  PARSE_PASSWORD_RESET_SUCCESS: passwordResetSuccess,
-  PARSE_VERIFY_EMAIL_SUCCESS: verifyEmailSuccess,
-
   APP_ADDITIONAL_MESSAGES: additionalMessages,
   APP_SCORE_REQUEST_LIMIT: scoreRequestLimit,
   APP_SCORE_REQUEST_OUTCOME_LIMIT: scoreRequestOutcomeLimit,
+  APP_DRAFT_ASSESSMENT_REQUEST_LIMIT: draftAssessmentRequestLimit,
+  APP_DRAFT_ASSESSMENT_REQUEST_OUTCOME_LIMIT: draftAssessmentRequestOutcomeLimit,
 
   SITE_PRICING_URL: sitePricingUrl,
+  NODE_ENV: nodeEnv,
 } = process.env;
+
+const isDev = nodeEnv === "development";
+const isProd = nodeEnv === "production";
 
 const vars = {
   app: {
     additionalMessages,
     scoreRequestLimit,
     scoreRequestOutcomeLimit,
+    draftAssessmentRequestLimit,
+    draftAssessmentRequestOutcomeLimit,
   },
   site: {
     pricingUrl: sitePricingUrl,
@@ -769,42 +767,10 @@ const vars = {
   admin: {
     key: process.env.ADMIN_KEY,
   },
-  parse: {
-    appName: process.env.PARSE_APP_NAME,
-    appId: process.env.PARSE_APP_ID,
-    masterKey: process.env.PARSE_MASTER_KEY,
-    databaseURI: process.env.DB_URI,
-    jsKey: process.env.PARSE_JS_KEY,
-    restAPIKey: process.env.PARSE_REST_API_KEY,
-    serverURL: process.env.PARSE_SERVER_URL,
-    publicServerURL: process.env.PARSE_PUBLIC_SERVER_URL,
-    cloud: process.env.PARSE_CLOUD,
-    port: process.env.PARSE_PORT,
-    clientURL,
-    customPages: {
-      choosePassword: `${clientURL}${choosePassword}`,
-      invalidLink: `${clientURL}${invalidLink}`,
-      invalidVerificationLink: `${clientURL}${invalidVerificationLink}`,
-      linkSendFail: `${clientURL}${linkSendFail}`,
-      linkSendSuccess: `${clientURL}${linkSendSuccess}`,
-      parseFrameURL: `${clientURL}${parseFrameURL}`,
-      passwordResetSuccess: `${clientURL}${passwordResetSuccess}`,
-      verifyEmailSuccess: `${clientURL}${verifyEmailSuccess}`,
-    },
-  },
-  database: {
-    url: process.env.DB_URI,
-  },
-  email: {
-    service: process.env.EMAIL_SERVICE,
-    username: process.env.EMAIL_USERNAME,
-    password: process.env.EMAIL_PASSWORD,
-    from: process.env.EMAIL_FROM,
-    recipient: process.env.EMAIL_RECIPIENT,
-  },
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
     scoreAssistantId: process.env.OPENAI_ASSISTANT_ID_SCORE,
+    draftAssessmentAssistantId: process.env.OPENAI_ASSISTANT_ID_ASSESSMENT,
     assistantIdDev: process.env.OPENAI_ASSISTANT_ID_DEV,
     assistantId:
       process.env.NODE_ENV === "production"
@@ -821,6 +787,14 @@ const vars = {
   jsonServer: {
     url: process.env.JSON_SERVER_URL,
   },
+  isDev,
+  isProd,
+  client: {
+    envs: {
+      isDev,
+      isProd,
+    }
+  },
 };
 
 const stripe = new Stripe(vars.stripe.restrictedKey, {
@@ -830,7 +804,20 @@ const stripe = new Stripe(vars.stripe.restrictedKey, {
     }),
 });
 
-const { appId, jsKey, masterKey, serverURL } = vars.parse;
+const {
+  PARSE_DB_URI: databaseURI,
+  PARSE_APP_NAME: appName,
+  PARSE_APP_ID: appId,
+  PARSE_MASTER_KEY: masterKey,
+  PARSE_JS_KEY: jsKey,
+  PARSE_REST_API_KEY: restAPIKey,
+  PARSE_SERVER_URL: serverURL,
+  PARSE_CLIENT_URL: clientURL,
+  PARSE_PUBLIC_SERVER_URL: publicServerURL,
+  PARSE_CLOUD: cloud,
+  PARSE_PORT: port,
+  PARSE_FRAME_URL: frameURL,
+} = process.env;
 
 Parse.initialize(appId, jsKey, masterKey);
 Parse.serverURL = serverURL;
@@ -841,6 +828,12 @@ const pointerObject = (className, objectId) => ({
   objectId,
 });
 
+const authVars = {
+  //
+  verifyEmail: "verify_email",
+  //
+  requestPassworReset: "request_password_reset"};
+
 const models = {
   user: "_User",
   competency: "Competency",
@@ -849,6 +842,7 @@ const models = {
   outcome: "Outcome",
   message: "Message",
   license: "License",
+  payment: "Payment",
   profile: "Profile",
   settting: "Setting",
 };
@@ -858,9 +852,9 @@ function handleInvalidSessionToken(error) {
     throw redirect$1("/logout");
 }
 
-const Class$5 = "License";
+const Class$5 = "License2";
 
-async function create$5(user, args) {
+async function create$6(user, args) {
   try {
     const License = Parse.Object.extend(Class$5);
     const license = new License();
@@ -877,24 +871,25 @@ async function create$5(user, args) {
   }
 }
 
-async function read$6(user, args) {
+async function read$7(user, args) {
   try {
     const query = new Parse.Query(Class$5);
 
     if (args?.objectId)
-      ;
+      return await query.get(args.objectId, { useMasterKey: true });
 
     user && query.equalTo("user", user.objectId);
-    args?.isActive && query.equalTo("isActive", args.isActive);
-    const data = await query.find({ useMasterKey: true });
-    return data[0];
+
+    if (args?.key && args?.value) query.equalTo(args.key, args.value);
+
+    return await query.first({ useMasterKey: true });
   } catch (error) {
     console.log("license.read", error.message);
     handleInvalidSessionToken(error);
   }
 }
 
-async function update$4(args) {
+async function update$5(args) {
   try {
     const License = Parse.Object.extend(Class$5);
     const license = new License();
@@ -905,13 +900,80 @@ async function update$4(args) {
   }
 }
 
-async function upsert$1(user, args) {
-  const license = await read$6(user);
+async function upsert$2(user, args) {
+  const license = await read$7(user);
+
   if (license)
-    return await update$4({
+    return await update$5({
       objectId: license.id,
       ...args,
     });
+
+  return await create$6(user, args);
+}
+
+async function updateTokens(licenseId, increase = true, key, value) {
+  const license = Parse.Object.extend(Class$5).createWithoutData(licenseId);
+  increase ? license.increment(key, value) : license.decrement(key, value);
+  await license.save(null, { useMasterKey: true });
+}
+
+async function create$5(user, args) {
+  try {
+    const Payment = Parse.Object.extend(models.payment);
+    const payment = new Payment();
+
+    return await payment.save(
+      {
+        user: pointerObject(models.user, user.objectId),
+        ...args,
+      },
+      { useMasterKey: true }
+    );
+  } catch (error) {
+    console.log("payment.create", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function read$6(user, args, kv) {
+  try {
+    const query = new Parse.Query(models.payment);
+
+    if (args?.objectId)
+      return await query.get(args.objectId, { useMasterKey: true });
+
+    if (kv)
+      return await query.equalTo(kv.key, kv.value).first({ useMasterKey: true });
+
+    return null;
+  } catch (error) {
+    console.log("payment.read", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function update$4(args) {
+  try {
+    const Payment = Parse.Object.extend(models.payment);
+    const payment = new Payment();
+
+    return await payment.save(args, { useMasterKey: true });
+  } catch (error) {
+    console.log("payment.update", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function upsert$1(user, args, kv) {
+  const payment = await read$6(user, args, kv);
+
+  if (payment)
+    return await update$4({
+      objectId: payment.id,
+      ...args,
+    });
+
   return await create$5(user, args);
 }
 
@@ -926,7 +988,7 @@ async function create$4(user, args) {
         user: pointerObject(models.user, user.objectId),
         ...args,
       },
-      { sessionToken: user.sessionToken }
+      { useMasterKey: true }
     );
   } catch (error) {
     console.log("profile.create", error.message);
@@ -995,14 +1057,33 @@ async function update$2(arg, sessionToken) {
     const existObject = await new Parse.Query("Outcome").get(arg?.objectId, {
       sessionToken,
     });
-    if (!existObject) return null;
+    if (!existObject) {
+      console.log("outcome.update: Object not found", arg?.objectId);
+      return null;
+    }
 
-    const Outcome = Parse.Object.extend("Outcome");
-    const outcome = new Outcome();
-    return await outcome.save(arg, { sessionToken });
+    Object.keys(arg).forEach((key) => {
+      if (key !== "objectId" && key !== "id") {
+        existObject.set(key, arg[key]);
+      }
+    });
+
+    const saved = await existObject.save(null, { sessionToken });
+
+    /*
+      console.log("outcome.update: Successfully updated", {
+      objectId: arg?.objectId,
+      situation: arg?.situation ? "updated" : "unchanged",
+      action: arg?.action ? "updated" : "unchanged",
+      outcome: arg?.outcome ? "updated" : "unchanged",
+    });
+    */
+
+    return saved;
   } catch (error) {
-    console.log("outcome.update", error.message);
+    console.error("outcome.update: Error", error.message, error);
     handleInvalidSessionToken(error);
+    return null;
   }
 }
 
@@ -1012,9 +1093,11 @@ const flags$2 = {
 // import * as User from "./models/user.server";
 // import * as Auth from "./lib/parse/auth.server";
 
+const SESSION_VERSION = "v001";
+
 const sessionStorage = createCookieSessionStorage({
   cookie: {
-    name: "cbapro__session",
+    name: `cbapro__session_${SESSION_VERSION}`,
     httpOnly: true,
     path: "/",
     sameSite: "lax",
@@ -1098,30 +1181,62 @@ const { getSession, commitSession, destroySession } = sessionStorage;
 
 const domain = vars.stripe.domain;
 
-async function strat(user, { priceKey }) {
+const assets = {
+  base: "base",
+  token: "token",
+};
+
+const types$2 = {
+  free: "free",
+  one_time: "one_time",
+  recurring: "recurring",
+};
+
+const modes = {
+  setup: "setup",
+  payment: "payment",
+  subscription: "subscription",
+};
+
+const statuses$1 = {
+  pending: "pending",
+  active: "active",
+  suspended: "suspended"};
+
+async function start$1(user, { priceKey }) {
   console.log("join.start", user?.objectId, priceKey);
-  if (!Object.keys(prices).includes(priceKey))
-    return {
-      message: "The price key not valid!",
-    };
 
-  let customerId;
+  let message;
 
-  const license = (await read$6(user))?.toJSON();
-  if (license && priceKey === prices.P0.key)
-    return {
-      message: "You got a free license before!",
-    };
+  if (!Object.keys(prices).includes(priceKey)) {
+    message = "The price key not valid!";
+    console.log(message);
+    return { message };
+  }
 
-  customerId =
-    license?.customerId ??
-    (
-      await stripe.customers.search({
-        query: `metadata[\'userId\']:\'${user.objectId}\'`,
-      })
-    )?.data?.[0]?.id;
+  let license = (await read$7(user))?.toJSON();
+  let licenseId = license?.objectId;
 
-  if (!customerId)
+  const { type, asset, limit } = prices[priceKey];
+  const free = type === types$2.free;
+
+  if (asset === assets.token) {
+    if (!license || !license?.active) message = "You must have an active license. Please get one.";
+    if (license?.type === types$2.free) message = "Adding extra tokens is not available on the free license. Please upgrade to another license.";
+    if (license.type === types$2.recurring && !license.active) message = "Your subscription isn’t active. Please renew your license or get a new one.";
+    console.log(message);
+    if (message) return { message }
+  }
+
+  if (license && type === types$2.free) {
+    message = "You got a free license before!";
+    // console.log(message);
+    return { message };
+  }
+
+  let customerId = license?.customerId;
+
+  if (!customerId) {
     customerId = (
       await stripe.customers.create({
         email: user.email,
@@ -1131,37 +1246,54 @@ async function strat(user, { priceKey }) {
       })
     )?.id;
 
-  return await createCheckoutSession(user, {
+    license = await create$6(user, {
+      customerId,
+      type,
+      priceKey,
+      status: free ? statuses$1.active : statuses$1.pending,
+      active: free ? true : false,
+      baseTokens: free ? limit.tokens : 0,
+    });
+    licenseId = license?.id;
+
+    // free tier without Stripe checkout session
+    if (free)
+      throw redirect$1("/join?success=true");
+  }
+
+  const { id: priceId, recurring } = (
+    await stripe.prices.list({
+      lookup_keys: [priceKey],
+    })
+  )?.data?.[0];
+
+  const metadata = { userId: user.objectId, licenseId, priceKey, priceId };
+
+  return await createCheckoutSession({
+    metadata,
     customerId,
-    lookup_key: priceKey,
+    recurring,
   });
 }
 
-async function createCheckoutSession(user, { customerId, lookup_key }) {
+async function createCheckoutSession({ metadata, customerId, recurring }) {
   try {
-    const { id: priceId } = (
-      await stripe.prices.list({
-        lookup_keys: [lookup_key],
-      })
-    )?.data?.[0];
-
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
-          price: priceId,
+          price: metadata?.priceId,
           quantity: 1,
         },
       ],
-      mode: "payment",
+      mode: recurring ? modes.subscription : modes.payment,
       allow_promotion_codes: true,
       success_url: `${domain}/join?success=true&sessionId={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${domain}/join?canceled=true&priceKey=${lookup_key}`,
-      metadata: {
-        userId: user.objectId,
-      },
-      automatic_tax: { enabled: true },
-      billing_address_collection: "required",
+      cancel_url: `${domain}/join?canceled=true&priceKey=${metadata?.priceKey}`,
+      metadata,
+      ...{ [recurring ? "subscription_data" : "payment_intent_data"]: { metadata } },
+      // automatic_tax: { enabled: true },
+      // billing_address_collection: "required",
       customer_update: {
         address: "auto",
       },
@@ -1174,33 +1306,40 @@ async function createCheckoutSession(user, { customerId, lookup_key }) {
   }
 }
 
-async function checkoutSessionCompleted(session) {
-  console.log("join.checkoutSessionCompleted", session?.id);
-  const {
-    id: sessionId,
-    customer: customerId,
-    amount_total: amount,
-    metadata,
-  } = session;
-  const line_items = await stripe.checkout.sessions.listLineItems(sessionId);
-  const { id: priceId, lookup_key: priceKey } = line_items.data[0].price;
+async function paymentAccsess(session, args) {
+  const { metadata: { userId, licenseId, priceKey, priceId } } = session;
+  const { customerId, active } = args;
+  const { type, asset, limit } = prices[priceKey];
 
-  // console.log({ customerId, priceId, amount, priceKey });
+  const license = (await read$7(null, { key: "customerId", value: args.customerId }))?.toJSON();
+  const user = license?.user;
 
-  await upsert$1(
-    {
-      objectId: metadata.userId,
-    },
-    {
-      licenseKey: nanoid(),
-      isActive: true,
-      customerId,
-      sessionId,
-      priceKey,
-      priceId,
-      amount,
-    }
-  );
+  if (type === types$2.one_time && asset === assets.token) {
+    // console.log("join.paymentAccsess", "one_time.token");
+    if (active) await updateTokens(licenseId, true, "extraTokens", limit.tokens);
+    return;
+  }
+
+  // console.log("join.paymentAccsess", `${type}.${asset}`, { user, ...args, type, priceKey });
+  if (active) await updateTokens(licenseId, true, "baseTokens", limit.tokens);
+  await upsert$2(user, { ...args, type, priceKey });
+}
+
+async function paymentLog(session, args) {
+  const { type, asset } = prices[args.priceKey];
+  const license = (await read$7(null, { key: "customerId", value: args.customerId }))?.toJSON();
+  const user = license?.user;
+
+  let kv;
+  if (args?.invoiceId) {
+    kv = { key: "invoiceId", value: args.invoiceId };
+  } else {
+    kv = { key: "paymentIntentId", value: args.paymentIntentId };
+    delete args.invoiceId;
+  }
+
+  // console.log("join.paymentLog", `${type}.${asset}`, { user, ...args, type, asset, kv });
+  await upsert$1(user, { ...args, type, asset }, kv);
 }
 
 async function check$1(
@@ -1215,39 +1354,41 @@ async function check$1(
   const user = session.get("user");
   const thread = session.get("thread");
 
-  const license = (await read$6(user))?.toJSON();
-  // if (!license) return redirect("/join?type=start");
+  const license = (await read$7(user))?.toJSON();
+  const profile = (await read$5(user))?.toJSON();
 
   let error = {};
-  const isFree = prices[license.priceKey].plan === plans.free;
-  const { cycles, cyclesIn, tokens } = prices[license.priceKey].limit;
-  const profile = (await read$5(user))?.toJSON();
-  const $tokens = profile?.usage?.total;
+  const { priceKey, baseTokens, extraTokens } = license;
+  const isFree = prices[license.priceKey].type === types$2.free;
+  const { cycles, cyclesIn, tokens, voiceToText, draftRefinement } = prices[license.priceKey].limit;
+  const usedTokens = profile?.usage?.total;
+  const totalTokens = baseTokens + extraTokens;
   const $cycles = (await read$4(user, { thread }))?.length;
 
   if (cyclesIn && $cyclesIn && !cyclesIn.includes($cyclesIn))
     error.cyclesIn = true;
 
   if (isFree && $cycles >= cycles) error.cycles = true;
-  if ($tokens >= tokens) error.tokens = true;
-  const hasError = Object.keys(error).length > 0;
-  const expired = error?.tokens;
+  if (usedTokens >= totalTokens) error.tokens = true;
+  if (!voiceToText) error.voiceToText = true;
+  if (!draftRefinement) error.draftRefinement = true;
 
-  const {
-    product: { name },
-  } = await stripe.prices.retrieve(license.priceId, {
-    expand: ["product"],
-  });
+  const hasError = Object.keys(error).length > 0;
+  const expired = error?.tokens || !license.active;
 
   const plan = {
-    name,
+    priceKey,
     isFree,
     cycles,
     $cycles,
     cyclesIn,
     $cyclesIn,
-    tokens,
-    $tokens,
+    totalTokens,
+    usedTokens,
+    baseTokens,
+    extraTokens,
+    voiceToText,
+    draftRefinement,
     error,
     hasError,
     expired,
@@ -1256,6 +1397,9 @@ async function check$1(
   };
 
   if (expired) console.warn("join.check.expired", expired);
+
+  if (error?.tokens && license.active)
+    await update$5({ objectId: license.objectId, active: false, status: statuses$1.suspended });
 
   if (expired && redirected) {
     session.flash("plan", plan);
@@ -1269,15 +1413,10 @@ async function check$1(
   return plan;
 }
 
-async function createPortalSession({ sessionId }) {
-  console.log("join.createPortalSession", sessionId);
-  // get customerId from db later
-  const { customer } = await stripe.checkout.sessions.retrieve(sessionId);
-  const return_url = domain + "/join";
-
+async function createPortalSession(customerId) {
   const portalSession = await stripe.billingPortal.sessions.create({
-    customer,
-    return_url,
+    customer: customerId,
+    return_url: `${domain}/app/settings/pricing`,
   });
 
   return Response.redirect(portalSession.url);
@@ -1302,6 +1441,9 @@ const plans = {
 const prices = {
   P0: {
     key: "P0",
+    name: "Free Plan",
+    type: types$2.free,
+    asset: assets.base,
     plan: plans.free,
     limit: {
       cycles: 1,
@@ -1311,34 +1453,78 @@ const prices = {
   },
   Pn1: {
     key: "Pn1",
+    name: "Pro Plan 1",
+    type: types$2.one_time,
+    asset: assets.base,
     plan: plans.paid,
     limit: {
       cycles: 34,
       tokens: 15000000,
+      voiceToText: true,
+      draftRefinement: true,
+
     },
   },
   Pn2: {
     key: "Pn2",
+    name: "Pro Plan 2",
+    type: types$2.one_time,
+    asset: assets.base,
     plan: plans.paid,
     limit: {
       cycles: 34,
       tokens: 15000000,
+      voiceToText: true,
+      draftRefinement: true,
     },
   },
   Pn3: {
     key: "Pn3",
+    name: "Pro Plan 3",
+    type: types$2.one_time,
+    asset: assets.base,
     plan: plans.paid,
     limit: {
       cycles: 34,
       tokens: 15000000,
+      voiceToText: true,
+      draftRefinement: true,
     },
+  },
+  P1M: {
+    key: "P1M",
+    name: "Pro Monthly",
+    type: types$2.recurring,
+    asset: assets.base,
+    plan: plans.paid,
+    mode: modes.subscription,
+    limit: {
+      cycles: 34,
+      tokens: 2000000,
+    },
+  },
+  P1T: {
+    key: "P1T",
+    name: "Extra Credits",
+    type: types$2.one_time,
+    asset: assets.token,
+    limit: {
+      cycles: 34,
+      tokens: 1500000,
+    }
   },
 };
 
-async function loader$k({ request }) {
+async function loader$s({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let plan = session.get("plan");
   if (!plan) plan = await check$1(request, false);
+  const price = await stripe.prices.list({
+    lookup_keys: [plan.priceKey],
+    expand: ["data.product"]
+  });
+  const name = price.data[0].product.name;
+  plan.name = name;
   session.unset("plan");
   return Response.json(
     { plan, sitePricingUrl: vars.site.pricingUrl },
@@ -1351,47 +1537,54 @@ async function loader$k({ request }) {
 }
 function Overview() {
   const data = useLoaderData();
+  useNavigate();
+  useEffect(() => {
+    console.log(data?.plan);
+  }, [data]);
   return /* @__PURE__ */ jsx("div", { className: "grid gap-4", children: data?.plan ? /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("div", { className: "flex justify-between", children: /* @__PURE__ */ jsxs(
+    /* @__PURE__ */ jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxs(
       "span",
       {
-        className: cn(
+        className: cn$1(
           "text-primary",
           data.plan?.expired ? "text-red-500" : "text-green-500"
         ),
         children: [
           "License: ",
-          data.plan?.name
+          /* @__PURE__ */ jsxs("b", { children: [
+            data.plan?.name,
+            " ",
+            data.plan?.expired && "Eexpired!"
+          ] })
         ]
       }
     ) }),
-    /* @__PURE__ */ jsxs(CardModule, { className: "shadow-none", title: "Tokens used", children: [
-      /* @__PURE__ */ jsx(
+    /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
+      /* @__PURE__ */ jsx(CardModule, { className: "shadow-none bg-zinc-50", title: "Credits", children: /* @__PURE__ */ jsx(
         UsageProgress,
         {
-          tokens: data.plan?.tokens,
-          total: data.plan?.$tokens ?? 0
+          totalTokens: data.plan?.totalTokens,
+          usedTokens: data.plan?.usedTokens,
+          baseTokens: data?.plan?.baseTokens,
+          extraTokens: data?.plan?.extraTokens
         }
-      ),
-      data.plan?.expired && /* @__PURE__ */ jsx(
-        AlertModule,
-        {
-          ...{
-            className: "mt-8",
-            icon: /* @__PURE__ */ jsx(AlertOctagon, {}),
-            title: "Your license has come to an end!",
-            description: "License tokens finished, Go to Pricing to get a new license.",
-            variant: "destructive",
-            actionButton: {
-              title: "Upgrade Now",
-              onClick: () => {
-                window.location = data?.sitePricingUrl;
-              }
-            },
-            open: true
-          }
-        }
-      )
+      ) }),
+      /* @__PURE__ */ jsxs(CardModule, { className: "shadow-none bg-zinc-50", title: "Access", children: [
+        /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 text-sm [&>svg]:w-4", children: [
+          "Competencies: ",
+          /* @__PURE__ */ jsxs("strong", { children: [
+            data?.plan?.cycles,
+            " of ",
+            34
+          ] }),
+          "Voice to text: ",
+          data?.plan?.voiceToText ? /* @__PURE__ */ jsx(Check, {}) : /* @__PURE__ */ jsx(X, {}),
+          "Draft refinement: ",
+          data?.plan?.draftRefinement ? /* @__PURE__ */ jsx(Check, {}) : /* @__PURE__ */ jsx(X, {})
+        ] }),
+        /* @__PURE__ */ jsx("hr", { className: "mt-6 mb-1" }),
+        /* @__PURE__ */ jsx("small", { className: "text-orange-500", children: "Upgrade your license using the plans menu on the left." })
+      ] })
     ] }),
     data.plan?.isFree && /* @__PURE__ */ jsx(
       Markdown,
@@ -1424,13 +1617,81 @@ const trialDescription = `
 const route1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Overview,
-  loader: loader$k
+  loader: loader$s
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$r({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  const license = (await read$7(user))?.toJSON();
+  const lookup_keys = Object.keys(prices);
+  const prices$1 = await getPrices({ lookup_keys });
+  return Response.json({
+    prices: prices$1?.data,
+    license
+  });
+}
+function Pricing() {
+  const { prices, license } = useLoaderData();
+  const navigate = useNavigate();
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-8 pb-16", children: [
+    /* @__PURE__ */ jsx("div", { className: "flex justify-center", children: /* @__PURE__ */ jsxs("span", { className: "flex gap-1 text-sm", children: [
+      /* @__PURE__ */ jsx(Award, { className: "stroke-1.5", size: 16 }),
+      "Select or change your license!"
+    ] }) }),
+    /* @__PURE__ */ jsx("div", { className: cn$1("grid gap-2 grid-cols-4 mx-auto my-4"), children: prices?.map((p, i) => {
+      const current = license?.priceKey === p.lookup_key;
+      const popular = p.lookup_key === "Pn1";
+      const price = p.unit_amount === 0 ? "0" : Math.round(p.unit_amount / 100);
+      const name = p.product.name.replace("CBA Pro", "").replace("CBAPro", "").replace("-", "").replace("|", "").trim();
+      const recurring = p.recurring;
+      const extra = p.lookup_key === "P1T";
+      const label = current ? recurring ? "Billing" : "Current License" : recurring ? "Subscription" : "Switch License";
+      const free = p.lookup_key === "P0";
+      const disabled = free && license?.priceKey !== "free" || current;
+      if (extra) return;
+      return /* @__PURE__ */ jsxs("div", { className: cn$1(`grid gap-2 rounded-lg border border-zinc-200 shadow-md p-4 pt-8 relative`, popular && "border-primary", current && "border-green-500"), children: [
+        /* @__PURE__ */ jsxs("div", { className: cn$1("flex flex-col gap-2"), children: [
+          /* @__PURE__ */ jsxs("div", { className: cn$1("grid text-center", current && "text-primary-500"), children: [
+            /* @__PURE__ */ jsx("span", { className: "text-sm font-semibold", children: name }),
+            /* @__PURE__ */ jsxs("span", { className: cn$1("font-semibold text-primary text-lg", current && "text-green-500"), children: [
+              "$",
+              price
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx("small", { className: "text-xs h-16 overflow-hidden text-zinc-400 text-center mb-4", children: p.product.description }),
+          /* @__PURE__ */ jsx("ul", { className: "flex-auto list-disc text-xs ml-4 mb-4 text-zinc-500", children: p.product?.marketing_features?.map((mf, j) => /* @__PURE__ */ jsx("li", { children: mf.name }, j)) }),
+          /* @__PURE__ */ jsxs(
+            Button,
+            {
+              variant: "default",
+              size: "sm",
+              className: cn$1(current ? "bg-green-500 hover:bg-green-400" : ""),
+              disabled: disabled && !recurring,
+              onClick: () => navigate(recurring && current ? `/join?type=portal&customerId=${license.customerId}` : `/join?type=create&priceKey=${p.lookup_key}`),
+              children: [
+                /* @__PURE__ */ jsx(Award, {}),
+                label
+              ]
+            }
+          )
+        ] }),
+        popular && /* @__PURE__ */ jsx("span", { className: cn$1("rounded-full w-fit whitespace-nowrap bg-primary text-white text-xs py-0.5 px-2 absolute -top-3 left-1/2 -translate-x-1/2", current && "bg-green-500"), children: "Most popular" })
+      ] }, i);
+    }) })
+  ] });
+}
+
+const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: Pricing,
+  loader: loader$r
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const labelVariants = cva(
   "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 );
-const Label = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(LabelPrimitive.Root, { ref, className: cn(labelVariants(), className), ...props }));
+const Label = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(LabelPrimitive.Root, { ref, className: cn$1(labelVariants(), className), ...props }));
 Label.displayName = LabelPrimitive.Root.displayName;
 
 const Form = FormProvider;
@@ -1459,7 +1720,7 @@ const useFormField = () => {
 const FormItemContext = React.createContext({});
 const FormItem = React.forwardRef(({ className, ...props }, ref) => {
   const id = React.useId();
-  return /* @__PURE__ */ jsx(FormItemContext.Provider, { value: { id }, children: /* @__PURE__ */ jsx("div", { ref, className: cn("space-y-2", className), ...props }) });
+  return /* @__PURE__ */ jsx(FormItemContext.Provider, { value: { id }, children: /* @__PURE__ */ jsx("div", { ref, className: cn$1("space-y-2", className), ...props }) });
 });
 FormItem.displayName = "FormItem";
 const FormLabel = React.forwardRef(({ className, ...props }, ref) => {
@@ -1468,7 +1729,7 @@ const FormLabel = React.forwardRef(({ className, ...props }, ref) => {
     Label,
     {
       ref,
-      className: cn(error && "text-destructive", className),
+      className: cn$1(error && "text-destructive", className),
       htmlFor: formItemId,
       ...props
     }
@@ -1496,7 +1757,7 @@ const FormDescription = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       id: formDescriptionId,
-      className: cn("text-[0.8rem] text-muted-foreground", className),
+      className: cn$1("text-[0.8rem] text-muted-foreground", className),
       ...props
     }
   );
@@ -1514,7 +1775,7 @@ const FormMessage = React.forwardRef(
       {
         ref,
         id: formMessageId,
-        className: cn("text-[0.8rem] font-medium text-destructive", className),
+        className: cn$1("text-[0.8rem] font-medium text-destructive", className),
         ...props,
         children: body
       }
@@ -1524,12 +1785,13 @@ const FormMessage = React.forwardRef(
 FormMessage.displayName = "FormMessage";
 
 const Select = SelectPrimitive.Root;
+const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
 const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsxs(
   SelectPrimitive.Trigger,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-white placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 dark:border-zinc-800 dark:ring-offset-zinc-950 dark:placeholder:text-zinc-400 dark:focus:ring-zinc-300",
       className
     ),
@@ -1545,7 +1807,7 @@ const SelectScrollUpButton = React.forwardRef(({ className, ...props }, ref) => 
   SelectPrimitive.ScrollUpButton,
   {
     ref,
-    className: cn("flex cursor-default items-center justify-center py-1", className),
+    className: cn$1("flex cursor-default items-center justify-center py-1", className),
     ...props,
     children: /* @__PURE__ */ jsx(ChevronUpIcon, {})
   }
@@ -1555,7 +1817,7 @@ const SelectScrollDownButton = React.forwardRef(({ className, ...props }, ref) =
   SelectPrimitive.ScrollDownButton,
   {
     ref,
-    className: cn("flex cursor-default items-center justify-center py-1", className),
+    className: cn$1("flex cursor-default items-center justify-center py-1", className),
     ...props,
     children: /* @__PURE__ */ jsx(ChevronDownIcon, {})
   }
@@ -1565,7 +1827,7 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
   SelectPrimitive.Content,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border border-zinc-200 bg-white text-zinc-950 shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50",
       position === "popper" && "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
       className
@@ -1577,7 +1839,7 @@ const SelectContent = React.forwardRef(({ className, children, position = "poppe
       /* @__PURE__ */ jsx(
         SelectPrimitive.Viewport,
         {
-          className: cn("p-1", position === "popper" && "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"),
+          className: cn$1("p-1", position === "popper" && "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"),
           children
         }
       ),
@@ -1590,7 +1852,7 @@ const SelectLabel = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   SelectPrimitive.Label,
   {
     ref,
-    className: cn("px-2 py-1.5 text-sm font-semibold", className),
+    className: cn$1("px-2 py-1.5 text-sm font-semibold", className),
     ...props
   }
 ));
@@ -1599,7 +1861,7 @@ const SelectItem = React.forwardRef(({ className, children, ...props }, ref) => 
   SelectPrimitive.Item,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-2 pr-8 text-sm outline-none focus:bg-zinc-100 focus:text-zinc-900 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-zinc-800 dark:focus:text-zinc-50",
       className
     ),
@@ -1615,7 +1877,7 @@ const SelectSeparator = React.forwardRef(({ className, ...props }, ref) => /* @_
   SelectPrimitive.Separator,
   {
     ref,
-    className: cn("-mx-1 my-1 h-px bg-zinc-100 dark:bg-zinc-800", className),
+    className: cn$1("-mx-1 my-1 h-px bg-zinc-100 dark:bg-zinc-800", className),
     ...props
   }
 ));
@@ -1626,7 +1888,7 @@ const Input = React.forwardRef(({ className, type, ...props }, ref) => {
     "input",
     {
       type,
-      className: cn(
+      className: cn$1(
         "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
         className
       ),
@@ -1652,7 +1914,7 @@ function SubmitField({
     {
       type,
       variant,
-      className: cn("relative shadow-none", loader && "!pl-8", className),
+      className: cn$1("relative shadow-none", loader && "!pl-8", className),
       disabled,
       ...props,
       children: [
@@ -1668,7 +1930,7 @@ const ScrollArea = React.forwardRef(({ className, children, ...props }, ref) => 
   ScrollAreaPrimitive.Root,
   {
     ref,
-    className: cn("relative overflow-hidden", className),
+    className: cn$1("relative overflow-hidden", className),
     ...props,
     children: [
       /* @__PURE__ */ jsx(ScrollAreaPrimitive.Viewport, { className: "h-full w-full rounded-[inherit]", children }),
@@ -1683,7 +1945,7 @@ const ScrollBar = React.forwardRef(({ className, orientation = "vertical", ...pr
   {
     ref,
     orientation,
-    className: cn(
+    className: cn$1(
       "flex touch-none select-none transition-colors",
       orientation === "vertical" && "h-full w-2.5 border-l border-l-transparent p-[1px]",
       orientation === "horizontal" && "h-2.5 flex-col border-t border-t-transparent p-[1px]",
@@ -1705,14 +1967,14 @@ function Calendar({
     DayPicker,
     {
       showOutsideDays,
-      className: cn("p-3", className),
+      className: cn$1("p-3", className),
       classNames: {
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
         caption: "flex justify-center pt-1 relative items-center",
         caption_label: "text-sm font-medium",
         nav: "space-x-1 flex items-center",
-        nav_button: cn(
+        nav_button: cn$1(
           buttonVariants({ variant: "outline" }),
           "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
         ),
@@ -1722,11 +1984,11 @@ function Calendar({
         head_row: "flex",
         head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
         row: "flex w-full mt-2",
-        cell: cn(
+        cell: cn$1(
           "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md",
           props.mode === "range" ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md" : "[&:has([aria-selected])]:rounded-md"
         ),
-        day: cn(
+        day: cn$1(
           buttonVariants({ variant: "ghost" }),
           "h-8 w-8 p-0 font-normal aria-selected:opacity-100"
         ),
@@ -1741,8 +2003,8 @@ function Calendar({
         ...classNames
       },
       components: {
-        IconLeft: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronLeftIcon, { className: cn("h-4 w-4", className2), ...props2 }),
-        IconRight: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronRightIcon, { className: cn("h-4 w-4", className2), ...props2 })
+        IconLeft: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronLeftIcon, { className: cn$1("h-4 w-4", className2), ...props2 }),
+        IconRight: ({ className: className2, ...props2 }) => /* @__PURE__ */ jsx(ChevronRightIcon, { className: cn$1("h-4 w-4", className2), ...props2 })
       },
       ...props
     }
@@ -1758,7 +2020,7 @@ const PopoverContent = React.forwardRef(({ className, align = "center", sideOffs
     ref,
     align,
     sideOffset,
-    className: cn(
+    className: cn$1(
       "z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className
     ),
@@ -1780,7 +2042,7 @@ function CalendarField({ name, label, description, control }) {
             Button,
             {
               variant: "outline",
-              className: cn(
+              className: cn$1(
                 "w-[240px] pl-3 text-left font-normal",
                 !field.value && "text-muted-foreground"
               ),
@@ -1820,7 +2082,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
     ref,
     decorative,
     orientation,
-    className: cn(
+    className: cn$1(
       "shrink-0 bg-border",
       orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
       className
@@ -1830,7 +2092,7 @@ const Separator = React.forwardRef(({ className, orientation = "horizontal", dec
 ));
 Separator.displayName = SeparatorPrimitive.Root.displayName;
 
-async function loader$j({ request }) {
+async function loader$q({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   let profile = session.get("profile");
   if (profile) return { profile };
@@ -1850,7 +2112,7 @@ async function loader$j({ request }) {
   }
   return null;
 }
-async function action$e({ request }) {
+async function action$j({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const formData = await request.formData();
@@ -1872,6 +2134,7 @@ async function action$e({ request }) {
 const formSchema = Joi.object({
   firstName: Joi.string().empty(""),
   lastName: Joi.string().empty(""),
+  phone: Joi.string(),
   fields: Joi.object({
     linkedin: Joi.string().uri().empty(""),
     discipline: Joi.string(),
@@ -1896,7 +2159,7 @@ const formSchema = Joi.object({
 function ProfilePage() {
   const data = useLoaderData();
   const aData = useActionData();
-  const { firstName, lastName, fields } = data.profile;
+  const { firstName, lastName, phone, fields } = data.profile;
   const [validatorsNumber, setValidatorsNumber] = useState(1);
   const { toast } = useToast();
   const submit = useSubmit();
@@ -1906,6 +2169,7 @@ function ProfilePage() {
     defaultValues: {
       firstName,
       lastName,
+      phone,
       fields
     }
   });
@@ -1961,6 +2225,18 @@ function ProfilePage() {
               }
             )
           ] }),
+          /* @__PURE__ */ jsx(
+            FormField,
+            {
+              control: form.control,
+              name: "phone",
+              render: ({ field }) => /* @__PURE__ */ jsxs(FormItem, { className: "flex-1", children: [
+                /* @__PURE__ */ jsx(FormLabel, { children: "Phone" }),
+                /* @__PURE__ */ jsx(FormControl, { children: /* @__PURE__ */ jsx(Input, { placeholder: "phone", ...field }) }),
+                /* @__PURE__ */ jsx(FormMessage, {})
+              ] })
+            }
+          ),
           /* @__PURE__ */ jsx(
             FormField,
             {
@@ -2119,7 +2395,7 @@ const associations = [
   "APEGS",
   "PEO",
   "APEGA",
-  "EGCB",
+  "EGBC",
   "EGM",
   "QIQ",
   "APEGNB",
@@ -2127,34 +2403,1208 @@ const associations = [
   "Others"
 ];
 
-const route2 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$e,
+  action: action$j,
+  associations,
   default: ProfilePage,
-  loader: loader$j
+  disciplines,
+  loader: loader$q
 }, Symbol.toStringTag, { value: 'Module' }));
 
+function eventStream(signal, init, options = {}) {
+  let stream = new ReadableStream({
+    start(controller) {
+      let encoder = new TextEncoder();
+      let closed = false;
+
+      function send({ event = "message", data }) {
+        if (closed) return; // If already closed, not enqueue anything
+
+        controller.enqueue(encoder.encode(`event: ${event}\n`));
+
+        if (closed) return; // If already closed, not enqueue anything
+
+        data.split("\n").forEach((line, index, array) => {
+          if (closed) return; // If already closed, not enqueue anything
+          let value = `data: ${line}\n`;
+          if (index === array.length - 1) value += "\n";
+          controller.enqueue(encoder.encode(value));
+        });
+      }
+
+      init(send, close);
+
+      function close() {
+        if (closed) return;
+        // cleanup();
+        closed = true;
+        signal.removeEventListener("abort", close);
+        controller.close();
+      }
+
+      signal.addEventListener("abort", close);
+
+      if (signal.aborted) return close();
+    },
+  });
+
+  let headers = new Headers(options.headers);
+
+  if (headers.has("Content-Type")) {
+    console.warn("Overriding Content-Type header to `text/event-stream`");
+  }
+
+  if (headers.has("Cache-Control")) {
+    console.warn("Overriding Cache-Control header to `no-cache`");
+  }
+
+  if (headers.has("Connection")) {
+    console.warn("Overriding Connection header to `keep-alive`");
+  }
+
+  headers.set("Content-Type", "text/event-stream");
+  headers.set("Cache-Control", "no-cache");
+  headers.set("Connection", "keep-alive");
+
+  return new Response(stream, { headers });
+}
+
+const ClassName = "Thread";
+
+async function read$3({ user, purpose = purposes.chat, objectId }) {
+  try {
+    const query = new Parse.Query(ClassName);
+    user && query.equalTo("user", user.objectId);
+    !objectId && query.equalTo("purpose", purpose);
+    !objectId && query.descending("createdAt");
+    if (objectId)
+      return await query.get(objectId, { sessionToken: user.sessionToken });
+    return await query.find({ sessionToken: user.sessionToken });
+  } catch (error) {
+    console.log("thread.read", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function create$2(args, sessionToken) {
+  try {
+    const Thread = Parse.Object.extend(ClassName);
+    const thread = new Thread();
+    return await thread.save(args, { sessionToken });
+  } catch (error) {
+    console.log("thread.create", error.message);
+  }
+}
+
+async function update$1(args, sessionToken) {
+  try {
+    const Thread = Parse.Object.extend(ClassName);
+    const thread = new Thread();
+    return await thread.save(args, { sessionToken });
+  } catch (error) {
+    console.log("thread.update", error.message);
+  }
+}
+
+const purposes = {
+  chat: "chat",
+  score: "score",
+  draftAssessment: "draftAssessment",
+};
+
+const Class$2 = "Message";
+
+async function read$2(user, { thread, limit }) {
+  try {
+    const query = new Parse.Query(Class$2);
+    user && query.equalTo("user", user.objectId);
+    thread && query.equalTo("thread", thread.objectId || thread.id);
+    limit && query.limit(limit);
+    query.descending("createdAt");
+
+    return await query.find({ sessionToken: user.sessionToken });
+  } catch (error) {
+    console.log("message.read", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+async function create$1(arg, sessionToken) {
+  try {
+    const Message = Parse.Object.extend("Message");
+    const message = new Message();
+    return await message.save(arg, { sessionToken });
+  } catch (error) {
+    console.log("message.create", error.message);
+    handleInvalidSessionToken(error);
+  }
+}
+
+const roles = {
+  assistant: "assistant",
+  user: "user",
+};
+
+const openai = new OpenAI({
+  ...(process.env.NODE_ENV === "development" &&
+    process.env.USE_OPENAI_PROXY === "true" && {
+    httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
+  }),
+});
+
+async function updateUsage(user, thread, usage) {
+  const $thread = await read$3({ user, objectId: thread.objectId });
+  const threadUsage = $thread.get("usage");
+  // console.log("usage.updateUsage:thread.usage", threadUsage);
+
+  await update$1(
+    {
+      objectId: thread.objectId,
+      usage: {
+        count: (threadUsage?.count ?? 0) + 1,
+        input: (threadUsage?.input ?? 0) + usage.input,
+        output: (threadUsage?.output ?? 0) + usage.output,
+        total: (threadUsage?.total ?? 0) + usage.total,
+      },
+    },
+    user.sessionToken
+  );
+
+  const profile = await read$5(user);
+  const profileUsage = profile.get("usage");
+
+  await update$3(user, {
+    objectId: profile.id,
+    usage: {
+      count: (profileUsage?.count ?? 0) + 1,
+      input: (profileUsage?.input ?? 0) + usage.input,
+      output: (profileUsage?.output ?? 0) + usage.output,
+      total: (profileUsage?.total ?? 0) + usage.total,
+    },
+  });
+}
+
+async function getMessages(user) {
+  try {
+    const draftAssessmentThread = await getDraftAssessmentThread(user);
+    if (!draftAssessmentThread?.threadId) {
+      return [];
+    }
+
+    const openaiMessages = await openai.beta.threads.messages.list(draftAssessmentThread.threadId, {
+      limit: 100,
+      order: "asc",
+    });
+
+    const messages = openaiMessages.data
+      .map((msg) => {
+        const content = msg.content[0];
+        if (content?.type === "text") {
+          return {
+            objectId: msg.id,
+            role: msg.role,
+            content: content.text.value,
+            createdAt: new Date(msg.created_at * 1000).toJSON(),
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+
+    return messages;
+  } catch (error) {
+    console.error("draftAssessment.getMessages: Error fetching messages", {
+      error: error.message,
+    });
+    return [];
+  }
+}
+
+async function sync$2(request, body) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  const { competencyItem, outcome } = body;
+
+  if (!outcome) {
+    return Response.json({ error: { message: "Outcome is required" } });
+  }
+
+  if (!competencyItem) {
+    return Response.json({ error: { message: "Competency item is required" } });
+  }
+
+  if (!vars.app.draftAssessmentRequestLimit || !vars.app.draftAssessmentRequestOutcomeLimit) {
+    console.warn(
+      "draftAssessment.sync: Rate limit environment variables are missing. " +
+      "Set APP_DRAFT_ASSESSMENT_REQUEST_LIMIT and APP_DRAFT_ASSESSMENT_REQUEST_OUTCOME_LIMIT " +
+      "in your .env file to enable rate limiting."
+    );
+  }
+
+  const outcomeCount = outcome?.draftAssessment?.count;
+  if (outcomeCount && outcomeCount >= Number(vars.app.draftAssessmentRequestOutcomeLimit)) {
+    return Response.json({
+      error: { message: `Draft assessment request limit: ${vars.app.draftAssessmentRequestOutcomeLimit} times` },
+    });
+  }
+
+  try {
+    const draftAssessmentThread = await getDraftAssessmentThread(user);
+
+    if (!draftAssessmentThread) {
+      console.error("draftAssessment.sync: Failed to create or retrieve assessment thread");
+      return Response.json({
+        error: { message: "Failed to create or retrieve assessment thread" },
+      });
+    }
+
+    const threadCount = draftAssessmentThread?.usage?.count;
+    if (threadCount && threadCount >= Number(vars.app.draftAssessmentRequestLimit)) {
+      console.warn("draftAssessment.sync: Thread request limit reached", {
+        threadCount,
+        limit: vars.app.draftAssessmentRequestLimit,
+      });
+      return Response.json({
+        error: {
+          message: `Draft assessment request limit: ${vars.app.draftAssessmentRequestLimit} times`,
+        },
+      });
+    }
+
+    const draftAssessment = await getDraftAssessment({
+      user,
+      competencyItem,
+      outcome,
+      draftAssessmentThread,
+    });
+
+    if (!draftAssessment) {
+      console.error("draftAssessment.sync: Failed to generate draft assessment", {
+        objectId: outcome?.objectId,
+        competencyItem: competencyItem?.title,
+      });
+      return Response.json({
+        error: { message: "Failed to generate draft assessment. Please try again." },
+      });
+    }
+
+    return Response.json(
+      draftAssessment,
+      !draftAssessmentThread
+        ? {
+          headers: {
+            "Set-Cookie": await commitSession(session),
+          },
+        }
+        : {}
+    );
+  } catch (error) {
+    console.error("draftAssessment.sync: Unexpected error", {
+      error: error.message,
+      stack: error.stack,
+      objectId: outcome?.objectId,
+    });
+    return Response.json({
+      error: {
+        message: error.message || "An error occurred while generating draft assessment",
+      },
+    });
+  }
+}
+
+async function getDraftAssessment({ user, competencyItem, outcome, draftAssessmentThread }) {
+  let draftAssessment = null,
+    usage = null,
+    rawResponse = null;
+  const content = `[${competencyItem.title}] - [${outcome.situation || ""}] - [${outcome.action || ""}] - [${outcome.outcome || ""}]`;
+
+  try {
+    await openai.beta.threads.messages.create(draftAssessmentThread.threadId, {
+      role: roles.user,
+      content,
+    });
+
+    const run = await openai.beta.threads.runs.create(draftAssessmentThread.threadId, {
+      assistant_id: vars.openai.draftAssessmentAssistantId,
+      stream: true,
+    });
+
+    for await (const r of run) {
+      try {
+        if (r.event === "thread.message.completed") {
+          const responseText = r.data?.content?.[0]?.text?.value;
+
+          if (!responseText) {
+            console.warn("draftAssessment.getDraftAssessment: No response text in message completed event");
+            continue;
+          }
+
+          // Store raw response for display in chat
+          rawResponse = responseText;
+
+          try {
+            const sections = responseText.match(/\[([^\]]+)\]/g);
+
+            if (sections && sections.length >= 3) {
+              const cleanedSections = sections.map(s => s.replace(/[\[\]]/g, "").trim());
+              const startIndex = cleanedSections.length >= 4 ? 1 : 0;
+
+              draftAssessment = {
+                situation: cleanedSections[startIndex] || "",
+                action: cleanedSections[startIndex + 1] || "",
+                outcome: cleanedSections[startIndex + 2] || "",
+              };
+            } else {
+              const situationMatch = responseText.match(/(?:Situation|SITUATION)[:\s\-]*([^\n]+(?:\n(?!Action|ACTION|Outcome|OUTCOME)[^\n]+)*)/i);
+              const actionMatch = responseText.match(/(?:Action|ACTION)[:\s\-]*([^\n]+(?:\n(?!Outcome|OUTCOME)[^\n]+)*)/i);
+              const outcomeMatch = responseText.match(/(?:Outcome|OUTCOME)[:\s\-]*([^\n]+(?:\n[^\n]+)*)/i);
+
+              draftAssessment = {
+                situation: situationMatch ? situationMatch[1].trim() : "",
+                action: actionMatch ? actionMatch[1].trim() : "",
+                outcome: outcomeMatch ? outcomeMatch[1].trim() : "",
+              };
+            }
+
+            if (!(draftAssessment.situation || draftAssessment.action || draftAssessment.outcome)) {
+              console.warn("draftAssessment.getDraftAssessment: No content found in parsed response", {
+                responsePreview: responseText.substring(0, 200),
+                responseLength: responseText.length,
+              });
+              draftAssessment = null;
+            }
+          } catch (parseError) {
+            console.error("draftAssessment.getDraftAssessment: Error parsing response", {
+              error: parseError.message,
+              responsePreview: responseText?.substring(0, 200),
+            });
+            draftAssessment = null;
+          }
+        }
+
+        if (r.event === "thread.run.completed") {
+          try {
+            const {
+              prompt_tokens: input,
+              completion_tokens: output,
+              total_tokens: total,
+            } = r.data?.usage || {};
+
+            if (input !== undefined || output !== undefined || total !== undefined) {
+              usage = { input: input || 0, output: output || 0, total: total || 0 };
+            } else {
+              console.warn("draftAssessment.getDraftAssessment: No usage data in run completed event");
+            }
+          } catch (usageError) {
+            console.warn("draftAssessment.getDraftAssessment: Error extracting usage data", {
+              error: usageError.message,
+            });
+          }
+        }
+      } catch (eventError) {
+        console.warn("draftAssessment.getDraftAssessment: Error processing stream event", {
+          event: r.event,
+          error: eventError.message,
+        });
+      }
+    }
+
+    if (draftAssessment && (draftAssessment.situation || draftAssessment.action || draftAssessment.outcome)) {
+      if (usage) {
+        try {
+          await updateUsage(user, draftAssessmentThread, usage);
+        } catch (usageUpdateError) {
+          console.warn("draftAssessment.getDraftAssessment: Failed to update usage", {
+            error: usageUpdateError.message,
+          });
+        }
+      } else {
+        console.warn("draftAssessment.getDraftAssessment: No usage data available");
+      }
+
+      return {
+        ...draftAssessment,
+        rawResponse: rawResponse || null,
+      };
+    } else {
+      console.error("draftAssessment.getDraftAssessment: Failed to parse or validate AI response", {
+        objectId: outcome.objectId,
+        hasDraftAssessment: !!draftAssessment,
+      });
+      return null;
+    }
+  } catch (error) {
+    console.error("draftAssessment.getDraftAssessment: OpenAI API error", {
+      error: error.message,
+      stack: error.stack,
+      objectId: outcome.objectId,
+    });
+    return null;
+  }
+}
+
+async function getDraftAssessmentThread(user) {
+  const purpose = purposes.draftAssessment;
+  const threads = await read$3({ user, purpose });
+
+  if (threads?.length > 0)
+    return {
+      objectId: threads[0].id,
+      threadId: threads[0].get("threadId"),
+      usage: threads[0].get("usage"),
+    };
+
+  const thread = await openai.beta.threads.create({
+    metadata: {
+      user: user.objectId,
+      purpose,
+    },
+  });
+
+  if (thread?.id) {
+    const thread_ = await create$2(
+      {
+        user: pointerObject(models.user, user.objectId),
+        name: "Draft Assessment thread",
+        threadId: thread.id,
+        thread,
+        purpose,
+      },
+      user.sessionToken
+    );
+
+    return {
+      objectId: thread_.id,
+      threadId: thread.id,
+      usage: thread_.get("usage"),
+    };
+  }
+
+  return null;
+}
+
+async function loader$p({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+
+  if (!user) return redirect$1("/auth/login");
+
+  const searchParams = new URL(request.url).searchParams;
+  let content = searchParams.get("q");
+  let competency = searchParams.get("c");
+
+  if (!content) return Response.json({});
+
+  const plan = await check$1(request, false, competency);
+  if (plan?.expired) {
+    session.flash("plan", plan);
+    return redirectStream$1(plan.url, session, request);
+  }
+
+  const draftAssessmentThread = await getDraftAssessmentThread(user);
+  if (!draftAssessmentThread) {
+    return Response.json({ error: { message: "Failed to create or retrieve assessment thread" } });
+  }
+
+  const userMessage = await openai.beta.threads.messages.create(draftAssessmentThread.threadId, {
+    role: "user",
+    content,
+  });
+
+  const run = await openai.beta.threads.runs.create(draftAssessmentThread.threadId, {
+    assistant_id: vars.openai.draftAssessmentAssistantId,
+    stream: true,
+  });
+
+  return eventStream(
+    request.signal,
+    function setup(send, close) {
+      return handleStream$1({
+        stream: streamDraftAssessmentResponse(run),
+        send,
+        close,
+        user,
+        thread: draftAssessmentThread,
+        userMessage,
+        runId: run.id,
+        session,
+      });
+    },
+    {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    }
+  );
+}
+
+function redirectStream$1(url, session, request) {
+  return eventStream(
+    request.signal,
+    function setup(send, close) {
+      send({
+        event: "redirected",
+        data: JSON.stringify({ url }),
+      });
+      close();
+    },
+    {
+      headers: {
+        "Set-Cookie": commitSession(session),
+      },
+    }
+  );
+}
+
+async function* streamDraftAssessmentResponse(run) {
+  for await (const chunk of run) {
+    if (
+      chunk.event === "thread.message.delta" &&
+      chunk.data?.delta?.content?.length > 0
+    ) {
+      for (const contentItem of chunk.data.delta.content) {
+        if (contentItem.type === "text" && contentItem.text?.value) {
+          const token = contentItem.text.value;
+          yield token;
+        }
+      }
+    }
+  }
+}
+
+async function handleStream$1({
+  stream,
+  send,
+  close,
+  user,
+  thread,
+  userMessage,
+  runId,
+  session,
+}) {
+  let fullResponse = "";
+
+  for await (const token of stream) {
+    fullResponse += token;
+    send({
+      event: "thread.message.delta",
+      data: token,
+    });
+  }
+
+  if (!fullResponse) {
+    console.error("Error: No response received from OpenAI.");
+    close();
+    return;
+  }
+
+  send({
+    event: "thread.message.completed",
+    data: "",
+  });
+
+  if (runId) {
+    try {
+      const runStatus = await openai.beta.threads.runs.retrieve(thread.threadId, runId);
+      const {
+        prompt_tokens: input,
+        completion_tokens: output,
+        total_tokens: total,
+      } = runStatus?.usage || {};
+
+      if (input !== undefined || output !== undefined || total !== undefined) {
+        const usage = { input: input || 0, output: output || 0, total: total || 0 };
+        await updateUsage(user, thread, usage);
+      }
+    } catch (usageError) {
+      console.warn("draft-assessment.sse: Error updating usage", {
+        error: usageError.message,
+      });
+    }
+  }
+
+  close();
+}
+
+const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  loader: loader$p
+}, Symbol.toStringTag, { value: 'Module' }));
+
+customAlphabet("1234567890abcdefghABCDEFGH", 8);
+
+const getPass = () => nanoid();
+
+
+// character sets
+const lower = 'abcdefghijklmnopqrstuvwxyz';
+const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const digits = '0123456789';
+const symbols = '!@#$%^&*()-_=+[]{}<>?';
+
+const all = lower + upper + digits + symbols;
+
+// nanoid generators for 1 char
+const nanoLower = customAlphabet(lower, 1);
+const nanoUpper = customAlphabet(upper, 1);
+const nanoDigit = customAlphabet(digits, 1);
+const nanoSymbol = customAlphabet(symbols, 1);
+const nanoAll = customAlphabet(all, 1);
+
+function generatePassword(length = 8) {
+  if (length < 8) length = 8;
+
+  // mandatory characters
+  const passwordChars = [
+    nanoLower(),
+    nanoUpper(),
+    nanoDigit(),
+    nanoSymbol(),
+  ];
+
+  // fill remaining chars
+  for (let i = passwordChars.length; i < length; i++) {
+    passwordChars.push(nanoAll());
+  }
+
+  // shuffle characters
+  return passwordChars
+    .sort(() => Math.random() - 0.5)
+    .join('');
+}
+
 function InputField({ ...props }) {
-  return /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5", children: [
+  const ref = useRef();
+  function genPassword() {
+    const target = ref.current;
+    target.value = generatePassword();
+    target.select();
+    target.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(target.value);
+  }
+  function togglePassword() {
+    ref.current.type === "password" ? ref.current.type = "text" : ref.current.type = "password";
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "grid gap-1.5 relative", children: [
     props?.label && /* @__PURE__ */ jsx(Label, { children: props?.label }),
     /* @__PURE__ */ jsx(
       Input,
       {
+        ref,
         ...props,
         ...props?.setValue && {
           onValueChange: props.setValue
         }
       }
     ),
+    props?.info && /* @__PURE__ */ jsx("span", { className: "text-xs text-zinc-500", children: props.info }),
+    props?.error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: props.error }),
+    props?.type === "password" && /* @__PURE__ */ jsxs("div", { className: "absolute right-0 top-5", children: [
+      props?.genPass && /* @__PURE__ */ jsx(Button, { type: "button", variant: "ghost", size: "icon", onClick: genPassword, children: /* @__PURE__ */ jsx(LightningBoltIcon, {}) }),
+      props?.togglePass && /* @__PURE__ */ jsx(Button, { type: "button", variant: "ghost", size: "icon", onClick: togglePassword, children: /* @__PURE__ */ jsx(EyeOpenIcon, {}) })
+    ] })
+  ] });
+}
+
+function AlertField({ message, variant }) {
+  if (!message) return null;
+  return /* @__PURE__ */ jsxs(Alert, { className: cn$1("px-2 pt-2.5 pb-1.5", variants[variant]), children: [
+    /* @__PURE__ */ jsx(Info, { className: "!left-2 !top-2 h-4 w-4" }),
+    /* @__PURE__ */ jsx(AlertTitle, { children: message.title }),
+    /* @__PURE__ */ jsx(AlertDescription, { className: "text-xs", children: message.description })
+  ] });
+}
+const variants = {
+  error: "text-red-500 [&>svg]:text-red-500 border-red-500",
+  success: "text-green-500 [&>svg]:text-green-500 border-green-500"
+};
+
+async function register(args) {
+  const { email, password, ...meta } = args;
+
+  try {
+    const user = await new Parse.User().signUp(
+      {
+        username: email,
+        password,
+        email,
+        meta
+      },
+      {
+        useMasterKey: true,
+      }
+    );
+
+    await assign(user, "user");
+
+    return user;
+  } catch (error) {
+    console.log("parse.auth.register.error", error.code, error.message);
+    return { error: error.message }
+  }
+}
+
+async function assign(user, role = "user") {
+  try {
+    const $role = await new Parse.Query("_Role")
+      .equalTo("name", role)
+      .first({ useMasterKey: true });
+
+    $role.getUsers().add(user);
+    await $role.save(null, { useMasterKey: true });
+
+    console.log("parse.auth.assign", user.id);
+    return { message: "Role assined!" };
+  } catch (error) {
+    console.log("parse.auth.assign.error", error.code, error.message);
+    return { error: error.message }
+  }
+
+}
+
+async function verify(email) {
+  try {
+    const data = await Parse.User.requestEmailVerification(email);
+    // console.log("parse.auth.verify", data);
+
+    return {
+      error: false,
+      message: "Check your email now!",
+    }
+  } catch (error) {
+    console.log("parse.auth.verify.error", error.code, error.message);
+
+    return {
+      error: true,
+      message: error.message,
+    }
+  }
+}
+
+async function confirm({ username, token }) {
+  const qs = new URLSearchParams({
+    username,
+    token,
+  }).toString();
+
+  try {
+    const data = await fetch(
+      `${serverURL}/apps/${appId}/verify_email?${qs}`
+    );
+
+    const url = new URLSearchParams(data?.url);
+    // console.log("parse.auth.confirm", url);
+
+    const success = data?.url.includes("verify_email_success");
+    const failed = data?.url.includes("invalid_verification_link");
+
+    if (failed)
+      return {
+        error: true,
+        message: "Username or token invalid! try again."
+      }
+
+    return {
+      error: false,
+      message: "Your email has been verified!, Try login.",
+    }
+  } catch (error) {
+    console.log("parse.auth.confirm", error.message);
+  }
+}
+
+async function remember(email) {
+  try {
+    const remember = await Parse.User.requestPasswordReset(email);
+    console.log("parse.auth.remember", remember);
+    return remember;
+  } catch (error) {
+    console.log("parse.auth.remember.error", error.code, error.message);
+  }
+}
+
+async function reset({ password, username, token }) {
+  const body = new URLSearchParams({
+    new_password: password,
+    confirm_new_password: password,
+    username,
+    token,
+    "utf-8": "✓",
+  });
+
+  try {
+    const data = await fetch(
+      `${serverURL}/apps/${appId}/request_password_reset`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body,
+      }
+    );
+
+    const url = new URLSearchParams(data?.url);
+    // console.log("parse.auth.reset", url);
+
+    const success = data?.url.includes("success");
+    const failed = data?.url.includes("failed");
+    const error = url.get("error");
+
+    if (error) return false;
+    return true;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function login(username, password) {
+  try {
+    return await Parse.User.logIn(username, password);
+  } catch (error) {
+    console.log("parse:auth:login", error.message);
+    return { error: error.message };
+  }
+}
+
+async function logout$1() {
+  try {
+    return await Parse.User.logOut();
+  } catch (error) {
+    console.log("parse:auth:logout", error.message);
+    // return { error: error.message };
+  }
+}
+
+let isHydrating$1 = true;
+function Turnstile({ onChange, error }) {
+  const [isHydrated, setIsHydrated] = useState(!isHydrating$1);
+  const [token, setToken] = useState(null);
+  const ref = useRef();
+  useEffect(() => {
+    isHydrating$1 = false;
+    setIsHydrated(true);
+  }, []);
+  useEffect(() => {
+    if (ref.current) {
+      turnstile.remove();
+      turnstile.render(ref.current, {
+        sitekey: "0x4AAAAAAA8rbrKZhit0xcFU",
+        size: "flexible",
+        theme: "light",
+        callback: function(token2) {
+          setToken(token2);
+          onChange?.({ target: { value: token2 } });
+        },
+        "error-callback": function(args) {
+          console.log(args);
+        }
+      });
+    }
+  }, [ref.current]);
+  useEffect(() => {
+    if (error) turnstile.reset();
+  }, [error]);
+  return isHydrated ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("div", { ref }),
+    !token && /* @__PURE__ */ jsx(
+      "input",
+      {
+        required: true,
+        className: "pointer-events-none w-full h-[1px] p-0 border-none focus:outline-none text-[0px] text-white -!my-4"
+      }
+    )
+  ] }) : null;
+}
+
+const { TURNSTILE_SECRET_KEY: secretKey, TURNSTILE_VERIFY_URL: verifyUrl } =
+  process.env;
+
+async function challenge({ form }) {
+  const token = form.get("cf-turnstile-response");
+
+  try {
+    const res = await fetch(verifyUrl, {
+      method: "POST",
+      body: JSON.stringify({
+        secret: secretKey,
+        response: token,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await res.json();
+    // console.log(token, data);
+
+    if (data.success) return true;
+    return { error: "Turnstile verification failed" };
+  } catch (error) {
+    console.log("turnstile.challenge", error?.message);
+    return { error: "Error verifying Turnstile token" };
+  }
+}
+
+function cn(...inputs) {
+  return twMerge(clsx(inputs))
+}
+
+function SelectField({ ...props }) {
+  return /* @__PURE__ */ jsxs("div", { className: cn("grid gap-1.5", props?.className), children: [
+    props?.label && /* @__PURE__ */ jsx(Label, { children: props.label }),
+    /* @__PURE__ */ jsxs(
+      Select,
+      {
+        name: props?.name,
+        required: props?.required,
+        onValueChange: props?.onValueChange,
+        defaultValue: props?.defaultValue,
+        children: [
+          /* @__PURE__ */ jsx(SelectTrigger, { className: "bg-white shadow-none", children: /* @__PURE__ */ jsx(SelectValue, { placeholder: props?.placeholder }) }),
+          /* @__PURE__ */ jsx(SelectContent, { children: /* @__PURE__ */ jsxs(SelectGroup, { children: [
+            props?.selectLabel && /* @__PURE__ */ jsx(SelectLabel, { children: props.selectLabel }),
+            props?.items.map((item, index) => /* @__PURE__ */ jsx(SelectItem, { value: item.value, children: item.label }, index))
+          ] }) })
+        ]
+      }
+    ),
     props?.error && /* @__PURE__ */ jsx("span", { className: "text-xs text-red-500", children: props.error })
   ] });
 }
+
+const schema$4 = Joi.object({
+  email: Joi.string().email().required().label("Email"),
+  password: Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password"),
+  firstName: Joi.string().required().label("First name"),
+  lastName: Joi.string().required().label("Last name"),
+  phone: Joi.string().regex(/^[0-9]{10}$/).messages({ "string.pattern.base": `Phone number must have 10 digits.` }).required(),
+  fields: Joi.object({
+    association: Joi.string().required().label("Association"),
+    priceKey: Joi.string().allow(null).optional().label("Price key")
+  })
+});
+async function loader$o({ request }) {
+  return Response.json(vars.client);
+}
+async function action$i({ request }) {
+  const url = new URL(request.url);
+  const priceKey = url.searchParams.get("priceKey");
+  const form = await request.formData();
+  const email = form.get("email");
+  const password = form.get("password");
+  const repassword = form.get("repassword");
+  const firstName = form.get("firstName");
+  const lastName = form.get("lastName");
+  const phone = form.get("phone");
+  const association = form.get("association");
+  const data = { email, password, firstName, lastName, phone, fields: { association, priceKey } };
+  if (process.env.NODE_ENV === "production") {
+    const challenge$1 = await challenge({ form });
+    if (challenge$1.error)
+      return { error: true, message: { title: "Fill the Chaptcha!" } };
+  }
+  const validate = schema$4.validate(data, { abortEarly: false });
+  if (validate?.error)
+    return {
+      error: true,
+      message: { title: validate.error.details[0].message }
+    };
+  if (!repassword || password !== repassword)
+    return {
+      error: true,
+      message: { title: "Passwords don't match!" }
+    };
+  const signup = await register(data);
+  if (signup?.error)
+    return {
+      error: true,
+      message: { title: signup.error }
+    };
+  return {
+    message: { title: "Signup completed! Check your email to begin" }
+  };
+}
+function Signup() {
+  const ldata = useLoaderData();
+  const adata = useActionData();
+  const { state } = useNavigation();
+  const formRef = useRef();
+  useEffect(() => {
+    if (state === "loading") formRef.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref: formRef, method: "post", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "email",
+        name: "email",
+        label: "Email"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "password",
+        name: "password",
+        label: "Password",
+        info: "At least 8 characters, with a special character, uppercase and lowercase letters, and numbers.",
+        genPass: true,
+        togglePass: true
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "password",
+        name: "repassword",
+        label: "Repeat Password",
+        togglePass: true
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "grid grid-cols-2 gap-4", children: [
+      /* @__PURE__ */ jsx(
+        InputField,
+        {
+          required: true,
+          type: "text",
+          name: "firstName",
+          label: "First name"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        InputField,
+        {
+          required: true,
+          type: "text",
+          name: "lastName",
+          label: "Last name"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        InputField,
+        {
+          required: true,
+          type: "tel",
+          name: "phone",
+          label: "Phone"
+        }
+      ),
+      /* @__PURE__ */ jsx(SelectField, { required: true, name: "association", label: "Association", items: associations.map((i) => ({ label: i, value: i })) })
+    ] }),
+    ldata?.envs?.isProd && /* @__PURE__ */ jsx(Turnstile, { error: adata?.errorType === "challenge" ? adata.message : null }),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Register now",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: adata?.error ? "error" : "success",
+        message: adata?.message
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$i,
+  default: Signup,
+  loader: loader$o
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const schema$3 = Joi.string().email().required().label("Email");
+async function loader$n({ request }) {
+  return Response.json(vars.client);
+}
+async function action$h({ request }) {
+  const form = await request.formData();
+  const email = form.get("email");
+  if (process.env.NODE_ENV === "production") {
+    const challenge$1 = await challenge({ form });
+    if (challenge$1.error)
+      return { error: true, message: challenge$1.error, errorType: "challenge" };
+  }
+  const validate = schema$3.validate(email);
+  if (validate?.error)
+    return {
+      error: true,
+      message: { title: validate.error.details[0].message }
+    };
+  const remember$1 = await remember(email);
+  if (!remember$1)
+    return {
+      error: true,
+      message: { title: "Email not found!" }
+    };
+  return {
+    message: { title: "Check your email" }
+  };
+}
+function Reset$1() {
+  const ldata = useLoaderData();
+  const adata = useActionData();
+  const { state } = useNavigation();
+  const ref = useRef();
+  useEffect(() => {
+    if (state === "loading") ref.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref, method: "post", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "email",
+        name: "email",
+        label: "Email"
+      }
+    ),
+    ldata?.envs?.isProd && /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: adata?.errorType === "challenge" ? adata.message : null
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Reset Password",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: adata?.error ? "error" : "success",
+        message: adata?.message
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$h,
+  default: Reset$1,
+  loader: loader$n
+}, Symbol.toStringTag, { value: 'Module' }));
 
 const Checkbox = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   CheckboxPrimitive.Root,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "peer h-4 w-4 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
       className
     ),
@@ -2162,7 +3612,7 @@ const Checkbox = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__
     children: /* @__PURE__ */ jsx(
       CheckboxPrimitive.Indicator,
       {
-        className: cn("flex items-center justify-center text-current"),
+        className: cn$1("flex items-center justify-center text-current"),
         children: /* @__PURE__ */ jsx(CheckIcon, { className: "h-4 w-4" })
       }
     )
@@ -2195,18 +3645,18 @@ function CheckboxField({ setValue, error, ...props }) {
   ] });
 }
 
-const Class$2 = "Setting";
+const Class$1 = "Setting";
 
-async function create$2(user, args) {
+async function create(user, args) {
   try {
-    const Setting = Parse.Object.extend(Class$2);
+    const Setting = Parse.Object.extend(Class$1);
     const setting = new Setting();
     return await setting.save(
       {
         user: pointerObject(models.user, user.objectId),
         ...args,
       },
-      { sessionToken: user.sessionToken }
+      { useMasterKey: true }
     );
   } catch (error) {
     console.log("setting.create", error.message);
@@ -2214,9 +3664,9 @@ async function create$2(user, args) {
   }
 }
 
-async function read$3(user) {
+async function read$1(user) {
   try {
-    const query = new Parse.Query(Class$2);
+    const query = new Parse.Query(Class$1);
     query.equalTo("user", user.objectId);
     const data = await query.find({ sessionToken: user.sessionToken });
     return data[0];
@@ -2226,9 +3676,9 @@ async function read$3(user) {
   }
 }
 
-async function update$1(user, args) {
+async function update(user, args) {
   try {
-    const Setting = Parse.Object.extend(Class$2);
+    const Setting = Parse.Object.extend(Class$1);
     const setting = new Setting();
     return await setting.save(args, { sessionToken: user.sessionToken });
   } catch (error) {
@@ -2238,22 +3688,22 @@ async function update$1(user, args) {
 }
 
 async function upsert(user, args) {
-  const setting = await read$3(user);
+  const setting = await read$1(user);
   if (setting)
-    return await update$1(user, {
+    return await update(user, {
       objectId: setting.id,
       ...args,
     });
-  return await create$2(user, args);
+  return await create(user, args);
 }
 
-const schema = Joi.object({
+const schema$2 = Joi.object({
   fullName: Joi.string().required(),
   termsConditions: Joi.string().required(),
   privacyPolicy: Joi.string().required(),
   appRules: Joi.string().required()
 });
-async function loader$i({ request }) {
+async function loader$m({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   const setting = session.get("setting");
@@ -2262,7 +3712,7 @@ async function loader$i({ request }) {
   if (setting?.consent) return redirect$2("/app");
   return null;
 }
-async function action$d({ request }) {
+async function action$g({ request }) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
   console.log("app.consent.action", user.objectId);
@@ -2273,7 +3723,7 @@ async function action$d({ request }) {
   const appRules = formData.get("appRules");
   const consent = { fullName, termsConditions, privacyPolicy, appRules };
   try {
-    await schema.validateAsync(consent, { abortEarly: false });
+    await schema$2.validateAsync(consent, { abortEarly: false });
     const setting = await upsert(user, { consent });
     session.set("setting", setting);
     return redirect$2("/app", {
@@ -2367,11 +3817,97 @@ function Consent() {
   ] });
 }
 
-const route3 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$d,
+  action: action$g,
   default: Consent,
-  loader: loader$i
+  loader: loader$m
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const schema$1 = Joi.string().email().required().label("Email");
+async function loader$l({ request }) {
+  const url = new URL(request.url);
+  const token = url.searchParams.get("token");
+  const username = url.searchParams.get("username");
+  if (username && token) {
+    const confirm$1 = await confirm({ username, token });
+    if (!confirm$1?.error) throw redirect$1("/auth/login");
+  }
+  return Response.json(vars.client);
+}
+async function action$f({ request }) {
+  const form = await request.formData();
+  const email = form.get("email");
+  if (process.env.NODE_ENV === "production") {
+    const challenge$1 = await challenge({ form });
+    if (challenge$1.error)
+      return { error: true, message: challenge$1.error, errorType: "challenge" };
+  }
+  const validate = schema$1.validate(email);
+  if (validate?.error)
+    return {
+      error: true,
+      message: validate.error.details[0].message
+    };
+  return await verify(email);
+}
+function Verify() {
+  const ldata = useLoaderData();
+  const adata = useActionData();
+  const [alert, setAlert] = useState(null);
+  const { state } = useNavigation();
+  const ref = useRef();
+  const [searchParams] = useSearchParams();
+  searchParams.get("email");
+  useEffect(() => {
+    setAlert({
+      error: ldata?.error ?? adata?.error,
+      message: ldata?.message ?? adata?.message
+    });
+  }, [ldata, adata]);
+  useEffect(() => {
+    if (state === "loading") ref.current.reset();
+  }, [state]);
+  return /* @__PURE__ */ jsxs(Form$1, { ref, method: "post", action: "/auth/verify", className: "space-y-4", children: [
+    /* @__PURE__ */ jsx(
+      InputField,
+      {
+        required: true,
+        type: "email",
+        name: "email",
+        label: "Email"
+      }
+    ),
+    ldata?.envs?.isProd && /* @__PURE__ */ jsx(
+      Turnstile,
+      {
+        error: adata?.errorType === "challenge" ? adata.message : null
+      }
+    ),
+    /* @__PURE__ */ jsx(
+      SubmitField,
+      {
+        label: "Verify email",
+        loader: state === "submitting" || state === "loading",
+        className: "w-full"
+      }
+    ),
+    alert?.message && /* @__PURE__ */ jsx(
+      AlertField,
+      {
+        variant: alert?.error ? "error" : "success",
+        message: { title: alert?.message }
+      }
+    ),
+    /* @__PURE__ */ jsx("div", { className: "text-sm p-8 text-center", children: /* @__PURE__ */ jsx(Link, { to: "/auth/login", children: "Back to Login" }) })
+  ] });
+}
+
+const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$f,
+  default: Verify,
+  loader: loader$l
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function isMobileServer(request) {
@@ -2386,97 +3922,6 @@ function isMobileServer(request) {
   return is ? true : false;
 }
 
-const { TURNSTILE_SECRET_KEY: secretKey, TURNSTILE_VERIFY_URL: verifyUrl } =
-  process.env;
-
-async function challenge({ form }) {
-  const token = form.get("cf-turnstile-response");
-
-  try {
-    const res = await fetch(verifyUrl, {
-      method: "POST",
-      body: JSON.stringify({
-        secret: secretKey,
-        response: token,
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await res.json();
-    // console.log(token, data);
-
-    if (data.success) return true;
-    return { error: "Turnstile verification failed" };
-  } catch (error) {
-    console.log("turnstile.challenge", error?.message);
-    return { error: "Error verifying Turnstile token" };
-  }
-}
-
-async function remember(email) {
-  try {
-    const remember = await Parse.User.requestPasswordReset(email);
-    console.log("parse.auth.remember", remember);
-    return remember;
-  } catch (error) {
-    console.log("parse.auth.remember.error", error.code, error.message);
-  }
-}
-
-async function reset({ password, username, token }) {
-  const body = new URLSearchParams({
-    new_password: password,
-    confirm_new_password: password,
-    username,
-    token,
-    "utf-8": "✓",
-  });
-
-  try {
-    const data = await fetch(
-      `${vars.parse.serverURL}/apps/${vars.parse.appId}/request_password_reset`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body,
-      }
-    );
-
-    // console.log("parse.auth.reset", data);
-    const url = new URLSearchParams(data?.url);
-
-    const success = data?.url.includes("success");
-    const failed = data?.url.includes("failed");
-    const error = url.get("error");
-
-    if (error) return false;
-    return true;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-async function login(username, password) {
-  try {
-    return await Parse.User.logIn(username, password);
-  } catch (error) {
-    console.log("parse:auth:login", error.message);
-    return { error: error.message };
-  }
-}
-
-async function logout$1() {
-  try {
-    return await Parse.User.logOut();
-  } catch (error) {
-    console.log("parse:auth:logout", error.message);
-    // return { error: error.message };
-  }
-}
-
 let authenticator = new Authenticator();
 
 authenticator.use(
@@ -2484,9 +3929,11 @@ authenticator.use(
     let email = form.get("email");
     let password = form.get("password");
 
-    const challenge$1 = await challenge({ form });
-    if (challenge$1.error)
-      return { error: challenge$1.error, errorType: "challenge" };
+    if (process.env.NODE_ENV === "production") {
+      const challenge$1 = await challenge({ form });
+      if (challenge$1.error)
+        return { error: challenge$1.error, errorType: "challenge" };
+    }
 
     return await login(email, password);
   }),
@@ -2497,48 +3944,7 @@ async function logout() {
   await logout$1();
 }
 
-let isHydrating$1 = true;
-function Turnstile({ onChange, error }) {
-  const [isHydrated, setIsHydrated] = useState(!isHydrating$1);
-  const [token, setToken] = useState(null);
-  const ref = useRef();
-  useEffect(() => {
-    isHydrating$1 = false;
-    setIsHydrated(true);
-  }, []);
-  useEffect(() => {
-    if (ref.current) {
-      turnstile.remove();
-      turnstile.render(ref.current, {
-        sitekey: "0x4AAAAAAA8rbrKZhit0xcFU",
-        size: "flexible",
-        theme: "light",
-        callback: function(token2) {
-          setToken(token2);
-          onChange?.({ target: { value: token2 } });
-        },
-        "error-callback": function(args) {
-          console.log(args);
-        }
-      });
-    }
-  }, [ref.current]);
-  useEffect(() => {
-    if (error) turnstile.reset();
-  }, [error]);
-  return isHydrated ? /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("div", { ref }),
-    !token && /* @__PURE__ */ jsx(
-      "input",
-      {
-        required: true,
-        className: "pointer-events-none w-full h-[1px] p-0 border-none focus:outline-none text-[0px] text-white -!my-4"
-      }
-    )
-  ] }) : null;
-}
-
-async function loader$h({ request }) {
+async function loader$k({ request }) {
   console.log("auth.login.loader");
   if (isMobileServer(request)) return redirect$1("/mobile");
   const session = await getSession(request.headers.get("cookie"));
@@ -2546,9 +3952,9 @@ async function loader$h({ request }) {
   const url = new URL(request.url);
   const from = url.searchParams.get("from");
   if (user) throw redirect$1(decodeURIComponent(from) ?? "/app");
-  return null;
+  return Response.json(vars.client);
 }
-async function action$c({ request }) {
+async function action$e({ request }) {
   console.log("auth.login.action");
   const session = await getSession(request.headers.get("cookie"));
   let user;
@@ -2568,6 +3974,7 @@ async function action$c({ request }) {
   });
 }
 function Login() {
+  const ldata = useLoaderData();
   const actionData = useActionData();
   const { state } = useNavigation();
   return /* @__PURE__ */ jsxs(Form$1, { method: "post", className: "grid gap-4", children: [
@@ -2581,7 +3988,7 @@ function Login() {
         /* @__PURE__ */ jsx(
           Link,
           {
-            to: "/auth/reset",
+            to: "/auth/remember",
             className: "ml-auto inline-block-- text-sm underline",
             children: "Forgot your password?"
           }
@@ -2589,7 +3996,7 @@ function Login() {
       ] }),
       /* @__PURE__ */ jsx(Input, { name: "password", type: "password", required: true })
     ] }),
-    /* @__PURE__ */ jsx(
+    ldata?.envs?.isProd && /* @__PURE__ */ jsx(
       Turnstile,
       {
         error: actionData?.errorType === "challenge" ? actionData.error : null
@@ -2614,8 +4021,7 @@ function Login() {
     /* @__PURE__ */ jsxs(
       "a",
       {
-        href: "https://competencybasedassessment.ca/cba-intake-form/",
-        target: "_blank",
+        href: "/auth/register",
         className: "mt-4 text-center text-sm flex gap-4 justify-center border border-primary rounded-md py-1.5 text-primary",
         children: [
           "Don't have an account?",
@@ -2626,95 +4032,49 @@ function Login() {
   ] });
 }
 
-const route4 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$c,
+  action: action$e,
   default: Login,
-  loader: loader$h
+  loader: loader$k
 }, Symbol.toStringTag, { value: 'Module' }));
 
-function AlertField({ message, variant }) {
-  if (!message) return null;
-  return /* @__PURE__ */ jsxs(Alert, { className: cn("px-2 pt-2.5 pb-1.5", variants[variant]), children: [
-    /* @__PURE__ */ jsx(Info, { className: "!left-2 !top-2 h-4 w-4" }),
-    /* @__PURE__ */ jsx(AlertTitle, { children: message.title }),
-    /* @__PURE__ */ jsx(AlertDescription, { className: "text-xs", children: message.description })
-  ] });
+const schema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
+async function loader$j({ request }) {
+  return Response.json(vars.client);
 }
-const variants = {
-  error: "text-red-500 [&>svg]:text-red-500 border-red-500",
-  success: "text-green-500 [&>svg]:text-green-500 border-green-500"
-};
-
-const emailSchema = Joi.string().email().required().label("Email");
-const passwordSchema = Joi.string().min(8).regex(/[A-Z]/, "upper-case").regex(/[a-z]/, "lower-case").regex(/[^\w]/, "special character").regex(/[0-9]/, "number").required().label("Password");
-async function loader$g({ request }) {
-  const url = new URL(request.url);
-  const link = url.searchParams.get("link");
-  const token = url.searchParams.get("token");
-  const username = url.searchParams.get("username");
-  if (link) return redirect$1(`/auth/reset?token=${token}&username=${username}`);
-  return null;
-}
-async function action$b({ request }) {
+async function action$d({ request }) {
   const url = new URL(request.url);
   const token = url.searchParams.get("token");
   const username = url.searchParams.get("username");
   const form = await request.formData();
-  const email = form.get("email");
   const password = form.get("password");
-  const challenge$1 = await challenge({ form });
-  if (challenge$1.error)
-    return { error: true, message: challenge$1.error, errorType: "challenge" };
-  if (token) {
-    if (!password)
-      return {
-        error: true,
-        message: { title: "Password is required!" }
-      };
-    const validate2 = passwordSchema.validate(password, { abortEarly: false });
-    if (validate2?.error)
-      return {
-        error: true,
-        message: { title: validate2.error.details[0].message }
-      };
-    const reset$1 = await reset({ password, username, token });
-    if (!reset$1)
-      return {
-        error: true,
-        message: { title: "Email or token invalid, chack again!" }
-      };
-    return {
-      message: { title: "Your password has been changed" }
-    };
+  if (process.env.NODE_ENV === "production") {
+    const challenge$1 = await challenge({ form });
+    if (challenge$1.error)
+      return { error: true, message: challenge$1.error, errorType: "challenge" };
   }
-  if (!email)
-    return {
-      error: true,
-      message: { title: "Email is required!" }
-    };
-  const validate = emailSchema.validate(email);
+  const validate = schema.validate(password, { abortEarly: false });
   if (validate?.error)
     return {
       error: true,
       message: { title: validate.error.details[0].message }
     };
-  const remember$1 = await remember(email);
-  if (!remember$1)
+  const reset$1 = await reset({ password, username, token });
+  if (!reset$1)
     return {
       error: true,
-      message: { title: "Email not found!" }
+      message: { title: "Email or token invalid, try again!" }
     };
   return {
-    message: { title: "Check your email" }
+    message: { title: "Your password has been changed" }
   };
 }
 function Reset() {
+  const ldata = useLoaderData();
   const adata = useActionData();
   const { state } = useNavigation();
   const formRef = useRef();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token");
   useEffect(() => {
     if (state === "loading") formRef.current.reset();
   }, [state]);
@@ -2723,12 +4083,12 @@ function Reset() {
       InputField,
       {
         required: true,
-        type: token ? "password" : "email",
-        name: token ? "password" : "email",
-        label: token ? "New password" : "Email"
+        type: "password",
+        name: "password",
+        label: "New password"
       }
     ),
-    /* @__PURE__ */ jsx(
+    ldata?.envs?.isProd && /* @__PURE__ */ jsx(
       Turnstile,
       {
         error: adata?.errorType === "challenge" ? adata.message : null
@@ -2737,7 +4097,7 @@ function Reset() {
     /* @__PURE__ */ jsx(
       SubmitField,
       {
-        label: token ? "Reset password" : "Remember password",
+        label: "Reset password",
         loader: state === "submitting" || state === "loading",
         className: "w-full"
       }
@@ -2753,11 +4113,305 @@ function Reset() {
   ] });
 }
 
-const route5 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$b,
+  action: action$d,
   default: Reset,
-  loader: loader$g
+  loader: loader$j
+}, Symbol.toStringTag, { value: 'Module' }));
+
+/**
+ * Transcribe audio using OpenAI Whisper API with whisper-1 model
+ * @param {File|Blob} audioFile - Audio file to transcribe
+ * @param {Object} user - User object
+ * @param {Object} thread - Thread object (optional, for token tracking)
+ * @param {number} duration - Audio duration in seconds (optional, more accurate if provided)
+ * @returns {Promise<{text: string, usage: {input: number, output: number, total: number}, duration: number}>}
+ */
+async function transcribe({ audioFile, user, thread, duration }) {
+  try {
+    // Create a File object if it's a Blob
+    const file = audioFile instanceof File 
+      ? audioFile 
+      : new File([audioFile], "audio.webm", { type: audioFile.type || "audio/webm" });
+
+    // Validate file size - OpenAI Whisper API has a 25MB limit
+    const maxSizeBytes = 25 * 1024 * 1024; // 25MB in bytes
+    if (file.size > maxSizeBytes) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      throw new Error(`Audio file is too large (${sizeMB}MB). Maximum size is 25MB. Please record a shorter audio clip or reduce audio quality.`);
+    }
+
+    // Validate file size is not empty or too small (likely silence/noise)
+    const minSizeBytes = 2048; // 2KB minimum (aligned with client-side validation)
+    if (file.size === 0) {
+      throw new Error('Audio file is empty. Please record some audio before submitting.');
+    }
+    
+    if (file.size < minSizeBytes) {
+      const sizeKB = (file.size / 1024).toFixed(2);
+      console.warn(`Audio file too small (${sizeKB}KB), likely silence or noise`);
+      throw new Error('Audio recording is too small. Please speak clearly and try again.');
+    }
+    
+    console.log('Audio file received:', {
+      size: `${(file.size / 1024).toFixed(2)}KB`,
+      type: file.type,
+      providedDuration: duration
+    });
+
+    // Get audio duration - use provided duration if available, otherwise estimate
+    const audioDuration = duration && duration > 0 
+      ? duration 
+      : await getAudioDuration(file);
+
+    // Ensure duration is valid
+    const finalDuration = Math.max(0.1, Math.min(audioDuration, 600)); // Min 0.1s, Max 10min
+
+    // Transcribe audio using OpenAI Whisper API with whisper-1 model
+    let transcription;
+    try {
+      transcription = await openai.audio.transcriptions.create({
+        file: file,
+        model: "whisper-1",
+        language: "en", // Optional: specify language for better accuracy
+      });
+    } catch (apiError) {
+      // Handle specific OpenAI API errors
+      if (apiError.code === 'ECONNRESET' || apiError.cause?.code === 'ECONNRESET') {
+        throw new Error('Connection to OpenAI was reset. Please check your network connection, firewall settings, or try again.');
+      }
+      if (apiError.code === 'ETIMEDOUT' || apiError.cause?.code === 'ETIMEDOUT') {
+        throw new Error('Connection to OpenAI timed out. The audio file may be too large or your network is slow. Please try again.');
+      }
+      // Re-throw the original error for other cases
+      throw apiError;
+    }
+
+    let text = transcription.text;
+    
+    // Detect and filter common Whisper hallucinations (silence produces these)
+    const commonHallucinations = [
+      'you',
+      'thank you',
+      'thanks for watching',
+      'bye',
+      'goodbye',
+      'thank you for watching',
+      'please subscribe',
+      'like and subscribe',
+      'you you you',
+      'uh',
+      'um',
+      'hmm',
+      '...',
+      'music',
+      '[music]',
+      '[silence]',
+      '[inaudible]'
+    ];
+    
+    const textLower = text.toLowerCase().trim();
+    const isHallucination = commonHallucinations.some(phrase => 
+      textLower === phrase || textLower.startsWith(phrase + '.') || textLower.startsWith(phrase + ',')
+    );
+    
+    if (isHallucination) {
+      console.warn('⚠️ Detected Whisper hallucination:', text);
+      console.warn('Audio likely contains only silence or unclear speech');
+      throw new Error('No clear speech detected. Please speak clearly into the microphone and try again.');
+    }
+    
+    // Also check for very short transcriptions (likely hallucinations)
+    if (text.trim().length < 2) {
+      console.warn('⚠️ Transcription too short:', text);
+      throw new Error('No speech detected. Please speak clearly and try again.');
+    }
+
+    // Calculate token usage for audio transcription
+    // Based on OpenAI Whisper API pricing: $0.006 per minute = $0.0001 per second
+    // Token calculation: Based on actual OpenAI billing model
+    // whisper-1 uses approximately 150 tokens per second of audio
+    const inputTokens = estimateAudioTokens(finalDuration);
+    
+    // Output tokens: Transcribed text tokens
+    // More accurate estimation using tiktoken-like calculation
+    // Average: ~0.75 tokens per word, or ~1 token per 4 characters
+    const outputTokens = estimateTextTokens(text);
+    
+    const usage = {
+      input: inputTokens,
+      output: outputTokens,
+      total: inputTokens + outputTokens,
+    };
+
+    console.log("Audio transcription usage:", {
+      duration: finalDuration,
+      durationSource: duration ? "client-provided" : "estimated",
+      textLength: text.length,
+      wordCount: text.split(/\s+/).length,
+      usage,
+    });
+
+    // Update usage if thread is provided
+    if (thread && user) {
+      await updateUsage(user, thread, usage);
+    }
+
+    return {
+      text,
+      usage,
+      duration: finalDuration,
+    };
+  } catch (error) {
+    console.error("Audio transcription error:", error);
+    throw new Error(`Transcription failed: ${error.message}`);
+  }
+}
+
+/**
+ * Get audio duration in seconds
+ * Since we're server-side, we estimate based on file size
+ * This is a fallback when client doesn't provide duration
+ * @param {File|Blob} audioFile - Audio file
+ * @returns {Promise<number>} Duration in seconds
+ */
+async function getAudioDuration(audioFile) {
+  // Server-side: estimate duration based on file size and format
+  // For WebM/Opus audio: typical bitrates vary
+  // - Low quality: ~32 kbps = ~4 KB per second
+  // - Medium quality: ~64 kbps = ~8 KB per second
+  // - High quality: ~128 kbps = ~16 KB per second
+  // Using adaptive estimation based on file size
+  
+  const sizeBytes = audioFile.size;
+  const sizeKB = sizeBytes / 1024;
+  
+  // Determine likely bitrate based on file size patterns
+  // Smaller files might be lower quality, larger files might be higher quality
+  let bytesPerSecond;
+  
+  if (sizeKB < 100) {
+    // Very small files: assume lower bitrate (~32-48 kbps)
+    bytesPerSecond = 4000; // ~4 KB/s
+  } else if (sizeKB < 500) {
+    // Medium files: assume medium bitrate (~48-64 kbps)
+    bytesPerSecond = 6000; // ~6 KB/s
+  } else {
+    // Larger files: assume higher bitrate (~64-96 kbps)
+    bytesPerSecond = 8000; // ~8 KB/s
+  }
+  
+  // Calculate estimated duration
+  const estimatedDuration = sizeBytes / bytesPerSecond;
+  
+  // Minimum 0.1 seconds, maximum reasonable limit of 10 minutes
+  return Math.max(0.1, Math.min(estimatedDuration, 600));
+}
+
+/**
+ * Estimate token usage from audio duration
+ * Based on OpenAI Whisper API pricing: $0.006 per minute = $0.0001 per second
+ * 
+ * OpenAI's token calculation for audio:
+ * - whisper-1: Processes audio at ~150 tokens per second
+ * - This is based on the actual billing model where you're charged per minute
+ * - Rounded to the nearest second for billing
+ * 
+ * @param {number} durationSeconds - Audio duration in seconds
+ * @returns {number} Estimated input tokens
+ */
+function estimateAudioTokens(durationSeconds) {
+  // OpenAI Whisper API billing: $0.006 per minute = $0.0001 per second
+  // Token calculation: Approximately 150 tokens per second of audio
+  // This is based on the token-to-cost ratio for whisper-1
+  
+  // Round duration to nearest second (as OpenAI does for billing)
+  const roundedDuration = Math.round(durationSeconds);
+  
+  // Calculate tokens: ~150 tokens per second
+  // Minimum 1 token even for very short audio (< 1 second)
+  const tokens = Math.max(1, Math.ceil(roundedDuration * 150));
+  
+  return tokens;
+}
+
+/**
+ * Estimate tokens from transcribed text
+ * More accurate than simple character division
+ * @param {string} text - Transcribed text
+ * @returns {number} Estimated output tokens
+ */
+function estimateTextTokens(text) {
+  if (!text || text.length === 0) return 0;
+  
+  // Method 1: Word-based estimation (more accurate)
+  // Average English word: ~1.3 tokens
+  // This accounts for punctuation, spaces, and word boundaries
+  const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+  const wordBasedTokens = Math.ceil(words.length * 1.3);
+  
+  // Method 2: Character-based estimation (fallback)
+  // Approximately 1 token per 4 characters (including spaces)
+  const charBasedTokens = Math.ceil(text.length / 4);
+  
+  // Use the average of both methods for better accuracy
+  // This accounts for varying text complexity
+  const estimatedTokens = Math.ceil((wordBasedTokens + charBasedTokens) / 2);
+  
+  return Math.max(1, estimatedTokens); // Minimum 1 token
+}
+
+async function action$c({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  const thread = session.get("thread");
+  if (!user) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  try {
+    const formData = await request.formData();
+    const audioFile = formData.get("audio");
+    const durationParam = formData.get("duration");
+    if (!audioFile || !(audioFile instanceof File)) {
+      return Response.json(
+        { error: "No audio file provided" },
+        { status: 400 }
+      );
+    }
+    const duration = durationParam ? parseFloat(durationParam) : null;
+    const result = await transcribe({
+      audioFile,
+      user,
+      thread,
+      duration
+      // Pass accurate duration from client
+    });
+    return Response.json(
+      {
+        text: result.text,
+        usage: result.usage,
+        duration: result.duration
+        // Return duration for debugging
+      },
+      {
+        headers: {
+          "Set-Cookie": await commitSession(session)
+        }
+      }
+    );
+  } catch (error) {
+    console.error("Audio transcription route error:", error);
+    return Response.json(
+      { error: error.message || "Transcription failed" },
+      { status: 500 }
+    );
+  }
+}
+
+const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Dialog = DialogPrimitive.Root;
@@ -2767,7 +4421,7 @@ const DialogOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__P
   DialogPrimitive.Overlay,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     ),
@@ -2781,7 +4435,7 @@ const DialogContent = React.forwardRef(({ className, children, ...props }, ref) 
     DialogPrimitive.Content,
     {
       ref,
-      className: cn(
+      className: cn$1(
         "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
         className
       ),
@@ -2809,7 +4463,7 @@ const DialogHeader = ({
 }) => /* @__PURE__ */ jsx(
   "div",
   {
-    className: cn("flex flex-col space-y-1.5 text-center sm:text-left", className),
+    className: cn$1("flex flex-col space-y-1.5 text-center sm:text-left", className),
     ...props
   }
 );
@@ -2820,7 +4474,7 @@ const DialogFooter = ({
 }) => /* @__PURE__ */ jsx(
   "div",
   {
-    className: cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
+    className: cn$1("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
     ...props
   }
 );
@@ -2829,7 +4483,7 @@ const DialogTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   DialogPrimitive.Title,
   {
     ref,
-    className: cn("text-lg font-semibold leading-none tracking-tight", className),
+    className: cn$1("text-lg font-semibold leading-none tracking-tight", className),
     ...props
   }
 ));
@@ -2838,7 +4492,7 @@ const DialogDescription = React.forwardRef(({ className, ...props }, ref) => /* 
   DialogPrimitive.Description,
   {
     ref,
-    className: cn("text-sm text-muted-foreground", className),
+    className: cn$1("text-sm text-muted-foreground", className),
     ...props
   }
 ));
@@ -3136,11 +4790,7 @@ const resources = {
   },
 };
 
-customAlphabet("1234567890abcdefghABCDEFGH", 8);
-
-const getPass = () => nanoid();
-
-async function action$a({ request }) {
+async function action$b({ request }) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
@@ -3193,13 +4843,66 @@ function DashUserCreate() {
   );
 }
 
-const route6 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  action: action$a,
+  action: action$b,
   default: DashUserCreate
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$f({ request }) {
+async function loader$i({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  if (!user) return redirect$1("/auth/login");
+
+  // Check if this is a request for messages
+  const url = new URL(request.url);
+  if (url.pathname === "/draft-assessment/messages") {
+    const messages = await getMessages(user);
+    return Response.json(messages, {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    });
+  }
+
+  return redirect$1("/app");
+}
+
+async function action$a({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  if (!user) return redirect$1("/auth/login");
+
+  const body = await request.json();
+  const { competencyItem } = body;
+  const competency = `${competencyItem?.competencyGroup?.order}.${competencyItem?.order}`;
+
+  const plan = await check$1(request, false, competency);
+  if (plan?.expired) {
+    session.flash("plan", plan);
+    return Response.json(
+      {
+        redirected: true,
+        url: plan.url,
+      },
+      {
+        headers: {
+          "Set-Cookie": await commitSession(session),
+        },
+      }
+    );
+  }
+
+  return await sync$2(request, body);
+}
+
+const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  action: action$a,
+  loader: loader$i
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$h({ request }) {
   return redirect$1("/app");
 }
 async function action$9({ request, params }) {
@@ -3209,7 +4912,7 @@ async function action$9({ request, params }) {
   if (!user) return redirect$1("/auth/login");
   const action2 = params.action;
   let body;
-  if (action2 === "create" || action2 === "update") {
+  if (action2 === "create") {
     body = await request.json();
     const competency = body.competency;
     const $competency = `${competency?.competencyGroup?.order}.${competency?.order}`;
@@ -3228,6 +4931,8 @@ async function action$9({ request, params }) {
         }
       );
     }
+  } else if (action2 === "update") {
+    body = await request.json();
   }
   let result;
   const thread = session.get("thread");
@@ -3244,7 +4949,8 @@ async function action$9({ request, params }) {
     );
   }
   if (action2 === "get") {
-    result = await read$4(user, { thread });
+    const outcomes = await read$4(user, { thread });
+    result = outcomes ? outcomes.map((o) => o.toJSON ? o.toJSON() : o) : [];
   }
   if (action2 === "update") {
     result = await update$2(
@@ -3268,11 +4974,30 @@ const outcomeSchema = {
   flag: "idle"
 };
 
-const route7 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$9,
-  loader: loader$f,
+  loader: loader$h,
   outcomeSchema
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$g({ request }) {
+  const { link, token, username } = Object.fromEntries(new URL(request.url).searchParams);
+  const type = link.split("/").reverse()[0];
+  switch (type) {
+    case authVars.verifyEmail:
+      console.log("auth.cb", type);
+      return redirect$1(`/auth/verify?username=${username}&token=${token}`);
+    case authVars.requestPassworReset:
+      console.log("auth.cb", type);
+      return redirect$1(`/auth/reset?username=${username}&token=${token}`);
+  }
+  return null;
+}
+
+const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  loader: loader$g
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const THEMES = {
@@ -3296,7 +5021,7 @@ const ChartContainer = React.forwardRef(
       {
         "data-chart": chartId,
         ref,
-        className: cn(
+        className: cn$1(
           "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
           className
         ),
@@ -3362,12 +5087,12 @@ const ChartTooltipContent = React.forwardRef(
       const itemConfig = getPayloadConfigFromPayload(config, item, key);
       const value = !labelKey && typeof label === "string" ? config[label]?.label || label : itemConfig?.label;
       if (labelFormatter) {
-        return /* @__PURE__ */ jsx("div", { className: cn("font-medium", labelClassName), children: labelFormatter(value, payload) });
+        return /* @__PURE__ */ jsx("div", { className: cn$1("font-medium", labelClassName), children: labelFormatter(value, payload) });
       }
       if (!value) {
         return null;
       }
-      return /* @__PURE__ */ jsx("div", { className: cn("font-medium", labelClassName), children: value });
+      return /* @__PURE__ */ jsx("div", { className: cn$1("font-medium", labelClassName), children: value });
     }, [
       label,
       labelFormatter,
@@ -3385,7 +5110,7 @@ const ChartTooltipContent = React.forwardRef(
       "div",
       {
         ref,
-        className: cn(
+        className: cn$1(
           "grid min-w-[8rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
           className
         ),
@@ -3398,7 +5123,7 @@ const ChartTooltipContent = React.forwardRef(
             return /* @__PURE__ */ jsx(
               "div",
               {
-                className: cn(
+                className: cn$1(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
                 ),
@@ -3406,7 +5131,7 @@ const ChartTooltipContent = React.forwardRef(
                   itemConfig?.icon ? /* @__PURE__ */ jsx(itemConfig.icon, {}) : !hideIndicator && /* @__PURE__ */ jsx(
                     "div",
                     {
-                      className: cn(
+                      className: cn$1(
                         "shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]",
                         {
                           "h-2.5 w-2.5": indicator === "dot",
@@ -3424,7 +5149,7 @@ const ChartTooltipContent = React.forwardRef(
                   /* @__PURE__ */ jsxs(
                     "div",
                     {
-                      className: cn(
+                      className: cn$1(
                         "flex flex-1 justify-between leading-none",
                         nestLabel ? "items-end" : "items-center"
                       ),
@@ -3458,7 +5183,7 @@ const ChartLegendContent = React.forwardRef(
       "div",
       {
         ref,
-        className: cn(
+        className: cn$1(
           "flex items-center justify-center gap-4",
           verticalAlign === "top" ? "pb-3" : "pt-3",
           className
@@ -3469,7 +5194,7 @@ const ChartLegendContent = React.forwardRef(
           return /* @__PURE__ */ jsxs(
             "div",
             {
-              className: cn(
+              className: cn$1(
                 "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
               ),
               children: [
@@ -3591,7 +5316,7 @@ function DashOverview() {
 const Box = ({ box, value = 1248, percent = -12.5 }) => /* @__PURE__ */ jsxs(
   "div",
   {
-    className: cn(
+    className: cn$1(
       "p-4 bg-white border rounded-lg flex flex-col gap-2 justify-between relative",
       box.className
     ),
@@ -3643,7 +5368,7 @@ const boxes = {
   }
 };
 
-const route8 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: DashOverview
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -3673,7 +5398,7 @@ function DashSettings() {
   ] }) });
 }
 
-const route9 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$8,
   default: DashSettings
@@ -3683,7 +5408,7 @@ const Avatar = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ *
   AvatarPrimitive.Root,
   {
     ref,
-    className: cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className),
+    className: cn$1("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className),
     ...props
   }
 ));
@@ -3692,7 +5417,7 @@ const AvatarImage = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   AvatarPrimitive.Image,
   {
     ref,
-    className: cn("aspect-square h-full w-full", className),
+    className: cn$1("aspect-square h-full w-full", className),
     ...props
   }
 ));
@@ -3701,7 +5426,7 @@ const AvatarFallback = React.forwardRef(({ className, ...props }, ref) => /* @__
   AvatarPrimitive.Fallback,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex h-full w-full items-center justify-center rounded-full bg-muted",
       className
     ),
@@ -3717,7 +5442,7 @@ const SheetPortal = DialogPrimitive.Portal;
 const SheetOverlay = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   DialogPrimitive.Overlay,
   {
-    className: cn(
+    className: cn$1(
       "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
     ),
@@ -3744,7 +5469,7 @@ const sheetVariants = cva(
 );
 const SheetContent = React.forwardRef(({ side = "right", className, children, ...props }, ref) => /* @__PURE__ */ jsxs(SheetPortal, { children: [
   /* @__PURE__ */ jsx(SheetOverlay, {}),
-  /* @__PURE__ */ jsxs(DialogPrimitive.Content, { ref, className: cn(sheetVariants({ side }), className), ...props, children: [
+  /* @__PURE__ */ jsxs(DialogPrimitive.Content, { ref, className: cn$1(sheetVariants({ side }), className), ...props, children: [
     /* @__PURE__ */ jsxs(
       DialogPrimitive.Close,
       {
@@ -3765,7 +5490,7 @@ const SheetHeader = ({
 }) => /* @__PURE__ */ jsx(
   "div",
   {
-    className: cn("flex flex-col space-y-2 text-center sm:text-left", className),
+    className: cn$1("flex flex-col space-y-2 text-center sm:text-left", className),
     ...props
   }
 );
@@ -3776,7 +5501,7 @@ const SheetFooter = ({
 }) => /* @__PURE__ */ jsx(
   "div",
   {
-    className: cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
+    className: cn$1("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className),
     ...props
   }
 );
@@ -3785,7 +5510,7 @@ const SheetTitle = React.forwardRef(({ className, ...props }, ref) => /* @__PURE
   DialogPrimitive.Title,
   {
     ref,
-    className: cn("text-lg font-semibold text-foreground", className),
+    className: cn$1("text-lg font-semibold text-foreground", className),
     ...props
   }
 ));
@@ -3794,7 +5519,7 @@ const SheetDescription = React.forwardRef(({ className, ...props }, ref) => /* @
   DialogPrimitive.Description,
   {
     ref,
-    className: cn("text-sm text-muted-foreground", className),
+    className: cn$1("text-sm text-muted-foreground", className),
     ...props
   }
 ));
@@ -3849,7 +5574,7 @@ const Toggle = React.forwardRef(
     TogglePrimitive.Root,
     {
       ref,
-      className: cn(toggleVariants({ variant, size, className })),
+      className: cn$1(toggleVariants({ variant, size, className })),
       ...props
     }
   )
@@ -3865,7 +5590,7 @@ const ToggleGroup = React.forwardRef(
     ToggleGroupPrimitive.Root,
     {
       ref,
-      className: cn("flex items-center justify-center gap-1", className),
+      className: cn$1("flex items-center justify-center gap-1", className),
       ...props,
       children: /* @__PURE__ */ jsx(ToggleGroupContext.Provider, { value: { variant, size }, children })
     }
@@ -3879,7 +5604,7 @@ const ToggleGroupItem = React.forwardRef(
       ToggleGroupPrimitive.Item,
       {
         ref,
-        className: cn(
+        className: cn$1(
           toggleVariants({
             variant: context.variant || variant,
             size: context.size || size
@@ -3920,18 +5645,18 @@ const Table = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */
   "table",
   {
     ref,
-    className: cn("w-full caption-bottom text-sm", className),
+    className: cn$1("w-full caption-bottom text-sm", className),
     ...props
   }
 ) }));
 Table.displayName = "Table";
-const TableHeader = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("thead", { ref, className: cn("[&_tr]:border-b", className), ...props }));
+const TableHeader = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx("thead", { ref, className: cn$1("[&_tr]:border-b", className), ...props }));
 TableHeader.displayName = "TableHeader";
 const TableBody = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
   "tbody",
   {
     ref,
-    className: cn("[&_tr:last-child]:border-0", className),
+    className: cn$1("[&_tr:last-child]:border-0", className),
     ...props
   }
 ));
@@ -3940,7 +5665,7 @@ const TableFooter = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   "tfoot",
   {
     ref,
-    className: cn("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className),
+    className: cn$1("border-t bg-muted/50 font-medium [&>tr]:last:border-b-0", className),
     ...props
   }
 ));
@@ -3949,7 +5674,7 @@ const TableRow = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__
   "tr",
   {
     ref,
-    className: cn(
+    className: cn$1(
       "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
       className
     ),
@@ -3961,7 +5686,7 @@ const TableHead = React.forwardRef(({ className, ...props }, ref) => /* @__PURE_
   "th",
   {
     ref,
-    className: cn(
+    className: cn$1(
       "h-10 px-2 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     ),
@@ -3973,7 +5698,7 @@ const TableCell = React.forwardRef(({ className, ...props }, ref) => /* @__PURE_
   "td",
   {
     ref,
-    className: cn(
+    className: cn$1(
       "p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     ),
@@ -3985,7 +5710,7 @@ const TableCaption = React.forwardRef(({ className, ...props }, ref) => /* @__PU
   "caption",
   {
     ref,
-    className: cn("mt-4 text-sm text-muted-foreground", className),
+    className: cn$1("mt-4 text-sm text-muted-foreground", className),
     ...props
   }
 ));
@@ -4009,7 +5734,7 @@ function TableModule({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cn(
+      className: cn$1(
         "rounded-lg border overflow-hidden",
         fullHeight && "h-full flex flex-col",
         props?.className
@@ -4040,11 +5765,11 @@ function TableModule({
         /* @__PURE__ */ jsx(
           ScrollArea,
           {
-            className: cn(
+            className: cn$1(
               // "whitespace-nowrap",
               fullHeight && "flex-auto [&>div>div:first-child]:h-full [&>div>div>div:first-child]:h-full"
             ),
-            children: /* @__PURE__ */ jsxs(Table, { className: cn("", props?.tableClassName), children: [
+            children: /* @__PURE__ */ jsxs(Table, { className: cn$1("", props?.tableClassName), children: [
               /* @__PURE__ */ jsx(TableHeader, { className: "sticky z-10 top-0 bg-white", children: table.getHeaderGroups().map((headerGroup) => /* @__PURE__ */ jsx(TableRow, { children: headerGroup.headers.map((header) => {
                 return /* @__PURE__ */ jsx(TableHead, { children: header.isPlaceholder ? null : flexRender(
                   header.column.columnDef.header,
@@ -4273,7 +5998,7 @@ function Notes({ data, resource }) {
   ] });
 }
 
-async function loader$e({ request, params }) {
+async function loader$f({ request, params }) {
   const resource = new URL(request.url).searchParams.get("resource");
   const userId = params.id;
   if (!resource) return redirect$1("/dash/user");
@@ -4399,12 +6124,12 @@ function ProgressModule({ start, end, value, ...props }) {
   ] });
 }
 
-const route10 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   ProgressModule,
   action: action$7,
   default: DashUserId,
-  loader: loader$e
+  loader: loader$f
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const Breadcrumb = React.forwardRef(
@@ -4415,7 +6140,7 @@ const BreadcrumbList = React.forwardRef(({ className, ...props }, ref) => /* @__
   "ol",
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
       className
     ),
@@ -4427,7 +6152,7 @@ const BreadcrumbItem = React.forwardRef(({ className, ...props }, ref) => /* @__
   "li",
   {
     ref,
-    className: cn("inline-flex items-center gap-1.5", className),
+    className: cn$1("inline-flex items-center gap-1.5", className),
     ...props
   }
 ));
@@ -4438,7 +6163,7 @@ const BreadcrumbLink = React.forwardRef(({ asChild, className, ...props }, ref) 
     Comp,
     {
       ref,
-      className: cn("transition-colors hover:text-foreground", className),
+      className: cn$1("transition-colors hover:text-foreground", className),
       ...props
     }
   );
@@ -4451,7 +6176,7 @@ const BreadcrumbPage = React.forwardRef(({ className, ...props }, ref) => /* @__
     role: "link",
     "aria-disabled": "true",
     "aria-current": "page",
-    className: cn("font-normal text-foreground", className),
+    className: cn$1("font-normal text-foreground", className),
     ...props
   }
 ));
@@ -4465,7 +6190,7 @@ const BreadcrumbSeparator = ({
   {
     role: "presentation",
     "aria-hidden": "true",
-    className: cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className),
+    className: cn$1("[&>svg]:w-3.5 [&>svg]:h-3.5", className),
     ...props,
     children: children ?? /* @__PURE__ */ jsx(ChevronRightIcon, {})
   }
@@ -4494,7 +6219,7 @@ function Skeleton({
   return /* @__PURE__ */ jsx(
     "div",
     {
-      className: cn("animate-pulse rounded-md bg-primary/10", className),
+      className: cn$1("animate-pulse rounded-md bg-primary/10", className),
       ...props
     }
   );
@@ -4508,7 +6233,7 @@ const TooltipContent = React.forwardRef(({ className, sideOffset = 4, ...props }
   {
     ref,
     sideOffset,
-    className: cn(
+    className: cn$1(
       "z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 origin-[--radix-tooltip-content-transform-origin]",
       className
     ),
@@ -4591,7 +6316,7 @@ const SidebarProvider = React.forwardRef(
           "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
           ...style
         },
-        className: cn(
+        className: cn$1(
           "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
           className
         ),
@@ -4617,7 +6342,7 @@ const Sidebar = React.forwardRef(
       return /* @__PURE__ */ jsx(
         "div",
         {
-          className: cn(
+          className: cn$1(
             "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
             className
           ),
@@ -4661,7 +6386,7 @@ const Sidebar = React.forwardRef(
           /* @__PURE__ */ jsx(
             "div",
             {
-              className: cn(
+              className: cn$1(
                 "relative w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear",
                 "group-data-[collapsible=offcanvas]:w-0",
                 "group-data-[side=right]:rotate-180",
@@ -4672,7 +6397,7 @@ const Sidebar = React.forwardRef(
           /* @__PURE__ */ jsx(
             "div",
             {
-              className: cn(
+              className: cn$1(
                 "fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex",
                 side === "left" ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]" : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
                 // Adjust the padding for floating and inset variants.
@@ -4706,7 +6431,7 @@ const SidebarTrigger = React.forwardRef(
         "data-sidebar": "trigger",
         variant: "ghost",
         size: "icon",
-        className: cn("h-7 w-7", className),
+        className: cn$1("h-7 w-7", className),
         onClick: (event) => {
           onClick?.(event);
           toggleSidebar();
@@ -4732,7 +6457,7 @@ const SidebarRail = React.forwardRef(({ className, ...props }, ref) => {
       tabIndex: -1,
       onClick: toggleSidebar,
       title: "Toggle Sidebar",
-      className: cn(
+      className: cn$1(
         "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
         "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
         "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
@@ -4751,7 +6476,7 @@ const SidebarInset = React.forwardRef(({ className, ...props }, ref) => {
     "main",
     {
       ref,
-      className: cn(
+      className: cn$1(
         "relative flex w-full flex-1 flex-col bg-background",
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         className
@@ -4767,7 +6492,7 @@ const SidebarInput = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "input",
-      className: cn(
+      className: cn$1(
         "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
         className
       ),
@@ -4782,7 +6507,7 @@ const SidebarHeader = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "header",
-      className: cn("flex flex-col gap-2 p-2", className),
+      className: cn$1("flex flex-col gap-2 p-2", className),
       ...props
     }
   );
@@ -4794,7 +6519,7 @@ const SidebarFooter = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "footer",
-      className: cn("flex flex-col gap-2 p-2", className),
+      className: cn$1("flex flex-col gap-2 p-2", className),
       ...props
     }
   );
@@ -4806,7 +6531,7 @@ const SidebarSeparator = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "separator",
-      className: cn("mx-2 w-auto bg-sidebar-border", className),
+      className: cn$1("mx-2 w-auto bg-sidebar-border", className),
       ...props
     }
   );
@@ -4818,7 +6543,7 @@ const SidebarContent = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "content",
-      className: cn(
+      className: cn$1(
         "flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden",
         className
       ),
@@ -4833,7 +6558,7 @@ const SidebarGroup = React.forwardRef(({ className, ...props }, ref) => {
     {
       ref,
       "data-sidebar": "group",
-      className: cn("relative flex w-full min-w-0 flex-col p-2", className),
+      className: cn$1("relative flex w-full min-w-0 flex-col p-2", className),
       ...props
     }
   );
@@ -4847,7 +6572,7 @@ const SidebarGroupLabel = React.forwardRef(
       {
         ref,
         "data-sidebar": "group-label",
-        className: cn(
+        className: cn$1(
           "flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium text-sidebar-foreground/70 outline-none ring-sidebar-ring transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
           "group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
           className
@@ -4866,7 +6591,7 @@ const SidebarGroupAction = React.forwardRef(
       {
         ref,
         "data-sidebar": "group-action",
-        className: cn(
+        className: cn$1(
           "absolute right-3 top-3.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0",
           // Increases the hit area of the button on mobile.
           "after:absolute after:-inset-2 after:md:hidden",
@@ -4884,7 +6609,7 @@ const SidebarGroupContent = React.forwardRef(({ className, ...props }, ref) => /
   {
     ref,
     "data-sidebar": "group-content",
-    className: cn("w-full text-sm", className),
+    className: cn$1("w-full text-sm", className),
     ...props
   }
 ));
@@ -4894,7 +6619,7 @@ const SidebarMenu = React.forwardRef(({ className, ...props }, ref) => /* @__PUR
   {
     ref,
     "data-sidebar": "menu",
-    className: cn("flex w-full min-w-0 flex-col gap-1", className),
+    className: cn$1("flex w-full min-w-0 flex-col gap-1", className),
     ...props
   }
 ));
@@ -4904,7 +6629,7 @@ const SidebarMenuItem = React.forwardRef(({ className, ...props }, ref) => /* @_
   {
     ref,
     "data-sidebar": "menu-item",
-    className: cn("group/menu-item relative", className),
+    className: cn$1("group/menu-item relative", className),
     ...props
   }
 ));
@@ -4948,7 +6673,7 @@ const SidebarMenuButton = React.forwardRef(
         "data-sidebar": "menu-button",
         "data-size": size,
         "data-active": isActive,
-        className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+        className: cn$1(sidebarMenuButtonVariants({ variant, size }), className),
         ...props
       }
     );
@@ -4983,7 +6708,7 @@ const SidebarMenuAction = React.forwardRef(
       {
         ref,
         "data-sidebar": "menu-action",
-        className: cn(
+        className: cn$1(
           "absolute right-1 top-1.5 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-sidebar-foreground outline-none ring-sidebar-ring transition-transform hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 peer-hover/menu-button:text-sidebar-accent-foreground [&>svg]:size-4 [&>svg]:shrink-0",
           // Increases the hit area of the button on mobile.
           "after:absolute after:-inset-2 after:md:hidden",
@@ -5005,7 +6730,7 @@ const SidebarMenuBadge = React.forwardRef(({ className, ...props }, ref) => /* @
   {
     ref,
     "data-sidebar": "menu-badge",
-    className: cn(
+    className: cn$1(
       "pointer-events-none absolute right-1 flex h-5 min-w-5 select-none items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground",
       "peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground",
       "peer-data-[size=sm]/menu-button:top-1",
@@ -5028,7 +6753,7 @@ const SidebarMenuSkeleton = React.forwardRef(
       {
         ref,
         "data-sidebar": "menu-skeleton",
-        className: cn("flex h-8 items-center gap-2 rounded-md px-2", className),
+        className: cn$1("flex h-8 items-center gap-2 rounded-md px-2", className),
         ...props,
         children: [
           showIcon && /* @__PURE__ */ jsx(
@@ -5059,7 +6784,7 @@ const SidebarMenuSub = React.forwardRef(({ className, ...props }, ref) => /* @__
   {
     ref,
     "data-sidebar": "menu-sub",
-    className: cn(
+    className: cn$1(
       "mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5",
       "group-data-[collapsible=icon]:hidden",
       className
@@ -5080,7 +6805,7 @@ const SidebarMenuSubButton = React.forwardRef(
         "data-sidebar": "menu-sub-button",
         "data-size": size,
         "data-active": isActive,
-        className: cn(
+        className: cn$1(
           "flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 text-sidebar-foreground outline-none ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 [&>svg]:text-sidebar-accent-foreground",
           "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
           size === "sm" && "text-xs",
@@ -5108,6 +6833,12 @@ const data$1 = {
       label: "Profile",
       icon: User,
       to: "profile"
+    },
+    {
+      name: "pricing",
+      label: "Plans",
+      icon: Award,
+      to: "pricing"
     }
   ]
 };
@@ -5129,7 +6860,7 @@ function Settings() {
     /* @__PURE__ */ jsxs(
       DialogContent,
       {
-        className: "overflow-hidden p-0 md:max-h-[600px] md:max-w-[700px] lg:max-w-[900px]",
+        className: "overflow-hidden p-0 md:max-h-[640px] md:max-w-[1024px] lg:max-w-[1024px]",
         onInteractOutside: (e) => {
           e.preventDefault();
         },
@@ -5171,7 +6902,7 @@ function Settings() {
   ] });
 }
 
-const route11 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Settings
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -5183,7 +6914,7 @@ function shouldRevalidate$2({ currentUrl, nextUrl }) {
     return true;
   return false;
 }
-async function loader$d({ request }) {
+async function loader$e({ request }) {
   const data = await licenseData({ request });
   return Response.json({ ...data });
 }
@@ -5259,10 +6990,10 @@ const columns$1 = () => [
   }
 ];
 
-const route12 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: DashLicense,
-  loader: loader$d,
+  loader: loader$e,
   shouldRevalidate: shouldRevalidate$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
@@ -5270,7 +7001,7 @@ const Textarea = React.forwardRef(({ className, ...props }, ref) => {
   return /* @__PURE__ */ jsx(
     "textarea",
     {
-      className: cn(
+      className: cn$1(
         "flex min-h-[60px] w-full rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-zinc-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:placeholder:text-zinc-400 dark:focus-visible:ring-zinc-300",
         className
       ),
@@ -5299,61 +7030,42 @@ function TextareaField({
   ] });
 }
 
-function module (options) {
-  var transporter = nodemailer.createTransport({
-    service: options.service,
-    auth: {
-      user: options.email,
-      pass: options.password,
-    },
-  });
-
-  const sendMail = function (mail) {
-    console.log("sendMail");
-    return new Promise(function (resolve, reject) {
-      var mailOptions = {
-        from: options.from,
-        sender: options.sender,
-        to: [mail.to],
-        subject: mail.subject,
-        text: mail.text,
-        html: mail.html,
-        attachments: mail.attachments,
-      };
-
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.log(error);
-          reject(error);
-        } else {
-          console.log("Message sent: " + info.response);
-          resolve(info);
-        }
-      });
-    });
-  };
+function module() {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const from = process.env.EMAIL_FROM;
 
   return {
-    sendMail,
+    sendMail: async (mail) => {
+      try {
+        const { error } = await resend.emails.send({
+          from,
+          to: [mail.to],
+          subject: mail.subject,
+          text: mail.text,
+          html: mail.html,
+        });
+
+        if (error) console.error("Resend send error:", error);
+      } catch (e) {
+        console.error("Unexpected Resend error:", e);
+      }
+    }
   };
 }
 
-const { service, username: email, password, from } = vars.email;
-
 const options = {
-  service,
-  email,
-  password,
+  from: process.env.EMAIL_FROM,
+  to: process.env.EMAIL_RECIPIENT,
 };
 
 const Email = async ({ payload }) =>
-  module(options).sendMail({
-    from,
-    sender: from,
+  module().sendMail({
+    from: options.from,
+    to: payload?.to ?? options.to,
     ...payload,
   });
 
-async function loader$c() {
+async function loader$d() {
   return null;
 }
 async function action$6({ request }) {
@@ -5417,7 +7129,7 @@ function Contact() {
   return /* @__PURE__ */ jsx(Dialog, { open, onOpenChange: (open2) => !open2 && navigate("/app"), children: /* @__PURE__ */ jsxs(
     DialogContent,
     {
-      className: cn("overflow-hidden", types$1[type].className),
+      className: cn$1("overflow-hidden", types$1[type].className),
       children: [
         /* @__PURE__ */ jsx(DialogTitle, { children: types$1[type].title }),
         /* @__PURE__ */ jsx(DialogDescription, { children: types$1[type].description }),
@@ -5478,14 +7190,14 @@ function Reviewer() {
   ] });
 }
 
-const route13 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$6,
   default: Contact,
-  loader: loader$c
+  loader: loader$d
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$b({ request }) {
+async function loader$c({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const plan = session.get("plan");
   return { plan };
@@ -5524,10 +7236,10 @@ function AppAlert() {
   );
 }
 
-const route14 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route22 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: AppAlert,
-  loader: loader$b
+  loader: loader$c
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function shouldRevalidate$1({ currentUrl, nextUrl }) {
@@ -5537,7 +7249,7 @@ function shouldRevalidate$1({ currentUrl, nextUrl }) {
     return true;
   return false;
 }
-async function loader$a({ request }) {
+async function loader$b({ request }) {
   const url = new URL(request.url);
   const resource = url.pathname.replace("/dash/", "");
   const data = await usersData({ request });
@@ -5731,64 +7443,495 @@ const columns = ({ resource, admin }) => [
   }
 ];
 
-const route15 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route23 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$5,
   default: DashUser,
-  loader: loader$a,
+  loader: loader$b,
   shouldRevalidate: shouldRevalidate$1
 }, Symbol.toStringTag, { value: 'Module' }));
 
-async function loader$9({ request }) {
-  const session = await getSession(request.headers.get("Cookie"));
-  const user = session.get("user");
+const Class = "Competency";
 
-  if (!user) return redirect$1("/auth/login");
+async function read() {
+  try {
+    const query = new Parse.Query(Class);
+    query.include("competencyGroup");
+    const data = await query.find();
 
-  let profile = session.get("profile");
-  let license = session.get("license");
-
-  if (!profile) profile = (await read$5(user))?.toJSON();
-
-  if (!license) license = (await read$6(user))?.toJSON();
-
-  if (license) {
-    const {
-      product: { name },
-    } = await stripe.prices.retrieve(license.priceId, {
-      expand: ["product"],
-    });
-
-    license = { ...license, name };
+    return modifier(data);
+  } catch (error) {
+    console.log("competency.getAll", error.message);
+    handleInvalidSessionToken(error);
   }
-
-  return Response.json({ profile, license });
 }
 
-const route16 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-  __proto__: null,
-  loader: loader$9
-}, Symbol.toStringTag, { value: 'Module' }));
+function modifier(data) {
+  return data.reduce((t, v) => {
+    // const cg = v.get("competencyGroup").toJSON();
+    const ci = v.toJSON();
+    const cg = ci.competencyGroup;
+    const g = t.find((i) => i.objectId === cg.objectId);
+    !g ? t.push({ ...cg, items: [ci] }) : g.items.push(ci);
+    return t;
+  }, []);
+}
 
-// billing_portal.session.created
-// charge.succeeded
-// payment_intent.succeeded
-// payment_intent.created
-// charge.updated
+async function init$1(session) {
+  const user = session.get("user");
+  let thread = session.get("thread");
+  let file = session.get("file");
+
+  if (thread) {
+    console.log("chat.init", "current thread", thread.objectId, file?.id);
+    return { thread, file };
+  }
+
+  const threads = await read$3({ user });
+  console.log("chat.init", "all threads", threads.length);
+
+  if (threads.length === 0) {
+    const _thread = await openai.beta.threads.create();
+
+    if (_thread.error) {
+      console.log("chat.init", _thread.error.error);
+      return { error: _thread.error.error };
+    }
+
+    const res = await create$2(
+      {
+        name: "Thread 1",
+        threadId: _thread.id,
+        user: pointerObject(models.user, user.objectId),
+        thread: _thread,
+        purpose: purposes.chat,
+      },
+      user.sessionToken
+    );
+    thread = res.toJSON();
+
+    console.log("chat.init", "add new thread", _thread?.id, thread?.objectId);
+  } else {
+    thread = threads[0].toJSON();
+  }
+
+  file = await getFile(thread?.thread);
+
+  session.set("thread", thread);
+  session.set("file", file);
+
+  console.log("chat.init", "exist thread", thread.objectId, file?.id);
+  return { thread, file };
+}
+
+async function getFile(thread) {
+  let file;
+  const vectorStoreId =
+    thread?.tool_resources?.file_search?.vector_store_ids?.[0];
+  if (vectorStoreId) {
+    try {
+      const files = await openai.vectorStores.files.list(vectorStoreId);
+      if (files?.data.length > 0)
+        file = await openai.files.retrieve(files.data[0].id);
+    } catch (error) {
+      console.log("chat.getFile", error);
+    }
+  }
+  return file;
+}
+
+async function send({ user, thread, content, session }) {
+  const progress = session.get("progress") || { step: 1 };
+  console.log("Progress is at:", progress.step);
+
+  let threadInstruction = getMarkdownInstruction();
+
+  try {
+    // Step Logic Handler
+    switch (progress.step) {
+      case 2:
+        // CV uploaded, user needs to select a competency
+        console.log("Step 2: Awaiting competency selection. No action taken.");
+        session.set("progress", { step: 3 });
+        break;
+
+      case 3:
+        console.log("Step 3: Checking for selected competency...");
+        threadInstruction += getProjectMatchInstruction();
+        const competencies = await read();
+
+        const found = competencies
+          .flatMap((group) => group.items)
+          .find((item) => item.get("title") === content);
+
+        if (found) {
+          console.log("Competency found:", found.get("title"));
+          session.set("progress", { step: 4 });
+        } else {
+          console.warn("Competency not found.");
+        }
+        break;
+
+      case 4:
+        console.log("Step 4: Injecting gap analysis instruction.");
+        threadInstruction += getGapAnalysisInstruction();
+        session.set("progress", { step: 5 });
+        break;
+
+      case 5:
+        console.log("Step 5: Follow-up response received.");
+        session.set("progress", { step: 6 });
+        break;
+
+      default:
+        console.log("No specific step logic. Continuing.");
+    }
+
+    // Create message
+    const userMessage = await openai.beta.threads.messages.create(
+      thread.threadId,
+      {
+        role: "user",
+        content: threadInstruction + content,
+      }
+    );
+
+    console.log("Assistant ID:", vars.openai.assistantId);
+
+    // Start assistant run
+    const run = await openai.beta.threads.runs.create(thread.threadId, {
+      assistant_id: vars.openai.assistantId,
+      stream: true,
+    });
+
+    const runId = await fetchRunId(thread.threadId);
+
+    // Return streaming generator
+    return {
+      userMessage,
+      stream: streamAssistantResponse(run),
+      runId,
+    };
+  } catch (error) {
+    console.error("chat.send.run", error);
+    return { userMessage: null, stream: null, runId: null };
+  }
+}
+
+function getMarkdownInstruction() {
+  return "Please format your response in Markdown. Use **headers**, **bold**, and **bullet points** as needed.\n";
+}
+
+function getProjectMatchInstruction() {
+  return `
+    You are now in **Step 2 and 3** of the workflow:
+    **Explain the Competency** and **Match Projects from the User's CV**.
+
+    ---
+
+    ## Competency Explanation (Intent + Indicators)
+
+    - Retrieve the selected competency’s **full title**, **intent**, and **explicit indicators** from your knowledge base.
+    - For each **indicator**, explain what it means **in the context of the user's background** (e.g., if they work in transportation infrastructure, reference TAC guidelines, CSA codes, etc.).
+    - Use **industry-relevant examples** that would be familiar to someone with the user’s expertise.
+    - Then, write a short **scenario story** as if you were an engineer in a similar role:
+      - Use **first-person perspective** (“I”)
+      - Describe a real engineering situation that demonstrates this competency
+      - Include:
+        - An **engineering challenge**
+        - The **action(s)** taken
+        - A **quantifiable outcome**
+
+    > This helps the user empathize with how the competency should be demonstrated.
+
+    ---
+
+    ## Match Projects from CV
+
+    - Analyze the user’s uploaded CV using **Named Entity Recognition (NER)**.
+    - Identify **all explicit projects** that match the selected competency.
+    - List them using this format:
+
+    **Project Name**
+    **Position Title**
+    **Relevant activities/duties that demonstrate competency**
+
+
+    - **Do NOT** ask the user to select a project until all matches are listed.
+    - End your message with:
+      _"Please select one of the explicit matches to focus on for this competency before we continue."_
+    - **Do NOT** continue to gap analysis or follow-up questions until the user selects a project.
+    `;
+}
+
+function getGapAnalysisInstruction() {
+  return `
+    Before drafting a STAR-format response, perform a **Gap Analysis**:
+
+    - Compare the user's experience against the competency indicators.
+    - Identify any missing technical details, quantifiable results, or specific codes/standards.
+    - Ask targeted follow-up questions to fill in these gaps.
+
+    **Do not** draft the structured response until these gaps are addressed.
+  `;
+}
+
+async function fetchRunId(threadId) {
+  let latestRun = null;
+  while (!latestRun) {
+    const runsList = await openai.beta.threads.runs.list(threadId, {
+      limit: 1,
+    });
+    if (runsList?.data?.length > 0) {
+      latestRun = runsList.data[0].id;
+      break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+  return latestRun;
+}
+
+async function* streamAssistantResponse(run) {
+  let responseText = "";
+  for await (const chunk of run) {
+    if (
+      chunk.event === "thread.message.delta" &&
+      chunk.data?.delta?.content?.length > 0
+    ) {
+      for (const contentItem of chunk.data.delta.content) {
+        if (contentItem.type === "text" && contentItem.text?.value) {
+          const token = contentItem.text.value;
+          responseText += token;
+          yield token;
+        }
+      }
+    }
+  }
+  return responseText;
+}
+
+async function getUsage(thread, runId) {
+  const runStatus = await openai.beta.threads.runs.retrieve(
+    thread.threadId,
+    runId
+  );
+  return runStatus.usage;
+}
+
+async function save({
+  user,
+  thread,
+  userMessage,
+  responseText,
+  session,
+}) {
+  if (userMessage?.id) {
+    const fullText = userMessage.content[0].text.value;
+    const content = fullText
+      .replace(getMarkdownInstruction(), "")
+      .replace(getProjectMatchInstruction(), "")
+      .replace(getGapAnalysisInstruction(), "")
+      .trim();
+
+    await create$1(
+      {
+        user: pointerObject(models.user, user.objectId),
+        thread: pointerObject(models.thread, thread.objectId),
+        message: userMessage,
+        role: roles.user,
+        content: content,
+      },
+      user.sessionToken
+    );
+
+    const messages = await openai.beta.threads.messages.list(thread.threadId, {
+      limit: 1,
+    });
+    const assistantMessage = messages.data.find((m) => m.role === "assistant");
+
+    await create$1(
+      {
+        user: pointerObject(models.user, user.objectId),
+        thread: pointerObject(models.thread, thread.objectId),
+        message: assistantMessage,
+        role: roles.assistant,
+        content: responseText,
+      },
+      user.sessionToken
+    );
+
+    return responseText;
+  }
+}
+
+async function loader$a({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+  if (!user) return redirect$1("/auth/login");
+
+  const { thread } = await init$1(session);
+  if (!thread) {
+    return Response.json([], {
+      headers: {
+        "Set-Cookie": await commitSession(session),
+      },
+    });
+  }
+
+  const messages = await read$2(user, thread);
+  
+  // Convert Parse objects to plain JSON (same format as app.server.js init function)
+  const messagesJSON = messages ? messages.map(m => ({
+    objectId: m.id,
+    role: m.get("role"),
+    content: m.get("content"),
+    createdAt: m.get("createdAt"),
+  })).reverse() : [];
+
+  return Response.json(messagesJSON, {
+    headers: {
+      "Set-Cookie": await commitSession(session),
+    },
+  });
+}
+
+const route24 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  loader: loader$a
+}, Symbol.toStringTag, { value: 'Module' }));
 
 async function action$4({ request }) {
   const event = await getStripeEvent(request);
 
   switch (event.type) {
-    case "customer.updated":
-      const customer = event.data.object;
-      console.log("join.wh", customer.id);
+    case "checkout.session.completed": {
+      // const session = event.data.object;
+      // console.log("join.wh.session", session);
       break;
-    case "checkout.session.completed":
-      const session = event.data.object;
-      console.log("join.wh", session.status);
-      await checkoutSessionCompleted(session);
+    }
+
+    case "payment_intent.succeeded": {
+      const pi = event.data.object;
+      console.log("join.wh.pi.succeeded", pi.id);
+
+      if (pi.invoice) return null;
+
+      await paymentAccsess(pi, {
+        customerId: pi.customer,
+        active: true,
+        status: statuses$1.active,
+        meta: {
+          paymentIntentId: pi.id,
+          paymentIntentStatus: pi.status,
+        },
+      });
+
+      await paymentLog(pi, {
+        customerId: pi.customer,
+        paymentIntentId: pi.id,
+        invoiceId: null,
+        amount: pi.amount_received,
+        currency: pi.currency,
+        priceId: pi.metadata.priceId,
+        priceKey: pi.metadata.priceKey,
+        status: "succeeded",
+        meta: {
+          paymentIntentStatus: pi.status,
+          occurredAt: new Date(pi.created * 1000).toJSON(),
+        }
+      });
       break;
+    }
+
+    case "payment_intent.payment_failed": {
+      const pi = event.data.object;
+      console.log("join.wh.pi.failed", pi.id);
+
+      if (pi.invoice) return null;
+
+      await paymentLog(pi, {
+        customerId: pi.customer,
+        paymentIntentId: pi.id,
+        invoiceId: null,
+        amount: pi.amount ?? 0,
+        currency: pi.currency,
+        priceId: pi.metadata.priceId,
+        priceKey: pi.metadata.priceKey,
+        status: "failed",
+        meta: {
+          paymentIntentStatus: pi.status,
+          occurredAt: new Date().toJSON(),
+        }
+      });
+      break;
+    }
+
+    case "customer.subscription.updated": {
+      const sub = event.data.object;
+      console.log("join.wh.sub.updated", sub.id);
+
+      const active = ["active", "trialing"].includes(sub.status);
+      await paymentAccsess(sub, {
+        customerId: sub.customer,
+        active,
+        status: active ? statuses$1.active : statuses$1.suspended,
+        meta: {
+          subscriptionId: sub.id,
+          subscriptionStatus: sub.status,
+          urrentPeriodStart: new Date(sub.current_period_start * 1000).toJSON(),
+          currentPeriodEnd: new Date(sub.current_period_end * 1000).toJSON(),
+          cancelAtPeriodEnd: sub.cancel_at_period_end,
+        }
+      });
+      break;
+    }
+
+    case "invoice.payment_succeeded": {
+      const invoice = event.data.object;
+      console.log("join.wh.invoice.payment_succeeded", invoice.id);
+
+      await paymentLog(invoice, {
+        customerId: invoice.customer,
+        paymentIntentId: invoice.payment_intent,
+        invoiceId: invoice.id,
+        amount: invoice.amount_paid,
+        currency: invoice.currency,
+        priceId: invoice.lines.data[0].price.id,
+        priceKey: invoice.lines.data[0].price.lookup_key,
+        status: "succeeded",
+        meta: {
+          subscriptionId: invoice.subscription,
+          invoiceStatus: invoice.status,
+          attemptCount: invoice.attempt_count,
+          occurredAt: new Date(invoice.created * 1000).toJSON(),
+        }
+      });
+      break;
+    }
+
+    case "invoice.payment_failed": {
+      const invoice = event.data.object;
+      console.log("join.wh.invoice.payment_failed", invoice.id);
+
+      await paymentLog(invoice, {
+        customerId: invoice.customer,
+        paymentIntentId: invoice.payment_intent,
+        invoiceId: invoice.id,
+        amount: invoice.amount_paid,
+        currency: invoice.currency,
+        priceId: invoice.lines.data[0].price.id,
+        priceKey: invoice.lines.data[0].price.lookup_key,
+        status: "failed",
+        meta: {
+          subscriptionId: invoice.subscription,
+          invoiceStatus: invoice.status,
+          attemptCount: invoice.attempt_count,
+          occurredAt: new Date().toJSON(),
+        }
+      });
+      break;
+    }
+
     default:
       console.log(`Unhandled event type ${event.type}.`);
   }
@@ -5811,7 +7954,7 @@ async function getStripeEvent(request) {
   }
 }
 
-const route17 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$4
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -5822,7 +7965,7 @@ const navigation = [
   { name: "Support", href: "#" },
   { name: "Company", href: "#" }
 ];
-async function loader$8({ request }) {
+async function loader$9({ request }) {
   return redirect$1("/app");
 }
 function Index() {
@@ -5945,13 +8088,13 @@ function Index() {
   ] });
 }
 
-const route18 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route26 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Index,
-  loader: loader$8
+  loader: loader$9
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const loader$7 = async ({ request }) => {
+const loader$8 = async ({ request }) => {
   const session = await getSession(request.headers.get("Cookie"));
   await logout();
   return redirect$1("/auth/login", {
@@ -5961,9 +8104,9 @@ const loader$7 = async ({ request }) => {
   });
 };
 
-const route19 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route27 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
-  loader: loader$7
+  loader: loader$8
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function Logo({
@@ -5998,7 +8141,7 @@ function Mobile() {
   ] });
 }
 
-const route20 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route28 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Mobile
 }, Symbol.toStringTag, { value: 'Module' }));
@@ -6019,200 +8162,10 @@ function Auth() {
   ] });
 }
 
-const route21 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route29 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Auth
 }, Symbol.toStringTag, { value: 'Module' }));
-
-const openai = new OpenAI({
-  ...(process.env.NODE_ENV === "development" &&
-    process.env.USE_OPENAI_PROXY === "true" && {
-      httpAgent: new HttpsProxyAgent(process.env.PROXY_URL),
-    }),
-});
-
-async function createAssistant() {
-  const existingAssistants = await openai.beta.assistants.list();
-  let assistant = existingAssistants.data.find(a => a.name === "CBA PRO V4.0.OPP");
-
-  if (assistant) {
-    console.log("Using existing Assistant ID:", assistant.id);
-    return assistant.id;
-  }
-
-  assistant = await openai.beta.assistants.create({
-    name: "PEO CBA Prov V3",
-    instructions: `
-      # CBA PRO V4.1 - OpenAI API Assistant System Instructions
-      [Last Update: 2025-03-17, Step2, Personalized Competency Explanation]
-
-      ## 🔹 Role:
-      You are **CBA PRO V4.1**, an advanced AI assistant specializing in **Competency-Based Assessment (CBA) for Professional Engineers Associations in Canada**. Your goal is to help users:
-      - **Match their work experience** to PEng's **34 key competencies**.
-      - **Identify gaps** and seek clarifications.
-      - **Craft structured and well-written responses** for their PEng application.
-      - **Ensure responses meet PEng’s competency requirements and character limits as per your knowledgebase**.
-      - **Ensure the responses have high breadth, depth, and quality to convince PEng assessor with no historical context of the user based on user-provided explicit information to prove competency**.
-      - user will attach **cv** with this message **My CV has been uploaded with the name**.
-
-      **🔹 Response Formatting Rules (Strictly Follow Markdown)**
-      - Use **bold** for key terms.
-      - Use **headers (##, ###)** to separate sections.
-      - Use bullet points (• or -) for lists.
-      - Use \`code formatting\` where applicable (for highlighting key terms).
-      - Ensure responses are structured logically.
-
-      ---
-      ## 🔹 Workflow:
-
-      ### **1️⃣ Analyze the User's CV**
-      - Retrieve **7 competency categories** from **CATEGORY CHUNKS** vector file in your knowledge base.
-      - Categorize all of the user’s work under **7 competency categories** to :
-        - **Technical Competence** 
-          -**understanding of Canadian regulations and standards but also the ability to apply engineering principles to develop, verify, and communicate effective solutions. It requires a holistic view of projects, encompassing risk management, safety, quality assurance, and lifecycle management.**
-        - **Communication**
-          -**the ability to effectively convey, interpret, and evaluate information through verbal and written means, ensuring clarity, precision, and understanding among team members, clients, contractors, and the public**
-        - **Project and Financial Management**
-          -**the ability to understand and apply project management principles, progressively take on greater responsibilities, manage resources effectively, understand financial implications, and respond to feedback**
-        - **Team Effectiveness**
-          -**the ability to collaborate respectfully with colleagues from various disciplines, contribute to a harmonious work environment, and effectively resolve conflicts and differences**
-        - **Professional Accountability**
-          -**the ability to apply ethical principles, understand and respect one's professional limitations, recognize and address conflicts of interest, and demonstrate accountability and integrity in professional practice**
-        - **Social, Economic, Environmental & Sustainability**
-          -**the ability to understand and implement safeguards to protect the public, recognize the impact of engineering activities on society and the environment, understand the role of regulatory bodies such as PEO and other professional engineers organizations, and promote sustainability principles in professional practice**
-        - **Personal Continuing Professional Development**
-          -**the ongoing commitment to learning and improving professional skills and knowledge, recognizing and addressing knowledge gaps, and planning for future development to maintain competence and stay current in the field**
-      - If the CV is missing, **ask the user to upload it**.
-
-      ---
-
-      ### **2️⃣ Ask User to Select a Competency**
-      - Ask the user which **competency** to start to work on.
-      - Retrieve the competency's **intent** and **indicators** from the knowledge base by using specific search queries targeting the exact vector file name for the chosen **competency**.
-      - Present the user with the **full competency description** and **explicit indicators**.
-        - **Explain elaborately** what the **intent** and **indicators** of the competency means in the context of **user work experience background**.
-          -**Provide specific example and explanation of the concept**, for example:
-            -**if it is about ethics, explain what ethic means**
-            -**if it is about Canadian regulations and codes, name a few of the codes that relates to the user's background**
-      - **Take persona of an engineering applicant** with **similar work experience** as the user and **Generate a detailed scenario example of your own work** based on the **explicit indicators** and inspiration from the **user work experience and background** to help user sympathy and empathy with it.
-        - Story must show an **engineering problem**, where "I" contributed something, and resulted in something quantifiable.
-        - the goal of the story is to help user understand the **intent** and **indicators** in practice and how it can be related to the **competency**.
-      
-
-      ---
-
-      ### **3️⃣ Compare CV with Competency Requirements**
-      - Retrieve the competency's **intent** and **indicators** from the knowledge base.
-      - **Use Named Entity Recognition (NER) to scan user's CV and identify every single explicit project roles and activities** that match the competency intent and indicators.
-        - The goal is to find the best **project** **explicit match** to the **competency** while providing a comprehensive overview of all relevant roles.
-        - reiterate to ensure there is no **potential matching project role** that meets the competency.
-      - **DO NOT ask the user to select a project until you have FIRST presented a list of all explicit matches.**
-      - **List explicit matches in the following format:**
-        - **Project Name**
-          - **Position Name**
-          - **Relevant activities and job duties that demonstrate competency**
-      - **After listing ALL possible matches, then ask the user to select ONE to focus on.**
-      - **If the user does not select a project, DO NOT proceed**—instead, repeat the request:
-        > _"Please select one of the explicit matches to focus on for this competency before we continue."_  
-      - **Once the user has selected a match, perform a gap analysis:**  
-        - **Compare the user’s experience to the competency’s indicators.**  
-        - Identify missing details.  
-        - Highlight areas requiring further explanation.  
-      - **Before moving to Step 4, validate the explicit match:**  
-        - ❌ If the user has not selected a match, loop back and ask them to choose.  
-        - ❌ If no gaps are identified, confirm with the user before continuing.  
-        - ✅ **Only move forward once a match has been selected and a gap analysis is performed.**  
-
-
-      ---
-
-      ### **4️⃣ Ask for Specific Work Examples**
-      - After receiving an initial response from the user, **DO NOT proceed to drafting until you have validated the response against the competency indicators.**   
-      - Use the selected **explicit match** to craft contextual questions to seek clarification on the **gap analysis** items.
-      - Ask for the following information if not already provided: 
-        -**the project name**
-        -**how many team members**
-        -**the role**
-        -**seniority level**
-        -**whether user had supervisor or was supervising others**
-      - Ask **targeted memory-triggering questions** to help the user recall detailed examples.
-      - Guide user to provide answers in **STAR format (Situation, Action, Result)**.
-      - Ensure responses **demonstrate impact and personal contribution**.
-      - After receiving initial response from user, ask **follow-up questions** to delve deeper into specific aspects of user's experience:
-        -Request **specific challenges** or **issues** encountered and how user addressed them.
-        -Ask for **quantifiable results** or **metrics** that demonstrate the impact of user's actions.
-        -Seek more **technical details** about the engineering principles or standards applied.
-      -If **any of these are missing**, **loop back** and ask more targeted questions until the user provides all necessary information.  
-
-      ---
-
-      ### **5️⃣ Iterate Until Highly Sufficient Evidence Is Provided**
-      > Before moving forward, **perform a self-check**:  
-      > ✅ **Does the user’s response fully cover the competency indicators?**  
-      > ✅ **Are there quantifiable results, detailed actions, and technical aspects included?**  
-      > ✅ **Is the response convincing to a P.Eng. assessor with no prior knowledge of the user’s experience?**  
-      >  
-      > If **ANY answer is NO**, **DO NOT proceed to Step 7**. Instead:  
-      > 1️⃣ Ask another targeted follow-up question.  
-      > 2️⃣ Clarify missing details with an example-based query.  
-      > 3️⃣ If the user does not provide enough detail, **explicitly tell them what’s missing** before moving forward.  
-
-
-
-      ---
-      ### **6️⃣Self-Critique Before Finalizing a Response**
-
-      > Before moving to Step 7, run a final **self-check validation**:  
-      > ❌ If the response **lacks depth, quantifiable results, or personal contribution**, ask for more clarification.  
-      > ❌ If the response **reads like a generic job description**, ask for **specific personal actions taken**.  
-      > ❌ If the response **does not clearly address risk identification, analysis, mitigation, and impact**, **DO NOT proceed to drafting**—instead, **loop back to ask for more details.**  
-      > ✅ **Only move to Step 7 once the response is strong, specific, and convincing.**  
-
-      ---
-
-      ### **7️⃣Draft the Competency Response**
-      - Structure responses according to **PEng’s CBA guidelines**:
-        - **Situation (300 characters)**
-        - **Action (1650 characters)**
-        - **Outcome (300 characters)**
-      - Use **professional and concise writing**:
-        - **First-person narrative ("I did this...")**.
-        - **Avoid generic job descriptions**—focus on **personal contribution**.
-        - **Use technical and engineering-specific language**.
-        - **Include quantifiable results where possible**.
-        - **Ensure clarity, coherence, and logical flow**.
-
-      ---
-
-      ### **8 Review & Finalize**
-      - Check if the response meets **PEO’s expectations**: 
-        -**Does this response fully address the **competency's indicators**?**
-        -**Are there missing details or incorrect assumptions?**
-        -**Could the answer be more structured, concise, or logical?**
-        -**Does the structured response provides sufficient **breadth**, **depth**, and **quality** to convince PEng assessor is competent?**
-      - If any issue is detected within above, ask for more clarification, refine and improve the response before presenting it in the next step.
-
-
-      ---
-
-      ## 🔹 Writing Guidelines:
-      ✅ Use **first-person perspective ("I")** to highlight **personal contributions**.  
-      ✅ Avoid **vague job descriptions**—focus on **specific actions**.  
-      ✅ Use **concise, professional language**.  
-      ✅ Incorporate **real-world examples & measurable impact**.  
-      ✅ Ensure the response is **well-structured and logical**.  
-      ✅ Adhere to **PEO’s character limits** for responses.
-    `,
-    model: "gpt-4o",
-    temperature: 0.2,
-    top_p: 0.9
-  });
-
-  console.log("Created new Assistant ID:", assistant.id);
-  return assistant.id;
-}
-
-createAssistant();
 
 // upload file to assistant's vector store
 async function CREATE({ thread, file }) {
@@ -6255,49 +8208,7 @@ const getOrCreateVectorStore = async (thread) => {
   return vectorStore.id;
 };
 
-const ClassName = "Thread";
-
-async function read$2({ user, purpose = purposes.chat, objectId }) {
-  try {
-    const query = new Parse.Query(ClassName);
-    user && query.equalTo("user", user.objectId);
-    !objectId && query.equalTo("purpose", purpose);
-    !objectId && query.descending("createdAt");
-    if (objectId)
-      return await query.get(objectId, { sessionToken: user.sessionToken });
-    return await query.find({ sessionToken: user.sessionToken });
-  } catch (error) {
-    console.log("thread.read", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-async function create$1(args, sessionToken) {
-  try {
-    const Thread = Parse.Object.extend(ClassName);
-    const thread = new Thread();
-    return await thread.save(args, { sessionToken });
-  } catch (error) {
-    console.log("thread.create", error.message);
-  }
-}
-
-async function update(args, sessionToken) {
-  try {
-    const Thread = Parse.Object.extend(ClassName);
-    const thread = new Thread();
-    return await thread.save(args, { sessionToken });
-  } catch (error) {
-    console.log("thread.update", error.message);
-  }
-}
-
-const purposes = {
-  chat: "chat",
-  score: "score",
-};
-
-async function loader$6() {
+async function loader$7() {
   console.log("files.loader");
   return redirect$1("/app");
 }
@@ -6310,7 +8221,7 @@ async function action$3({ request }) {
   const file = formData.get("file");
   const file_ = await CREATE({ thread: thread?.thread, file });
   const thread_ = await openai.beta.threads.retrieve(thread.threadId);
-  await update(
+  await update$1(
     {
       objectId: thread.objectId,
       thread: thread_
@@ -6328,75 +8239,11 @@ async function action$3({ request }) {
   });
 }
 
-const route22 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route30 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$3,
-  loader: loader$6
+  loader: loader$7
 }, Symbol.toStringTag, { value: 'Module' }));
-
-const Class$1 = "Message";
-
-async function read$1(user, thread, limit) {
-  try {
-    const query = new Parse.Query(Class$1);
-    user && query.equalTo("user", user.objectId);
-    thread && query.equalTo("thread", thread.objectId || thread.id);
-    limit && query.limit(limit);
-    query.descending("createdAt");
-    return await query.find({ sessionToken: user.sessionToken });
-  } catch (error) {
-    console.log("message.read", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-async function create(arg, sessionToken) {
-  try {
-    const Message = Parse.Object.extend("Message");
-    const message = new Message();
-    return await message.save(arg, { sessionToken });
-  } catch (error) {
-    console.log("outcome.create", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-const roles = {
-  assistant: "assistant",
-  user: "user",
-};
-
-async function updateUsage(user, thread, usage) {
-  const $thread = await read$2({ user, objectId: thread.objectId });
-  const threadUsage = $thread.get("usage");
-  // console.log("usage.updateUsage:thread.usage", threadUsage);
-
-  await update(
-    {
-      objectId: thread.objectId,
-      usage: {
-        count: (threadUsage?.count ?? 0) + 1,
-        input: (threadUsage?.input ?? 0) + usage.input,
-        output: (threadUsage?.output ?? 0) + usage.output,
-        total: (threadUsage?.total ?? 0) + usage.total,
-      },
-    },
-    user.sessionToken
-  );
-
-  const profile = await read$5(user);
-  const profileUsage = profile.get("usage");
-
-  await update$3(user, {
-    objectId: profile.id,
-    usage: {
-      count: (profileUsage?.count ?? 0) + 1,
-      input: (profileUsage?.input ?? 0) + usage.input,
-      output: (profileUsage?.output ?? 0) + usage.output,
-      total: (profileUsage?.total ?? 0) + usage.total,
-    },
-  });
-}
 
 async function sync$1(request, body) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -6435,10 +8282,10 @@ async function sync$1(request, body) {
     score,
     !scoreThread
       ? {
-          headers: {
-            "Set-Cookie": await commitSession(session),
-          },
-        }
+        headers: {
+          "Set-Cookie": await commitSession(session),
+        },
+      }
       : {}
   );
 }
@@ -6460,18 +8307,16 @@ async function getScore({ user, competencyItem, outcome, scoreThread }) {
 
   for await (const r of run) {
     // console.log("score.getScore.run", r.event);
-    if (r.event === "thread.message.completed")
-      score = {
-        count: outcome?.score?.count ? outcome.score.count + 1 : 1,
-        result:
-          Number(
-            r.data.content[0].text.value
-              .split("CRITERIA")[0]
-              .split("\n")[1]
-              .trim()
-          ) || 0,
-        reason: r.data.content[0].text.value.split("RATIONALE")[1].trim(),
-      };
+    if (r.event === "thread.message.completed") {
+      const value = r.data.content[0].text.value;
+      const fline = value.split("\n")[0];
+      const count = outcome?.score?.count ? outcome.score.count + 1 : 1;
+      const result = Number(fline[fline.length - 1]) || 0;
+      const reason = value?.substr(fline.length)?.trim();
+
+      // console.log({ fline, count, result, reason });
+      score = { count, result, reason };
+    }
 
     if (r.event === "thread.run.completed") {
       const {
@@ -6499,7 +8344,7 @@ async function getScore({ user, competencyItem, outcome, scoreThread }) {
 
 async function getScoreThread(user) {
   const purpose = purposes.score;
-  const threads = await read$2({ user, purpose });
+  const threads = await read$3({ user, purpose });
 
   console.log("score.getScoreThread.read", threads.length);
   if (threads?.length > 0)
@@ -6518,7 +8363,7 @@ async function getScoreThread(user) {
   console.log("score.getScoreThread.thread.create", thread.id);
 
   if (thread?.id) {
-    const thread_ = await create$1(
+    const thread_ = await create$2(
       {
         user: pointerObject(models.user, user.objectId),
         name: "Score thread",
@@ -6539,7 +8384,7 @@ async function getScoreThread(user) {
   return null;
 }
 
-async function loader$5() {
+async function loader$6() {
   return redirect$1("/app");
 }
 
@@ -6573,15 +8418,13 @@ async function action$2({ request }) {
   return await sync$1(request, body);
 }
 
-const route23 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route31 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$2,
-  loader: loader$5
+  loader: loader$6
 }, Symbol.toStringTag, { value: 'Module' }));
 
 async function sync(user) {
-  const { serverURL, appId, restAPIKey } = vars.parse;
-
   try {
     const res = await fetch(`${serverURL}/users/me`, {
       headers: {
@@ -6591,7 +8434,7 @@ async function sync(user) {
       },
     });
     const $user = await res.json();
-    console.log("user.sync", $user?.sessionToken, user?.sessionToken);
+    console.log("user.sync", $user?.sessionToken === user?.sessionToken);
 
     return $user.error ? false : true;
   } catch (error) {
@@ -6625,7 +8468,7 @@ const DropdownMenuSubTrigger = React.forwardRef(({ className, inset, children, .
   DropdownMenuPrimitive.SubTrigger,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex cursor-default gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
       inset && "pl-8",
       className
@@ -6642,7 +8485,7 @@ const DropdownMenuSubContent = React.forwardRef(({ className, ...props }, ref) =
   DropdownMenuPrimitive.SubContent,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className
     ),
@@ -6655,7 +8498,7 @@ const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...pr
   {
     ref,
     sideOffset,
-    className: cn(
+    className: cn$1(
       "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
       "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
       className
@@ -6668,7 +8511,7 @@ const DropdownMenuItem = React.forwardRef(({ className, inset, ...props }, ref) 
   DropdownMenuPrimitive.Item,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&>svg]:size-4 [&>svg]:shrink-0",
       inset && "pl-8",
       className
@@ -6681,7 +8524,7 @@ const DropdownMenuCheckboxItem = React.forwardRef(({ className, children, checke
   DropdownMenuPrimitive.CheckboxItem,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     ),
@@ -6698,7 +8541,7 @@ const DropdownMenuRadioItem = React.forwardRef(({ className, children, ...props 
   DropdownMenuPrimitive.RadioItem,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className
     ),
@@ -6714,7 +8557,7 @@ const DropdownMenuLabel = React.forwardRef(({ className, inset, ...props }, ref)
   DropdownMenuPrimitive.Label,
   {
     ref,
-    className: cn("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className),
+    className: cn$1("px-2 py-1.5 text-sm font-semibold", inset && "pl-8", className),
     ...props
   }
 ));
@@ -6723,7 +8566,7 @@ const DropdownMenuSeparator = React.forwardRef(({ className, ...props }, ref) =>
   DropdownMenuPrimitive.Separator,
   {
     ref,
-    className: cn("-mx-1 my-1 h-px bg-muted", className),
+    className: cn$1("-mx-1 my-1 h-px bg-muted", className),
     ...props
   }
 ));
@@ -6814,7 +8657,7 @@ function Layout$1({ nav, children, ...props }) {
   ] });
 }
 
-async function loader$4({ request, params }) {
+async function loader$5({ request, params }) {
   const url = new URL(request.url);
   let resource = url.pathname.replace("/dash/", "");
   if (resource.indexOf("/") > 0)
@@ -6837,10 +8680,10 @@ function Dash() {
   return /* @__PURE__ */ jsx(Layout$1, { nav, children: /* @__PURE__ */ jsx(Outlet, {}) });
 }
 
-const route24 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route32 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: Dash,
-  loader: loader$4
+  loader: loader$5
 }, Symbol.toStringTag, { value: 'Module' }));
 
 async function wait (delay = 1000) {
@@ -6848,17 +8691,15 @@ async function wait (delay = 1000) {
   await new Promise((resolve) => setTimeout(resolve, delay));
 }
 
-async function loader$3({ request }) {
+async function loader$4({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
   const user = session.get("user");
   const url = new URL(request.url);
   if (!user)
-    return redirect$2(
-      `/auth/login?from=${encodeURIComponent(url.pathname + url.search)}`
-    );
-  const { type, priceKey, sessionId, success, canceled } = Object.fromEntries(
-    url.searchParams
-  );
+    return redirect$2(`/auth/login?from=${encodeURIComponent(url.pathname + url.search)}`);
+  const { type, priceKey, sessionId, customerId, success, canceled } = Object.fromEntries(url.searchParams);
+  if (type === "portal" && customerId)
+    return await createPortalSession(customerId);
   let message, to, caption;
   if (type === "start") {
     caption = "Get License";
@@ -6867,7 +8708,7 @@ async function loader$3({ request }) {
     return Response.json({ type, message, caption, to });
   }
   if (type === "create" && priceKey) {
-    const cflow = await strat(user, { priceKey });
+    const cflow = await start$1(user, { priceKey });
     if (!cflow?.message) return cflow;
     caption = "Try again";
     message = cflow.message;
@@ -6877,8 +8718,14 @@ async function loader$3({ request }) {
     caption = "Back to App";
     message = "The checkout was successful.";
     to = "/app/settings/overview";
+    const license2 = await read$7(user);
+    session.set("license", license2);
     await wait(3e3);
-    return redirect$2(to);
+    return redirect$2(to, {
+      headers: {
+        "Set-Cookie": await commitSession(session)
+      }
+    });
   }
   if (canceled) {
     caption = "Try again";
@@ -6890,7 +8737,7 @@ async function loader$3({ request }) {
     message = "You have an Active License!";
     to = "/app/settings/overview";
   }
-  const license = (await read$6(user))?.toJSON();
+  const license = (await read$7(user))?.toJSON();
   const lookup_keys = Object.keys(prices);
   const prices$1 = await getPrices({ lookup_keys });
   return Response.json({
@@ -6913,9 +8760,7 @@ async function action$1({ request }) {
   const form = await request.formData();
   const { priceKey, sessionId } = Object.fromEntries(form);
   if (type === "create" && priceKey)
-    return await strat(user, { priceKey });
-  if (type === "portal" && sessionId)
-    return await createPortalSession({ sessionId });
+    return await start$1(user, { priceKey });
   return null;
 }
 function join() {
@@ -6930,7 +8775,6 @@ function join() {
     caption,
     to
   } = useLoaderData();
-  const { state } = useNavigation();
   const { toast } = useToast();
   const navigate = useNavigate();
   useEffect(() => {
@@ -6939,73 +8783,22 @@ function join() {
         title: message
       });
   }, [success, canceled, message]);
-  function getPrice(price) {
-    return price === "0" ? "0.00" : `${price.slice(0, -2)}.${price.slice(-2)}`;
-  }
   return /* @__PURE__ */ jsxs("div", { className: "h-full flex flex-col gap-8 justify-center items-center p-16", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex flex-col gap-4 justify-center items-center", children: [
       /* @__PURE__ */ jsx(Logo, { subtitle: true }),
       /* @__PURE__ */ jsxs(CardModule, { className: "shadow-none min-w-96 max-w-96", title: "Join", children: [
         /* @__PURE__ */ jsx("div", { children: message }),
-        /* @__PURE__ */ jsx("div", { className: "flex justify-end mt-4", children: /* @__PURE__ */ jsx(
-          Button,
-          {
-            onClick: () => type === "start" ? window.location = to : navigate(to),
-            children: caption
-          }
-        ) })
+        /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-end mt-4", children: [
+          /* @__PURE__ */ jsx(Link, { to: "/app/settings/pricing", className: "text-sm text-zinc-500 underline", children: "Back to App" }),
+          /* @__PURE__ */ jsx(
+            Button,
+            {
+              onClick: () => type === "start" ? window.location = to : navigate(to),
+              children: caption
+            }
+          )
+        ] })
       ] })
-    ] }),
-    license?.id && /* @__PURE__ */ jsxs("div", { className: "flex gap-16", children: [
-      !prices && "There is no price to display!",
-      prices?.map((price, i) => /* @__PURE__ */ jsx("form", { action: "?type=create", method: "POST", children: /* @__PURE__ */ jsxs("div", { className: "grid gap-2", children: [
-        /* @__PURE__ */ jsx("strong", { className: "text-primary text-lg", children: price.product.name }),
-        /* @__PURE__ */ jsx("small", { children: price.product.description }),
-        /* @__PURE__ */ jsxs("span", { children: [
-          price.currency?.toUpperCase(),
-          " ",
-          getPrice(price.unit_amount_decimal)
-        ] }),
-        price.product?.metadata && /* @__PURE__ */ jsx("div", { className: "grid gap-1 divide-y text-sm", children: Object.keys(price.product.metadata).map((item, j) => /* @__PURE__ */ jsxs("span", { children: [
-          item,
-          ": ",
-          price.product.metadata[item]
-        ] }, j)) }),
-        /* @__PURE__ */ jsx("input", { type: "hidden", name: "priceKey", value: price.lookup_key }),
-        /* @__PURE__ */ jsx(
-          SubmitField,
-          {
-            type: "submit",
-            size: "small",
-            className: cn(
-              "shadow-none px-2 py-1 mt-4",
-              license?.priceKey === price.lookup_key && "bg-green-500"
-            ),
-            loader: state === "submitting" || state === "loading",
-            disabled: license && price.lookup_key === "P0" || license?.priceKey === price.lookup_key,
-            label: license?.priceKey === price.lookup_key ? "Current" : "Checkout"
-          }
-        )
-      ] }) }, i))
-    ] }),
-    license?.id && license?.sessionId && /* @__PURE__ */ jsxs("form", { action: "?type=portal", method: "POST", children: [
-      /* @__PURE__ */ jsx(
-        "input",
-        {
-          type: "hidden",
-          name: "sessionId",
-          value: sessionId ?? license.sessionId
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        Button,
-        {
-          type: "submit",
-          variant: "ghost",
-          className: "shadow-none px-3 py-1 mt-4  border !text-green-500 !border-green-500 hover:opacity-95",
-          children: "Manage your billing information"
-        }
-      )
     ] }),
     /* @__PURE__ */ jsx("div", { className: "hidden bg-muted lg:block", children: /* @__PURE__ */ jsx(
       "img",
@@ -7017,42 +8810,21 @@ function join() {
   ] });
 }
 
-const route25 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route33 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action: action$1,
   default: join,
-  loader: loader$3
+  loader: loader$4
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const Switch = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(
-  SwitchPrimitives.Root,
-  {
-    className: cn(
-      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
-      className
-    ),
-    ...props,
-    ref,
-    children: /* @__PURE__ */ jsx(
-      SwitchPrimitives.Thumb,
-      {
-        className: cn(
-          "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
-        )
-      }
-    )
-  }
-));
-Switch.displayName = SwitchPrimitives.Root.displayName;
-
 const Accordion = AccordionPrimitive.Root;
-const AccordionItem = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Item, { ref, className: cn("border-b", className), ...props }));
+const AccordionItem = React.forwardRef(({ className, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Item, { ref, className: cn$1("border-b", className), ...props }));
 AccordionItem.displayName = "AccordionItem";
 const AccordionTrigger = React.forwardRef(({ className, children, ...props }, ref) => /* @__PURE__ */ jsx(AccordionPrimitive.Header, { className: "flex", children: /* @__PURE__ */ jsxs(
   AccordionPrimitive.Trigger,
   {
     ref,
-    className: cn(
+    className: cn$1(
       "flex flex-1 items-center justify-between py-4 text-sm font-medium transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180",
       className
     ),
@@ -7075,7 +8847,7 @@ const AccordionContent = React.forwardRef(({ className, children, ...props }, re
     ref,
     className: "overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
     ...props,
-    children: /* @__PURE__ */ jsx("div", { className: cn("pb-4 pt-0", className), children })
+    children: /* @__PURE__ */ jsx("div", { className: cn$1("pb-4 pt-0", className), children })
   }
 ));
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;
@@ -7089,7 +8861,7 @@ function NavUser() {
     if (open && !plan) read();
   }, [open]);
   async function read() {
-    const res = await fetch("/nav-user");
+    const res = await fetch("/user");
     const { profile: profile2, license } = await res.json();
     setProfile({
       name: `${profile2?.firstName} ${profile2?.lastName}`,
@@ -7121,14 +8893,6 @@ function NavUser() {
             ] }) : /* @__PURE__ */ jsx(SKeleton, {})
           ] }) }),
           /* @__PURE__ */ jsx(DropdownMenuSeparator, {}),
-          /* @__PURE__ */ jsxs(DropdownMenuLabel, { className: "flex gap-2 justify-between items-center font-medium", children: [
-            /* @__PURE__ */ jsx(Clock, { className: "w-4" }),
-            /* @__PURE__ */ jsxs("span", { className: "grid flex-auto", children: [
-              "Remind me",
-              /* @__PURE__ */ jsx("small", { className: "text-zinc-400", children: "Continue Working alerts" })
-            ] }),
-            /* @__PURE__ */ jsx(Switch, { checked: reminder, onCheckedChange: setReminder })
-          ] }),
           /* @__PURE__ */ jsxs(Accordion, { type: "single", collapsible: true, className: "m-0", children: [
             /* @__PURE__ */ jsxs(AccordionItem, { value: "item-1", className: "group border-none", children: [
               /* @__PURE__ */ jsx(AccordionTrigger, { className: "p-0 hover:no-underline group-data-[state=open]:text-primary [&>svg]:absolute [&>svg]:right-4", children: /* @__PURE__ */ jsxs(DropdownMenuLabel, { className: "flex gap-2 justify-between items-center font-medium", children: [
@@ -7235,7 +8999,7 @@ function NavUser() {
             plan ? /* @__PURE__ */ jsxs(
               Link,
               {
-                to: "/app/settings/overview",
+                to: "/app/settings/pricing",
                 className: "grid w-full hover:text-primary",
                 children: [
                   "Upgrade your Plan",
@@ -7366,12 +9130,12 @@ function Guide() {
     onNext();
     localStorage.setItem("guide", true);
   }
-  return /* @__PURE__ */ jsxs("div", { className: cn(open ? "block visible" : "hidden invisible"), children: [
+  return /* @__PURE__ */ jsxs("div", { className: cn$1(open ? "block visible" : "hidden invisible"), children: [
     /* @__PURE__ */ jsx("div", { className: "fixed left-0 top-0 w-screen h-screen bg-white/80 z-30" }),
-    step && /* @__PURE__ */ jsx(Step$1, { ...{ step, onSkip, onNext } })
+    step && /* @__PURE__ */ jsx(Step, { ...{ step, onSkip, onNext } })
   ] });
 }
-function Step$1({
+function Step({
   step: {
     step,
     label,
@@ -7389,7 +9153,7 @@ function Step$1({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cn(
+      className: cn$1(
         "absolute z-50 bg-white shadow-lg rounded-xl p-4 text-sm space-y-4 w-96"
       ),
       style: { left: x + "px", top: y + "px" },
@@ -7431,10 +9195,10 @@ function Step$1({
 
 function Layout({ ...props }) {
   return /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs("div", { className: "bg-[#F7F7F7] h-full flex flex-col", children: [
+    /* @__PURE__ */ jsx("div", { className: "bg-[#F7F7F7] h-full flex flex-col", children: /* @__PURE__ */ jsxs(TooltipProvider, { children: [
       /* @__PURE__ */ jsx(Outlet, {}),
       props?.children
-    ] }),
+    ] }) }),
     /* @__PURE__ */ jsx(Guide, {})
   ] });
 }
@@ -7443,17 +9207,51 @@ async function action({ request }) {
   console.log("test.action");
   return null;
 }
-async function loader$2({ request }) {
+async function loader$3({ request }) {
   return redirect$1("/app");
 }
 function Test() {
   return /* @__PURE__ */ jsx(Layout, { children: /* @__PURE__ */ jsx("div", { className: "w-[400px] p-8 grid gap-16", children: /* @__PURE__ */ jsx(NavUser, {}) }) });
 }
 
-const route26 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route34 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   action,
   default: Test,
+  loader: loader$3
+}, Symbol.toStringTag, { value: 'Module' }));
+
+async function loader$2({ request }) {
+  const session = await getSession(request.headers.get("Cookie"));
+  const user = session.get("user");
+
+  if (!user) return redirect$1("/auth/login");
+
+  let profile = session.get("profile");
+  let license = session.get("license");
+
+  if (!profile) profile = (await read$5(user))?.toJSON();
+  profile = { ...profile, email: user.email };
+
+  if (!license) license = (await read$7(user))?.toJSON();
+
+  if (license) {
+    let name = prices[license.priceKey].name;
+
+    if (process.env.NODE_ENV === "production")
+      name = (await stripe.prices.list({
+        lookup_keys: [license.priceKey],
+        expand: ["data.product"],
+      }))?.data[0]?.product?.name;
+
+    license = { ...license, name };
+  }
+
+  return Response.json({ profile, license });
+}
+
+const route35 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
   loader: loader$2
 }, Symbol.toStringTag, { value: 'Module' }));
 
@@ -7482,7 +9280,7 @@ function ChatProgress({ className, input = 0, outcomes }) {
         Progress,
         {
           value,
-          className: cn(className, status.progressClassname)
+          className: cn$1(className, status.progressClassname)
         }
       )
     ] }),
@@ -7521,7 +9319,7 @@ function Play({ ...props }) {
     {
       variant: "default",
       size: "icon",
-      className: cn(
+      className: cn$1(
         "rounded-full w-6 h-6 text-xs peer-hover:scale-110 transition",
         props?.className
       ),
@@ -7556,19 +9354,21 @@ function ChatIncome({
   competencies,
   outcomes,
   getCompetency,
-  plan
+  plan,
+  draftRefinement
 }) {
+  const navigate = useNavigate();
   const { ongoing } = useOngoing();
   function getClassName(ci) {
     const outcome = outcomes?.find(
       (item) => item.competency.objectId === ci.objectId
     );
-    return outcome ? flags$1[outcome.flag].className : "";
+    return outcome ? flags$1[outcome?.flag]?.className : "";
   }
   function onClick(type, cg, ci) {
     getCompetency?.(type, cg, ci);
   }
-  return /* @__PURE__ */ jsx(Accordion, { type: "single", collapsible: true, children: competencies.map((cg, x) => /* @__PURE__ */ jsxs(
+  return /* @__PURE__ */ jsx(Accordion, { type: "single", defaultValue: competencies?.[0]?.objectId, collapsible: true, children: competencies.map((cg, x) => /* @__PURE__ */ jsxs(
     AccordionItem,
     {
       value: cg.objectId,
@@ -7586,11 +9386,11 @@ function ChatIncome({
             /* @__PURE__ */ jsxs(
               "button",
               {
-                className: cn(
-                  "peer pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
+                className: cn$1(
+                  "peer w-full pb-4 border rounded-md p-2 text-xs text-zinc-500 hover:bg-primary/5 hover:bg-opacity-50 transition text-left",
                   getClassName(ci)
                 ),
-                onClick: () => ipIn && onClick("send", cg, ci),
+                onClick: () => !ipIn ? navigate("/app/settings/overview") : onClick("send", cg, ci),
                 children: [
                   ip,
                   " ",
@@ -7598,7 +9398,7 @@ function ChatIncome({
                 ]
               }
             ),
-            /* @__PURE__ */ jsx(
+            !draftRefinement && /* @__PURE__ */ jsx(
               Play,
               {
                 className: "absolute right-1 bottom-1 bg-zinc-400",
@@ -7606,7 +9406,7 @@ function ChatIncome({
                 disabled: ongoing || !ipIn
               }
             ),
-            !ipIn && /* @__PURE__ */ jsx(Lock, { size: 12, className: "absolute right-8 bottom-1" })
+            !ipIn && /* @__PURE__ */ jsx(Lock, { size: 12, className: cn$1("absolute right-8 bottom-1", draftRefinement && "right-1") })
           ] }, y);
         }) })
       ]
@@ -7629,29 +9429,76 @@ const flags$1 = {
   }
 };
 
-const badgeVariants = cva(
-  "inline-flex items-center rounded-md border border-zinc-200 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 dark:border-zinc-800 dark:focus:ring-zinc-300",
-  {
-    variants: {
-      variant: {
-        default: "border-transparent bg-zinc-900 text-zinc-50 shadow hover:bg-zinc-900/80 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/80",
-        secondary: "border-transparent bg-zinc-100 text-zinc-900 hover:bg-zinc-100/80 dark:bg-zinc-800 dark:text-zinc-50 dark:hover:bg-zinc-800/80",
-        destructive: "border-transparent bg-red-500 text-zinc-50 shadow hover:bg-red-500/80 dark:bg-red-900 dark:text-zinc-50 dark:hover:bg-red-900/80",
-        outline: "text-zinc-950 dark:text-zinc-50"
+function Guides({ sendChat }) {
+  const [open, setOpen] = useState(false);
+  return /* @__PURE__ */ jsxs("div", { className: cn$1(
+    "space-y-4 text-xs flex justify-center items-center absolute right-0 top-0 p-2",
+    open && "w-full h-full bg-white/75 backdrop-blur rounded-xl"
+  ), children: [
+    /* @__PURE__ */ jsx(
+      Button,
+      {
+        variant: "ghost",
+        size: "icon",
+        className: "rounded-full absolute right-2 top-2 bg-primary/10 backdrop-blur text-primary hover:text-orange-500",
+        onClick: () => setOpen(!open),
+        children: open ? /* @__PURE__ */ jsx(X, {}) : /* @__PURE__ */ jsx(ClipboardList, {})
       }
-    },
-    defaultVariants: {
-      variant: "default"
-    }
-  }
-);
-function Badge({
-  className,
-  variant,
-  ...props
-}) {
-  return /* @__PURE__ */ jsx("div", { className: cn(badgeVariants({ variant }), className), ...props });
+    ),
+    open && /* @__PURE__ */ jsx("div", { className: "p-8 grid gap-6 text-sm cursor-default", children: guides.map((item, index) => /* @__PURE__ */ jsxs("div", { className: "flex gap-2", children: [
+      /* @__PURE__ */ jsx("span", { children: index + 1 }),
+      /* @__PURE__ */ jsxs("div", { className: "space-y-1", children: [
+        /* @__PURE__ */ jsxs("span", { className: "flex gap-2 items-center", children: [
+          /* @__PURE__ */ jsx("strong", { className: "text-primary", children: item.title }),
+          item?.button && item.button.com(sendChat, setOpen)
+        ] }),
+        /* @__PURE__ */ jsx("p", { className: "text-xs text-zinc-500", children: item.description })
+      ] })
+    ] }, index)) })
+  ] });
 }
+const guides = [
+  {
+    title: "Select a Competency",
+    description: "Choose a competency from the left panel to start working on it."
+  },
+  {
+    title: "Specify Draft Refinement",
+    description: "Check the box in the right panel if you have a draft."
+  },
+  {
+    title: "Provide Your Best Answer",
+    description: "Type out your response with as much detail as you remember. Don't worry if it's not perfect-AI will help refine it"
+  },
+  {
+    title: "Review AI's Draft Carefully",
+    description: "AI will generate a draft based on your input. Read it carefully to ensure it reflects your real experience."
+  },
+  {
+    title: "Fix Any Mistakes",
+    description: "If anything looks incorrect or unrealistic, edit the response before proceeding."
+  },
+  {
+    title: "Click Evaluate & Improve",
+    description: "The AI will analyze your response, identify missing details, and suggest improvements for better clarity.",
+    button: {
+      separate: true,
+      label: "Evaluate & Improve",
+      com: (action, setOpen) => Play({
+        className: "-mt-1.5",
+        disabled: true,
+        onClick: () => {
+          action("Is this convincing enough for the PEng assessor");
+          setOpen(false);
+        }
+      })
+    }
+  },
+  {
+    title: "Add Missing Information",
+    description: "AI will highlight gaps in your response. Provide the missing details in the chat to make your submission stronger."
+  }
+];
 
 function useOutcome() {
   const { state, store } = useStore();
@@ -7680,158 +9527,35 @@ function useOutcome() {
   };
 }
 
-function Guides({ ...props }) {
-  const [value, setValue] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const { store } = useStore();
-  const { syncSteps } = useOutcome();
-  useEffect(() => {
-    store.outcome("guides", null);
-    setValue(null);
-  }, [props?.outcome]);
-  useEffect(() => {
-    if (!value) {
-      const v = props?.value ?? [];
-      store.outcome("guides", v);
-      setValue(v);
-    }
-    if (value?.length > 0) {
-      syncSteps(value.length === guides.length, props?.step);
-    }
-  }, [value, props?.value]);
-  async function onUpdate(v) {
-    setLoading(true);
-    const res = await fetch("/outcomes/update", {
-      method: "POST",
-      body: JSON.stringify({
-        objectId: props?.outcome.objectId,
-        guides: v
-      })
-    });
-    if (!res?.error) {
-      await props?.getOutcomes();
-    }
-    setLoading(false);
-  }
-  return /* @__PURE__ */ jsx("div", { className: "space-y-4", children: !props?.competencyItem ? /* @__PURE__ */ jsx("div", { className: "text-yellow-700 text-xs text-center", children: "Select a Competency from Left panel to begin" }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs("div", { className: "text-yellow-700 text-xs", children: [
-      /* @__PURE__ */ jsx("b", { children: "Hint:" }),
-      " Mark the checkbox upon completion to go forward."
-    ] }),
-    /* @__PURE__ */ jsx("div", { className: "space-y-4 text-xs", children: value && guides.map((item, index) => /* @__PURE__ */ jsxs(
-      "div",
-      {
-        className: cn(
-          "flex gap-2",
-          !value?.includes?.(index) && !value?.includes?.(index - 1) && index !== 0 && "opacity-50"
-        ),
-        children: [
-          loading ? /* @__PURE__ */ jsx("span", { children: /* @__PURE__ */ jsx(
-            LoaderCircle,
-            {
-              size: 16,
-              className: "animate-spin text-zinc-500"
-            }
-          ) }) : /* @__PURE__ */ jsx(
-            Checkbox,
-            {
-              id: `chkbx-${index}`,
-              disabled: index === 0 || value?.includes?.(index - 1) ? false : true,
-              checked: value?.[index] === index ? true : false,
-              onCheckedChange: (checked) => {
-                const v = checked ? [...value, index] : value.filter((l) => l !== index && l < index);
-                store.outcome("guides", v);
-                setValue(v);
-                onUpdate(v);
-              }
-            }
-          ),
-          /* @__PURE__ */ jsxs(
-            "span",
-            {
-              className: cn(
-                "space-y-1",
-                value?.includes?.(index) && "text-primary- line-through",
-                index === value.length && "text-primary"
-              ),
-              children: [
-                /* @__PURE__ */ jsxs("div", { className: "flex gap-1", children: [
-                  /* @__PURE__ */ jsx(Label, { htmlFor: `chkbx-${index}`, children: item.title }),
-                  item?.button && item.button.com(props?.sendChat)
-                ] }),
-                /* @__PURE__ */ jsx("p", { className: "text-xs text-zinc-500", children: item.description })
-              ]
-            }
-          )
-        ]
+function SAO({ setDraftAssessmentMessages, onDraftAssessmentLoadingChange, ...props }) {
+  useStore();
+  useOutcome();
+  const [draftAssessmentLoading, setDraftAssessmentLoading] = useState(false);
+  const [draftAssessmentData, setDraftAssessmentData] = useState(null);
+  useToast();
+  useNavigate();
+  const [draftRefinement, setDraftRefinement] = useState(false);
+  return /* @__PURE__ */ jsx("div", { className: "flex-auto flex flex-col space-y-8 pt-12 pb-32", children: props?.competencyItem && /* @__PURE__ */ jsx("div", { className: "flex-auto flex flex-col gap-4", children: Object.keys(types).map((type, index) => /* @__PURE__ */ jsx(
+    OutcomeBox,
+    {
+      type,
+      label: types[type].label,
+      limit: types[type].limit,
+      competencyGroup: props?.competencyGroup,
+      competencyItem: props.competencyItem,
+      outcomes: props?.outcomes,
+      outcome: props?.outcome,
+      getOutcomes: props?.getOutcomes,
+      step: props?.step,
+      draftRefinement,
+      draftAssessmentData: null,
+      onDraftAssessmentApplied: () => {
+        setDraftAssessmentData(null);
       },
-      index
-    )) })
-  ] }) });
-}
-const guides = [
-  {
-    title: "Select a Competency",
-    description: "Choose a competency from the left panel to start working on it."
-  },
-  {
-    title: "Provide Your Best Answer",
-    description: "Type out your response with as much detail as you remember. Don't worry if it's not perfect-AI will help refine it"
-  },
-  {
-    title: "Review AI's Draft Carefully",
-    description: "AI will generate a draft based on your input. Read it carefully to ensure it reflects your real experience."
-  },
-  {
-    title: "Fix Any Mistakes",
-    description: "If anything looks incorrect or unrealistic, edit the response before proceeding."
-  },
-  {
-    title: "Click Evaluate & Improve",
-    description: "The AI will analyze your response, identify missing details, and suggest improvements for better clarity.",
-    button: {
-      separate: true,
-      label: "Evaluate & Improve",
-      com: (sendChat) => Play({
-        className: "-mt-1.5",
-        onClick: () => sendChat("Is this convincing enough for the PEng assessor")
-      })
-    }
-  },
-  {
-    title: "Add Missing Information",
-    description: "AI will highlight gaps in your response. Provide the missing details in the chat to make your submission stronger."
-  }
-];
-
-function SAO({ ...props }) {
-  const { state } = useStore();
-  const { syncSteps } = useOutcome();
-  useEffect(() => {
-    if (props?.outcome?.flag)
-      syncSteps(props.outcome.flag === flags.approved, props?.step);
-  }, [props?.outcome]);
-  return /* @__PURE__ */ jsx("div", { className: "flex flex-col space-y-8", children: !state?.outcome?.steps?.includes("guides") ? /* @__PURE__ */ jsx("div", { className: "text-yellow-700 text-xs text-center", children: "Complete previous step to continue" }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs("div", { className: "text-yellow-700 text-xs", children: [
-      /* @__PURE__ */ jsx("b", { children: "Hint:" }),
-      " Fill the following fields from chat results."
-    ] }),
-    props?.competencyItem && Object.keys(types).map((type, index) => /* @__PURE__ */ jsx(
-      OutcomeBox,
-      {
-        type,
-        label: types[type].label,
-        limit: types[type].limit,
-        competencyGroup: props?.competencyGroup,
-        competencyItem: props.competencyItem,
-        outcomes: props?.outcomes,
-        outcome: props?.outcome,
-        getOutcomes: props?.getOutcomes,
-        step: props?.step
-      },
-      index
-    ))
-  ] }) });
+      allFieldValues: draftAssessmentData
+    },
+    `${props?.outcome?.objectId}-${type}-${props?.outcome?.updatedAt || index}`
+  )) }) });
 }
 function OutcomeBox({
   type,
@@ -7842,6 +9566,10 @@ function OutcomeBox({
   outcomes,
   outcome,
   getOutcomes,
+  draftRefinement,
+  draftAssessmentData,
+  onDraftAssessmentApplied,
+  allFieldValues,
   ...props
 }) {
   const [updated, setUpdated] = useState(true);
@@ -7857,15 +9585,22 @@ function OutcomeBox({
     setCounter(0);
   }, [value]);
   useEffect(() => {
-    setUpdated(true);
-    setValue(outcome?.[type]);
-    setPreviousValue(outcome?.[type]);
-  }, [outcome]);
+    const newValue = outcome?.[type] || null;
+    const currentValueStr = String(value || "");
+    const newValueStr = String(newValue || "");
+    if (currentValueStr !== newValueStr || outcome?._refresh) {
+      setUpdated(true);
+      setValue(newValue);
+      setPreviousValue(newValue);
+    }
+  }, [outcome, type]);
   function syncFlag(type2, value2) {
-    outcome[type2] = value2;
-    const SOA = [outcome?.situation, outcome?.action, outcome?.outcome];
-    const idled = SOA.every((item) => !item || item === "");
-    const filled = SOA.every((item) => item && item !== "");
+    const situation = type2 === "situation" ? value2 : allFieldValues?.situation || outcome?.situation || "";
+    const action = type2 === "action" ? value2 : allFieldValues?.action || outcome?.action || "";
+    const outcomeValue = type2 === "outcome" ? value2 : allFieldValues?.outcome || outcome?.outcome || "";
+    const sao = [situation, action, outcomeValue];
+    const idled = sao.every((item) => !item || item === "");
+    const filled = sao.every((item) => item && item !== "");
     return idled ? "idle" : filled ? "approved" : "pending";
   }
   async function onUpdate() {
@@ -7873,13 +9608,35 @@ function OutcomeBox({
     if (!updated) {
       setLoading(true);
       const flag = syncFlag(type, value);
+      const updateData = {
+        objectId: outcome.objectId,
+        [type]: value,
+        flag,
+        draftRefinement
+      };
+      if (allFieldValues) {
+        if (type === "situation" && allFieldValues.action) {
+          updateData.action = allFieldValues.action;
+        }
+        if (type === "situation" && allFieldValues.outcome) {
+          updateData.outcome = allFieldValues.outcome;
+        }
+        if (type === "action" && allFieldValues.situation) {
+          updateData.situation = allFieldValues.situation;
+        }
+        if (type === "action" && allFieldValues.outcome) {
+          updateData.outcome = allFieldValues.outcome;
+        }
+        if (type === "outcome" && allFieldValues.situation) {
+          updateData.situation = allFieldValues.situation;
+        }
+        if (type === "outcome" && allFieldValues.action) {
+          updateData.action = allFieldValues.action;
+        }
+      }
       const res = await fetch("/outcomes/update", {
         method: "POST",
-        body: JSON.stringify({
-          objectId: outcome.objectId,
-          [type]: value,
-          flag
-        })
+        body: JSON.stringify(updateData)
       });
       if (res?.error) return;
       const data = await res.json();
@@ -7888,6 +9645,9 @@ function OutcomeBox({
       await getOutcomes();
       setPreviousValue(value);
       setLoading(false);
+      if (onDraftAssessmentApplied) {
+        onDraftAssessmentApplied();
+      }
     }
     setUpdated(!updated);
   }
@@ -7895,14 +9655,14 @@ function OutcomeBox({
     setValue(previousValue);
     setUpdated(!updated);
   }
-  return /* @__PURE__ */ jsxs("div", { children: [
+  return /* @__PURE__ */ jsxs("div", { className: "flex-1", children: [
     /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-end", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-1 items-center", children: [
         /* @__PURE__ */ jsx("span", { className: "text-sm font-medium text-nowrap", children: label }),
         /* @__PURE__ */ jsx(
           "span",
           {
-            className: cn(
+            className: cn$1(
               "text-[10px] text-nowrap",
               counter > limit ? "text-red-500" : "text-green-500",
               counter === 0 && "text-zinc-500"
@@ -7917,7 +9677,7 @@ function OutcomeBox({
           Button,
           {
             variant: "ghost",
-            className: cn(
+            className: cn$1(
               "h-4 p-1 rounded-md text-xs",
               updated ? "text-blue-500" : "text-orange-500"
             ),
@@ -7938,10 +9698,16 @@ function OutcomeBox({
       ] })
     ] }),
     /* @__PURE__ */ jsx(Separator, {}),
-    updated ? /* @__PURE__ */ jsx("div", { ref: contentRef, className: "text-zinc-400 text-sm", children: value }) : /* @__PURE__ */ jsx(
+    updated ? /* @__PURE__ */ jsx("div", { ref: contentRef, className: "text-zinc-400 text-sm", children: /* @__PURE__ */ jsx(
+      Markdown,
+      {
+        children: value,
+        className: "text-zinc-600 space-y-4 [&>p>br]:!content-[''] [&>p>br]:!block [&>p>br]:!my-2"
+      }
+    ) }) : /* @__PURE__ */ jsx(
       Textarea,
       {
-        className: cn(
+        className: cn$1(
           "min-h-40 bg-none focus-visible:ring-0 border-zinc/50 focus-visible:border-primary text-primary",
           `h-[${contentRef?.current?.clientHeight}px]`
         ),
@@ -7968,88 +9734,6 @@ const types = {
 const flags = {
   approved: "approved"
 };
-
-function Score({
-  competencyGroup,
-  competencyItem,
-  outcome,
-  getOutcomes,
-  ...props
-}) {
-  const [loading, setLoading] = useState(false);
-  const [score, setScore] = useState(null);
-  const { toast } = useToast();
-  const { state } = useStore();
-  const { syncSteps } = useOutcome();
-  const navigate = useNavigate();
-  useEffect(() => {
-    if (outcome?.score) syncSteps(outcome.score !== null, props?.step);
-  }, [props?.outcome]);
-  useEffect(() => {
-    setScore(
-      outcome?.score ?? {
-        count: 0,
-        result: 0,
-        reason: null
-      }
-    );
-  }, [outcome]);
-  async function onClick() {
-    setLoading(true);
-    const res = await fetch("/score", {
-      method: "POST",
-      body: JSON.stringify({ competencyItem, outcome })
-    });
-    const data = await res.json();
-    if (data?.redirected) {
-      setLoading(false);
-      return navigate(data.url);
-    }
-    if (data?.error) {
-      toast({
-        title: data.error?.message ?? "Error!"
-      });
-      setLoading(false);
-      return;
-    }
-    await getOutcomes();
-    setLoading(false);
-  }
-  return /* @__PURE__ */ jsx("div", { className: "space-y-4", children: !state?.outcome?.steps?.includes("sao") ? /* @__PURE__ */ jsx("div", { className: "text-yellow-700 text-xs text-center", children: "Complete previous step to continue" }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsxs("div", { className: "text-yellow-700 text-xs", children: [
-      /* @__PURE__ */ jsx("b", { children: "Hint:" }),
-      " Click the Button to get the Right Score for this Competency."
-    ] }),
-    /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center", children: [
-      /* @__PURE__ */ jsx(
-        SubmitField,
-        {
-          type: "button",
-          label: "Get Score",
-          size: "small",
-          className: "px-2 py-1",
-          disabled: loading ? true : outcome?.flag !== "approved",
-          loader: loading,
-          onClick
-        }
-      ),
-      score?.result !== 0 && /* @__PURE__ */ jsxs("span", { children: [
-        "Result:",
-        /* @__PURE__ */ jsxs("b", { className: "text-lg text-primary", children: [
-          " ",
-          `${score?.result}`
-        ] })
-      ] })
-    ] }),
-    score?.reason && /* @__PURE__ */ jsx("div", { className: "text-xs", children: /* @__PURE__ */ jsx(
-      Markdown,
-      {
-        children: score.reason,
-        className: "text-zinc-600 space-y-4 [&>p>br]:!content-[''] [&>p>br]:!block [&>p>br]:!my-2"
-      }
-    ) })
-  ] }) });
-}
 
 const data = [
 	{
@@ -8310,15 +9994,15 @@ const cbas = {
 };
 
 function Sample({ ...props }) {
-  const [CBA, setCBA] = useState();
+  const [cba, setCba] = useState();
   useEffect(() => {
-    const cba = cbas.data.find(
-      (cba2) => cba2.competency === `${props?.competencyGroup?.order}.${props?.competencyItem?.order}`
+    const cba2 = cbas.data.find(
+      (cba3) => cba3.competency === `${props?.competencyGroup?.order}.${props?.competencyItem?.order}`
     );
-    setCBA(cba);
+    setCba(cba2);
   }, [props?.competencyItem]);
-  return /* @__PURE__ */ jsx("div", { className: "space-y-4", children: !CBA ? /* @__PURE__ */ jsx("div", { className: "text-yellow-700 text-xs text-center", children: "Select a Competency from Left panel" }) : /* @__PURE__ */ jsxs(Fragment, { children: [
-    /* @__PURE__ */ jsx("strong", { className: "text-primary", children: CBA?.title }),
+  return /* @__PURE__ */ jsxs("div", { className: "space-y-4 text-sm", children: [
+    /* @__PURE__ */ jsx("strong", { className: "text-primary", children: cba?.title }),
     /* @__PURE__ */ jsx("div", { className: "space-y-8", children: Object.keys(items).map((key, i) => /* @__PURE__ */ jsxs("div", { className: "divide-y space-y-1", children: [
       /* @__PURE__ */ jsxs("span", { className: "space-x-1", children: [
         /* @__PURE__ */ jsx("strong", { className: "font-semibold", children: items[key].title }),
@@ -8331,12 +10015,12 @@ function Sample({ ...props }) {
       /* @__PURE__ */ jsx("div", { className: "text-zinc-500 pt-1", children: /* @__PURE__ */ jsx(
         Markdown,
         {
-          children: CBA?.[key]?.replace(/\\n/gi, "\n "),
+          children: cba?.[key]?.replace(/\\n/gi, "\n "),
           className: "space-y-2 [&>ul]:space-y-2 [&>ul]:list-[auto] [&>ul]:my-2 [&>ul]:pl-4 [&>ol]:list-[auto] [&>ol]:my-2 [&>ol]:pl-4"
         }
       ) })
     ] }, i)) })
-  ] }) });
+  ] });
 }
 const items = {
   situation: {
@@ -8356,28 +10040,105 @@ const items = {
   }
 };
 
-const Collapsible = CollapsiblePrimitive.Root;
-const CollapsibleTrigger = CollapsiblePrimitive.CollapsibleTrigger;
-const CollapsibleContent = CollapsiblePrimitive.CollapsibleContent;
-
-function CollapsibleModule({ ...props }) {
-  return /* @__PURE__ */ jsxs(
-    Collapsible,
-    {
-      open: props?.open,
-      defaultOpen: props?.defaultOpen,
-      onOpenChange: props?.onOpenChange,
-      className: cn(props?.className),
-      disabled: props?.disabled,
-      children: [
-        /* @__PURE__ */ jsxs(CollapsibleTrigger, { className: cn(props?.triggerClassName), children: [
-          props?.trigger,
-          props?.icon
-        ] }),
-        /* @__PURE__ */ jsx(CollapsibleContent, { className: cn(props?.contentClassName), children: props?.content })
-      ]
+function Score({
+  competencyGroup,
+  competencyItem,
+  outcome,
+  getOutcomes,
+  ...props
+}) {
+  const [loading, setLoading] = useState(false);
+  const [score, setScore] = useState(null);
+  const { toast } = useToast();
+  useStore();
+  const { syncSteps } = useOutcome();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (outcome?.score) syncSteps(outcome.score !== null, props?.step);
+  }, [props?.outcome]);
+  useEffect(() => {
+    setScore(
+      outcome?.score ?? {
+        count: 0,
+        result: 0,
+        reason: null
+      }
+    );
+  }, [outcome]);
+  async function onClick() {
+    setLoading(true);
+    const res = await fetch("/score", {
+      method: "POST",
+      body: JSON.stringify({ competencyItem, outcome })
+    });
+    const data = await res.json();
+    if (data?.redirected) {
+      setLoading(false);
+      return navigate(data.url);
     }
-  );
+    if (data?.error) {
+      toast({
+        title: data.error?.message ?? "Error!"
+      });
+      setLoading(false);
+      return;
+    }
+    await getOutcomes();
+    setLoading(false);
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "fixed w-64 bottom-8 grid gap-2 pt-2 bg-white/50 backdrop-blur", children: [
+    !score?.result !== 0 && /* @__PURE__ */ jsx(
+      DialogModule,
+      {
+        title: score?.result > 0 ? "Result" : null,
+        trigger: /* @__PURE__ */ jsxs("div", { className: cn$1(
+          "flex justify-between items-center rounded-md px-2 py-1 border cursor-pointer",
+          score?.result > 0 ? "border-green-200 bg-green-100 *:text-green-500" : "border-orange-200 bg-orange-100 *:text-orange-500"
+        ), children: [
+          /* @__PURE__ */ jsx(CircleStar, { size: 20, className: "stroke-1" }),
+          /* @__PURE__ */ jsxs("span", { className: "text-xl-", children: [
+            score?.result,
+            " ",
+            /* @__PURE__ */ jsx("small", { className: "text-xs", children: "of" }),
+            " 5"
+          ] }),
+          /* @__PURE__ */ jsx(ChevronRight, { size: 20, className: "stroke-1" })
+        ] }),
+        children: /* @__PURE__ */ jsx("div", { className: "text-sm p-4", children: score?.reason ? /* @__PURE__ */ jsx(
+          Markdown,
+          {
+            children: score.reason,
+            className: "text-zinc-600 space-y-4 [&>p>br]:!content-[''] [&>p>br]:!block [&>p>br]:!my-2"
+          }
+        ) : /* @__PURE__ */ jsxs("div", { className: "p-4 text-center", children: [
+          "Please get/set the Situation, Action, and Outcome values first. ",
+          /* @__PURE__ */ jsx("br", {}),
+          "Then Click on the Result and Score Button"
+        ] }) })
+      }
+    ),
+    /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
+      /* @__PURE__ */ jsx(
+        DialogModule,
+        {
+          trigger: /* @__PURE__ */ jsx(Button, { variant: "outline", className: "flex-1 text-xs text-zinc-500", children: "Sample" }),
+          children: /* @__PURE__ */ jsx(Sample, { competencyGroup, competencyItem })
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        SubmitField,
+        {
+          type: "button",
+          label: "Result & Score",
+          className: "px-2 py-1",
+          icon: /* @__PURE__ */ jsx(CircleCheckBig, {}),
+          disabled: loading ? true : outcome?.flag !== "approved",
+          loader: loading,
+          onClick
+        }
+      )
+    ] })
+  ] });
 }
 
 function Outcome({
@@ -8387,139 +10148,71 @@ function Outcome({
   outcome,
   getOutcomes,
   sendChat,
+  draftRefinement,
+  setDraftAssessmentMessages,
+  onDraftAssessmentLoadingChange,
   ...props
 }) {
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(steps.guides.id);
   useStore();
-  const { initSteps } = useOutcome();
+  const { initSteps} = useOutcome();
   useEffect(() => {
     if (outcome) {
       initSteps(outcome);
       setData(outcome);
     }
   }, [outcome]);
-  return /* @__PURE__ */ jsxs("div", { className: "h-full", children: [
-    !competencyItem && /* @__PURE__ */ jsxs("div", { className: "flex flex-col items-center justify-center gap-4 text-xs text-zinc-500 mb-8", children: [
+  return /* @__PURE__ */ jsxs("div", { className: "h-full flex flex-col relative", children: [
+    !competencyItem && /* @__PURE__ */ jsxs("div", { className: "flex-auto flex flex-col items-center justify-center gap-4 text-xs text-zinc-500 mb-8", children: [
       /* @__PURE__ */ jsx(MousePointerClick, {}),
       "Select a Competency from Left panel"
     ] }),
-    competencyItem && /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center mb-8 text-xs [&>div]:font-semibold [&>div]:text-primary", children: [
-      /* @__PURE__ */ jsxs(Badge, { variant: "outline", className: "py-2", children: [
-        competencyGroup?.order,
-        ".",
-        competencyGroup?.title
+    competencyItem && /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsxs("div", { className: "flex justify-between items-center pb-2 mb-2 text-primary font-semibold text-sm [&>div]:font-semibold [&>div]:text-primary fixed w-64 bg-white/50 backdrop-blur", children: [
+        /* @__PURE__ */ jsxs("span", { children: [
+          competencyGroup?.order,
+          ".",
+          competencyGroup?.title
+        ] }),
+        /* @__PURE__ */ jsx(ChevronRight, { size: 16, className: "text-zinc-500" }),
+        /* @__PURE__ */ jsxs("span", { children: [
+          competencyGroup?.order,
+          ".",
+          competencyItem?.order
+        ] })
       ] }),
-      /* @__PURE__ */ jsx(ChevronRight, { size: 16, className: "text-zinc-500" }),
-      /* @__PURE__ */ jsxs(Badge, { variant: "outline", className: "py-2", children: [
-        competencyGroup?.order,
-        ".",
-        competencyItem?.order
-      ] })
-    ] }),
-    /* @__PURE__ */ jsx(
-      Step,
-      {
-        trigger: steps.guides.title,
-        content: /* @__PURE__ */ jsx(
-          Guides,
-          {
-            step: steps.guides.id,
-            value: data?.guides,
-            competencyItem,
-            outcome,
-            getOutcomes,
-            sendChat
-          }
-        ),
-        step: steps.guides.id,
-        open
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      Step,
-      {
-        trigger: steps.sao.title,
-        content: /* @__PURE__ */ jsx(
-          SAO,
-          {
-            step: steps.sao.id,
-            value: {
-              situaction: data?.situaction,
-              action: data?.action,
-              outcome: data?.outcome
-            },
-            competencyGroup,
-            competencyItem,
-            outcomes,
-            outcome,
-            getOutcomes
-          }
-        ),
-        step: steps.sao.id,
-        open
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      Step,
-      {
-        trigger: steps.score.title,
-        content: /* @__PURE__ */ jsx(
-          Score,
-          {
-            step: steps.score.id,
-            value: data?.score,
-            competencyGroup,
-            competencyItem,
-            outcome,
-            getOutcomes
-          }
-        ),
-        step: steps.score.id,
-        open
-      }
-    ),
-    /* @__PURE__ */ jsx(
-      Step,
-      {
-        trigger: steps.sample.title,
-        content: /* @__PURE__ */ jsx(
-          Sample,
-          {
-            step: steps.sample.id,
-            competencyGroup,
-            competencyItem
-          }
-        ),
-        step: steps.sample.id,
-        open
-      }
-    )
-  ] });
-}
-function Step({ ...props }) {
-  const { state } = useStore();
-  return /* @__PURE__ */ jsx(
-    CollapsibleModule,
-    {
-      trigger: props?.trigger,
-      content: props?.content,
-      defaultOpen: props.step === props.open,
-      className: "group",
-      triggerClassName: cn(
-        "w-full flex justify-between text-left border rounded-lg p-3 my-1 text-[.85rem] border-zinc-200 group-data-[state=open]:border-primary group-data-[state=open]:text-primary",
-        state.outcome.steps?.includes(props.step) && "!border-green-500 !text-green-500"
-      ),
-      contentClassName: "space-y-1 text-sm p-4 border border-zinc-200 rounded-lg",
-      icon: /* @__PURE__ */ jsx(
-        ChevronDown,
+      /* @__PURE__ */ jsx(
+        SAO,
         {
-          size: 16,
-          className: "group-data-[state=open]:rotate-180 transition-transform text-zinc-400"
+          step: steps.sao.id,
+          value: {
+            situaction: data?.situaction,
+            action: data?.action,
+            outcome: data?.outcome
+          },
+          competencyGroup,
+          competencyItem,
+          outcomes,
+          outcome,
+          getOutcomes,
+          draftRefinement,
+          setDraftAssessmentMessages
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        Score,
+        {
+          step: steps.score.id,
+          value: data?.score,
+          competencyGroup,
+          competencyItem,
+          outcome,
+          getOutcomes
         }
       )
-    }
-  );
+    ] })
+  ] });
 }
 const steps = {
   guides: {
@@ -8544,112 +10237,312 @@ const steps = {
   }
 };
 
-const suggestions = [
-	{
-		id: "1",
-		title: "",
-		description: "If you start categories 1, 5 and 6 at first, and get help from our AI, you will actually progress to 22 competencies, which is about 65% of the them. Finally, you can receive a special reward and 65 Scores!"
-	},
-	{
-		id: "2",
-		title: "",
-		description: "Otherwise, If you start categories 2, 3, 4 and 7 at first, and get help from our AI, you will actually progress to 12 competencies, which is about 35% of the them. Finally, you can receive 35 Scores!"
-	}
-];
-
-function Suggestions() {
-  return /* @__PURE__ */ jsxs(Collapsible, { className: "relative z-10 text-sm flex-grow", children: [
-    /* @__PURE__ */ jsxs(CollapsibleTrigger, { className: "bg-white w-full px-6 py-3 rounded-xl flex gap-2 justify-between items-center group text-zinc-600", children: [
-      /* @__PURE__ */ jsx(Icon, {}),
-      "Suggestions for Boosting your CBA",
-      /* @__PURE__ */ jsx(
-        ChevronDown,
-        {
-          size: 16,
-          className: "ml-2 group-data-[state=open]:rotate-180 transition"
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxs(CollapsibleContent, { className: "absolute mt-2 bg-white p-4 rounded-xl shadow-lg space-y-2", children: [
-      /* @__PURE__ */ jsx("span", { className: "text-xs text-primary/75", children: "Quick suggestions" }),
-      /* @__PURE__ */ jsx(Separator, {}),
-      /* @__PURE__ */ jsx("ul", { className: "list-disc px-4 py-2 space-y-4 text-zinc-600", children: suggestions.map((suggestion, index) => /* @__PURE__ */ jsx("li", { children: suggestion.description }, index)) })
-    ] })
-  ] });
-}
-const Icon = () => /* @__PURE__ */ jsxs(
-  "svg",
-  {
-    width: "24",
-    height: "24",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    xmlns: "http://www.w3.org/2000/svg",
-    children: [
-      /* @__PURE__ */ jsx("rect", { width: "24", height: "24", fill: "#1E1E1E" }),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M-2577 -3864C-2577 -3919.23 -2532.23 -3964 -2477 -3964H2529C2584.23 -3964 2629 -3919.23 2629 -3864V8964C2629 9019.23 2584.23 9064 2529 9064H-2477C-2532.23 9064 -2577 9019.23 -2577 8964V-3864Z",
-          fill: "#444444"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M-2477 -3963H2529V-3965H-2477V-3963ZM2628 -3864V8964H2630V-3864H2628ZM2529 9063H-2477V9065H2529V9063ZM-2576 8964V-3864H-2578V8964H-2576ZM-2477 9063C-2531.68 9063 -2576 9018.68 -2576 8964H-2578C-2578 9019.78 -2532.78 9065 -2477 9065V9063ZM2628 8964C2628 9018.68 2583.68 9063 2529 9063V9065C2584.78 9065 2630 9019.78 2630 8964H2628ZM2529 -3963C2583.68 -3963 2628 -3918.68 2628 -3864H2630C2630 -3919.78 2584.78 -3965 2529 -3965V-3963ZM-2477 -3965C-2532.78 -3965 -2578 -3919.78 -2578 -3864H-2576C-2576 -3918.68 -2531.68 -3963 -2477 -3963V-3965Z",
-          fill: "white",
-          fillOpacity: "0.1"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "rect",
-        {
-          width: "1440",
-          height: "1024",
-          transform: "translate(-669 -38)",
-          fill: "#F7F7F7"
-        }
-      ),
-      /* @__PURE__ */ jsx("rect", { x: "-16", y: "-14", width: "348", height: "52", rx: "16", fill: "white" }),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M22 13V9C22 4 20 2 15 2H9C4 2 2 4 2 9V15C2 20 4 22 9 22H13",
-          stroke: "#585858",
-          strokeWidth: "1.2",
-          strokeLinecap: "round",
-          strokeLinejoin: "round"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M7.32996 14.49L9.70996 11.4C10.05 10.96 10.68 10.88 11.12 11.22L12.95 12.66C13.39 13 14.02 12.92 14.36 12.49L16.67 9.51001",
-          stroke: "#585858",
-          strokeWidth: "1.2",
-          strokeLinecap: "round",
-          strokeLinejoin: "round"
-        }
-      ),
-      /* @__PURE__ */ jsx(
-        "path",
-        {
-          d: "M19.48 15.8199L19.76 16.3899C19.9 16.6699 20.25 16.9299 20.56 16.9899L20.94 17.0499C22.08 17.2399 22.35 18.0799 21.53 18.9099L21.18 19.2599C20.95 19.4999 20.82 19.9599 20.89 20.2799L20.94 20.4899C21.25 21.8699 20.52 22.3999 19.32 21.6799L19.06 21.5299C18.75 21.3499 18.25 21.3499 17.94 21.5299L17.68 21.6799C16.47 22.4099 15.74 21.8699 16.06 20.4899L16.1099 20.2799C16.1799 19.9599 16.05 19.4999 15.82 19.2599L15.47 18.9099C14.65 18.0799 14.92 17.2399 16.06 17.0499L16.44 16.9899C16.74 16.9399 17.1 16.6699 17.24 16.3899L17.52 15.8199C18.06 14.7299 18.94 14.7299 19.48 15.8199Z",
-          stroke: "#FDB900",
-          strokeWidth: "1.2",
-          strokeLinecap: "round",
-          strokeLinejoin: "round"
-        }
-      )
-    ]
-  }
-);
-
-const ChatInput = forwardRef(function ChatInput({ getInput }, ref) {
+const ChatInput = forwardRef(function ChatInput({ getInput, plan }, ref) {
   const [message, setMessage] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSupported, setIsSupported] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const [isWarmingUp, setIsWarmingUp] = useState(false);
   const messageRef = useRef();
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const recordingStartTimeRef = useRef(null);
+  const recordingDurationRef = useRef(0);
+  const recordingTimerRef = useRef(null);
+  const shouldCollectChunksRef = useRef(false);
+  const navigate = useNavigate();
+  const MAX_RECORDING_DURATION = 600;
+  useEffect(() => {
+    if (typeof MediaRecorder !== "undefined" && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      setIsSupported(true);
+      console.log("Audio recording is supported");
+    } else {
+      console.warn("Audio recording not supported:", {
+        hasMediaRecorder: typeof MediaRecorder !== "undefined",
+        hasMediaDevices: !!navigator.mediaDevices,
+        hasGetUserMedia: !!navigator.mediaDevices?.getUserMedia
+      });
+    }
+    return () => {
+      shouldCollectChunksRef.current = false;
+      if (mediaRecorderRef.current?.recorder && mediaRecorderRef.current.recorder.state !== "inactive") {
+        mediaRecorderRef.current.recorder.stop();
+        if (mediaRecorderRef.current.stream) {
+          mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+        }
+      }
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+      }
+      audioChunksRef.current = [];
+    };
+  }, []);
+  const startRecording = async () => {
+    try {
+      if (typeof MediaRecorder === "undefined") {
+        alert("Audio recording is not supported in this browser. Please use a modern browser like Chrome, Firefox, or Edge.");
+        return;
+      }
+      if (mediaRecorderRef.current?.recorder) {
+        const prevRecorder = mediaRecorderRef.current.recorder;
+        if (prevRecorder.state !== "inactive") {
+          console.warn("Previous recording still active, stopping it first...");
+          prevRecorder.stop();
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        if (mediaRecorderRef.current.stream) {
+          mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+        }
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          sampleRate: 16e3,
+          autoGainControl: true
+        }
+      });
+      let options = { mimeType: "audio/webm;codecs=opus" };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        const mimeTypes = [
+          "audio/webm",
+          "audio/ogg;codecs=opus",
+          "audio/mp4",
+          "audio/mpeg"
+        ];
+        for (const mimeType of mimeTypes) {
+          if (MediaRecorder.isTypeSupported(mimeType)) {
+            options = { mimeType };
+            break;
+          }
+        }
+      }
+      const mediaRecorder = new MediaRecorder(stream, options);
+      audioChunksRef.current = [];
+      recordingDurationRef.current = 0;
+      recordingStartTimeRef.current = null;
+      shouldCollectChunksRef.current = true;
+      console.log("Audio chunks cleared, starting fresh recording");
+      let chunkCount = 0;
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunkCount++;
+          console.log(`Audio chunk #${chunkCount} received:`, event.data.size, "bytes", "shouldCollect:", shouldCollectChunksRef.current, "state:", mediaRecorder.state);
+          if (shouldCollectChunksRef.current && mediaRecorder.state === "recording") {
+            audioChunksRef.current.push(event.data);
+            console.log("Chunk accepted, total chunks:", audioChunksRef.current.length);
+          } else {
+            console.warn("🚫 CHUNK REJECTED - shouldCollect:", shouldCollectChunksRef.current, "state:", mediaRecorder.state);
+          }
+        }
+      };
+      mediaRecorder.onstop = async () => {
+        console.log("MediaRecorder onstop fired - state:", mediaRecorder.state);
+        shouldCollectChunksRef.current = false;
+        stream.getTracks().forEach((track) => {
+          console.log("Stopping track:", track.kind, track.label);
+          track.stop();
+        });
+        if (recordingStartTimeRef.current) {
+          const calculatedDuration = (Date.now() - recordingStartTimeRef.current) / 1e3;
+          const totalDuration = calculatedDuration + 0.3;
+          recordingDurationRef.current = Math.max(0.1, Math.min(totalDuration, 600));
+        } else {
+          recordingDurationRef.current = 1;
+        }
+        const chunksToUse = [...audioChunksRef.current];
+        const audioBlob = new Blob(chunksToUse, { type: options.mimeType || "audio/webm" });
+        console.log("📊 Recording stopped:", {
+          chunks: chunksToUse.length,
+          totalSize: audioBlob.size,
+          sizeKB: (audioBlob.size / 1024).toFixed(2),
+          duration: recordingDurationRef.current,
+          mimeType: options.mimeType
+        });
+        audioChunksRef.current = [];
+        console.log("✅ Audio chunks cleared after blob creation");
+        const maxSizeBytes = 25 * 1024 * 1024;
+        if (audioBlob.size > maxSizeBytes) {
+          const sizeMB = (audioBlob.size / (1024 * 1024)).toFixed(2);
+          alert(`Audio recording is too large (${sizeMB}MB). Maximum size is 25MB. Please record a shorter clip.`);
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        const minSizeBytes = 2048;
+        if (audioBlob.size === 0) {
+          alert("Audio recording is empty. Please try recording again.");
+          return;
+        }
+        const bytesPerSecond = audioBlob.size / recordingDurationRef.current;
+        console.log("Audio quality check:", {
+          size: audioBlob.size,
+          duration: recordingDurationRef.current,
+          bytesPerSecond: bytesPerSecond.toFixed(0),
+          sizeKB: (audioBlob.size / 1024).toFixed(2)
+        });
+        if (audioBlob.size < minSizeBytes) {
+          console.warn("⚠️ Recording too small - likely silence/noise");
+          alert("Recording is too small. This usually means no speech was detected. Please speak clearly and try again.");
+          return;
+        }
+        if (bytesPerSecond < 800 && recordingDurationRef.current > 1) {
+          console.warn("⚠️ Bytes per second too low - likely silence");
+          alert("Audio quality is too low. Please speak louder and closer to the microphone.");
+          return;
+        }
+        if (recordingDurationRef.current < 0.5) {
+          alert("Recording is too short. Please record for at least 0.5 seconds.");
+          return;
+        }
+        const duration = recordingDurationRef.current;
+        console.log("Using recorded duration:", duration, "seconds");
+        await transcribeAudio(audioBlob, duration);
+      };
+      mediaRecorder.start(1e3);
+      mediaRecorderRef.current = { recorder: mediaRecorder, stream };
+      setIsRecording(true);
+      setIsWarmingUp(true);
+      setRecordingDuration(0);
+      console.log("Recording started with options:", options);
+      console.log("Starting with 300ms warm-up buffer to capture first words...");
+      setTimeout(() => {
+        setIsWarmingUp(false);
+        recordingStartTimeRef.current = Date.now();
+        recordingTimerRef.current = setInterval(() => {
+          if (!recordingStartTimeRef.current) return;
+          const elapsed = Math.floor((Date.now() - recordingStartTimeRef.current) / 1e3);
+          setRecordingDuration(elapsed);
+          if (elapsed >= MAX_RECORDING_DURATION) {
+            console.warn("Maximum recording duration reached, stopping...");
+            stopRecording();
+            alert("Maximum recording duration (10 minutes) reached. Recording stopped automatically.");
+          }
+        }, 1e3);
+      }, 300);
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      setIsRecording(false);
+      setIsWarmingUp(false);
+      shouldCollectChunksRef.current = false;
+      audioChunksRef.current = [];
+      alert("Failed to access microphone. Please check permissions.");
+    }
+  };
+  const stopRecording = () => {
+    console.log("stopRecording called, current state:", mediaRecorderRef.current?.recorder?.state);
+    if (mediaRecorderRef.current?.recorder && mediaRecorderRef.current.recorder.state !== "inactive") {
+      const recorder = mediaRecorderRef.current.recorder;
+      mediaRecorderRef.current.stream;
+      const chunksBeforeStop = audioChunksRef.current.length;
+      console.log("🛑 DISABLING CHUNK COLLECTION - chunks collected so far:", chunksBeforeStop);
+      shouldCollectChunksRef.current = false;
+      if (recordingTimerRef.current) {
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+      if (recorder.state === "recording") {
+        console.log("Requesting final data before stop...");
+        try {
+          recorder.requestData();
+        } catch (e) {
+          console.warn("requestData failed:", e);
+        }
+        setTimeout(() => {
+          console.log("Stopping MediaRecorder after requestData...");
+          if (recorder.state !== "inactive") {
+            recorder.stop();
+          }
+        }, 50);
+      } else {
+        console.log("Stopping MediaRecorder...");
+        recorder.stop();
+      }
+      setIsRecording(false);
+      setIsWarmingUp(false);
+      setRecordingDuration(0);
+      console.log("Recording stop initiated");
+    }
+  };
+  const transcribeAudio = async (audioBlob, duration) => {
+    setIsTranscribing(true);
+    let validDuration = duration;
+    if (!isFinite(duration) || duration <= 0) {
+      console.warn("Invalid duration received:", duration, "- will let server estimate");
+      validDuration = null;
+    }
+    console.log("=== SENDING FOR TRANSCRIPTION ===");
+    console.log("Audio blob size:", (audioBlob.size / 1024).toFixed(2), "KB");
+    console.log("Audio blob type:", audioBlob.type);
+    console.log("Duration:", validDuration ? `${validDuration} seconds` : "will be estimated by server");
+    console.log("================================");
+    try {
+      const formData = new FormData();
+      formData.append("audio", audioBlob, "recording.webm");
+      if (validDuration && validDuration > 0) {
+        formData.append("duration", validDuration.toString());
+      }
+      const response = await fetch("/audio/transcribe", {
+        method: "POST",
+        body: formData
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        let errorMsg = errorData.error || "Transcription failed";
+        if (errorMsg.includes("Connection") || errorMsg.includes("ECONNRESET")) {
+          errorMsg = "Failed to connect to transcription service. Please check your internet connection and try again.";
+        } else if (errorMsg.includes("timeout") || errorMsg.includes("ETIMEDOUT")) {
+          errorMsg = "Transcription request timed out. The audio may be too large. Please try recording a shorter clip.";
+        } else if (errorMsg.includes("too large") || errorMsg.includes("too small")) {
+          errorMsg = errorMsg;
+        } else if (errorMsg.includes("No clear speech") || errorMsg.includes("No speech detected")) {
+          errorMsg = errorMsg;
+        } else if (errorMsg.includes("Unauthorized")) {
+          errorMsg = "Please log in to use the transcription feature.";
+        }
+        throw new Error(errorMsg);
+      }
+      const result = await response.json();
+      console.log("=== TRANSCRIPTION RESULT ===");
+      console.log("Transcribed text:", result.text);
+      console.log("Text length:", result.text?.length || 0);
+      console.log("Word count:", result.text?.split(/\s+/).length || 0);
+      console.log("Duration:", result.duration || duration, "seconds");
+      if (result.usage) {
+        console.log("Token usage:", result.usage);
+      }
+      console.log("==========================");
+      const wordCount = result.text?.split(/\s+/).length || 0;
+      if (wordCount > 50) {
+        console.error("⚠️ FIREFOX BUG DETECTED: Transcription has", wordCount, "words - much longer than expected!");
+        console.error("This suggests audio continued recording after stop was called.");
+      }
+      const existingText = messageRef.current.value || "";
+      const newText = existingText + (existingText ? " " : "") + result.text;
+      messageRef.current.value = newText;
+      setMessage(newText.trim() || null);
+    } catch (error) {
+      console.error("Transcription error:", error);
+      let displayMessage = error.message;
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        displayMessage = "Network error. Please check your internet connection and try again.";
+      }
+      alert(displayMessage);
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
   async function onClick(value) {
+    if (isRecording) {
+      stopRecording();
+    }
     messageRef.current.value = "";
     getInput({ status: true, req: message ?? value });
     setMessage(null);
@@ -8676,22 +10569,47 @@ const ChatInput = forwardRef(function ChatInput({ getInput }, ref) {
         rows: 1,
         variant: "ghost",
         placeholder: "Write a messge here ...",
-        className: "border-none shadow-none focus-visible:ring-border-primary resize-none pr-8",
+        className: "border-none shadow-none focus-visible:ring-border-primary resize-none pr-20",
         ref: messageRef,
         onKeyUp
       }
     ),
-    /* @__PURE__ */ jsx(
-      Button,
-      {
-        variant: "destructive",
-        size: "icon",
-        className: "rounded-full bg-zinc-300 hover:bg-primary w-8 h-8 absolute right-4 top-4",
-        disabled: !message || message === "" ? true : false,
-        onClick,
-        children: /* @__PURE__ */ jsx(ArrowUp, {})
-      }
-    )
+    /* @__PURE__ */ jsxs("div", { className: "absolute right-4 top-4 flex gap-2 items-center", children: [
+      isSupported && /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: !plan?.limit?.voiceToText && "cursor-pointer *:pointer-events-none",
+            onClick: () => !plan?.limit?.voiceToText && navigate("/app/settings/overview"),
+            children: /* @__PURE__ */ jsx(
+              Button,
+              {
+                type: "button",
+                variant: isRecording || isTranscribing ? "destructive" : "ghost",
+                size: "icon",
+                className: `rounded-full w-8 h-8 ${isRecording ? "bg-red-500 hover:bg-red-600 animate-pulse" : isTranscribing ? "bg-blue-500 hover:bg-blue-600 animate-pulse" : "bg-zinc-200 hover:bg-zinc-300"}`,
+                onClick: toggleRecording,
+                disabled: !plan?.limit?.voiceToText || isTranscribing,
+                title: isTranscribing ? "Transcribing..." : isRecording ? "Stop recording" : "Start voice input",
+                children: isRecording || isTranscribing ? /* @__PURE__ */ jsx(MicOff, { className: "w-4 h-4 text-white" }) : /* @__PURE__ */ jsx(Mic, { className: "w-4 h-4" })
+              }
+            )
+          }
+        ),
+        (isRecording || isTranscribing) && /* @__PURE__ */ jsx("span", { className: "text-xs text-zinc-500 animate-pulse", children: isTranscribing ? "🔵 Transcribing..." : isWarmingUp ? "⏳ Ready..." : `🔴 Recording... ${Math.floor(recordingDuration / 60)}:${String(recordingDuration % 60).padStart(2, "0")}` })
+      ] }),
+      /* @__PURE__ */ jsx(
+        Button,
+        {
+          variant: "destructive",
+          size: "icon",
+          className: "rounded-full bg-zinc-300 hover:bg-primary w-8 h-8",
+          disabled: !message || message === "" ? true : false,
+          onClick,
+          children: /* @__PURE__ */ jsx(ArrowUp, {})
+        }
+      )
+    ] })
   ] });
 });
 
@@ -8861,7 +10779,7 @@ const Icon3 = () => /* @__PURE__ */ jsxs(
 );
 
 function UserAvatar({ className }) {
-  return /* @__PURE__ */ jsxs(Avatar, { className: cn("rounded-xl", className), children: [
+  return /* @__PURE__ */ jsxs(Avatar, { className: cn$1("rounded-xl", className), children: [
     /* @__PURE__ */ jsx(AvatarImage, { src: "/avatar.jpg" }),
     /* @__PURE__ */ jsx(AvatarFallback, { children: "CN" })
   ] });
@@ -8876,7 +10794,7 @@ function Message({
   return /* @__PURE__ */ jsxs(
     "div",
     {
-      className: cn(
+      className: cn$1(
         "message flex gap-4 items-start",
         !assistant && "flex-row-reverse"
       ),
@@ -8885,7 +10803,7 @@ function Message({
         /* @__PURE__ */ jsx(
           "div",
           {
-            className: cn(
+            className: cn$1(
               "markdown-content prose prose-lg dark:prose-invert max-w-none",
               "p-4 rounded-2xl text-sm text-zinc-600 max-w-[80%]",
               "[&_p]:mb-4 last:[&_p]:m-0 [&_li]:mb-4 [&_hr]:mb-4",
@@ -8944,7 +10862,8 @@ function ChatOutput({
   useEffect(() => {
     scrollTo(true);
   }, []);
-  function handleStream(q) {
+  function handleStream(req) {
+    const q = `${req}`;
     const c = `${competencyGroup?.order}.${competencyItem?.order}`;
     const eventSource = new EventSource(`/sse?q=${q}&c=${c}`);
     eventSource.addEventListener("redirected", (event) => {
@@ -9016,10 +10935,15 @@ function ChatOutput({
   );
 }
 
-function Assessment({ file, sendChat }) {
+function Assessment({ file, sendChat, onFileUpload }) {
   const [afile, setAFile] = useState(file);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (file) {
+      setAFile(file);
+    }
+  }, [file]);
   const handleFile = async (event) => {
     setLoading(true);
     const data = new FormData();
@@ -9033,6 +10957,7 @@ function Assessment({ file, sendChat }) {
     setLoading(false);
     if (!file2.error) {
       setAFile(file2);
+      onFileUpload?.(file2);
       setOpen(false);
       sendChat("My CV has been uploaded with the name " + file2?.filename);
       return;
@@ -9045,9 +10970,9 @@ function Assessment({ file, sendChat }) {
       {
         asChild: true,
         variant: "ghost",
-        className: "shadow-none bg-primary/10 hover:bg-primary/10 text-primary rounded-lg p-6 gap-2",
+        className: "shadow-none bg-primary/10 hover:bg-primary/10 text-primary rounded-xl p-6 gap-4 w-full justify-start",
         children: /* @__PURE__ */ jsxs("div", { children: [
-          afile ? /* @__PURE__ */ jsx(Paperclip, {}) : /* @__PURE__ */ jsx(Plus, { size: 20 }),
+          afile ? /* @__PURE__ */ jsx(Paperclip, { size: 20 }) : /* @__PURE__ */ jsx(Plus, { size: 20 }),
           afile ? afile.filename : "New Assessment"
         ] })
       }
@@ -9103,316 +11028,6 @@ function Assessment({ file, sendChat }) {
   ] });
 }
 
-const Class = "Competency";
-
-async function read() {
-  try {
-    const query = new Parse.Query(Class);
-    query.include("competencyGroup");
-    const data = await query.find();
-    return modifier(data);
-  } catch (error) {
-    console.log("competency.getAll", error.message);
-    handleInvalidSessionToken(error);
-  }
-}
-
-function modifier(data) {
-  return data.reduce((t, v) => {
-    const cg = v.get("competencyGroup").toJSON();
-    const g = t.find((i) => i.objectId === cg.objectId);
-    !g ? t.push({ ...cg, items: [v] }) : g.items.push(v);
-    return t;
-  }, []);
-}
-
-async function init$1(session) {
-  const user = session.get("user");
-  let thread = session.get("thread");
-  let file = session.get("file");
-
-  if (thread) {
-    console.log("chat.init", "current thread", thread.objectId, file?.id);
-    return { thread, file };
-  }
-
-  const threads = await read$2({ user });
-  console.log("chat.init", "all threads", threads.length);
-
-  if (threads.length === 0) {
-    const _thread = await openai.beta.threads.create();
-
-    if (_thread.error) {
-      console.log("chat.init", _thread.error.error);
-      return { error: _thread.error.error };
-    }
-
-    const res = await create$1(
-      {
-        name: "Thread 1",
-        threadId: _thread.id,
-        user: pointerObject(models.user, user.objectId),
-        thread: _thread,
-        purpose: purposes.chat,
-      },
-      user.sessionToken
-    );
-    thread = res.toJSON();
-
-    console.log("chat.init", "add new thread", _thread?.id, thread?.objectId);
-  } else {
-    thread = threads[0].toJSON();
-  }
-
-  file = await getFile(thread?.thread);
-
-  session.set("thread", thread);
-  session.set("file", file);
-
-  console.log("chat.init", "exist thread", thread.objectId, file?.id);
-  return { thread, file };
-}
-
-async function getFile(thread) {
-  let file;
-  const vectorStoreId =
-    thread?.tool_resources?.file_search?.vector_store_ids?.[0];
-  if (vectorStoreId) {
-    try {
-      const files = await openai.vectorStores.files.list(vectorStoreId);
-      if (files?.data.length > 0)
-        file = await openai.files.retrieve(files.data[0].id);
-    } catch (error) {
-      console.log("chat.getFile", error);
-    }
-  }
-  return file;
-}
-
-async function send({ user, thread, content, session }) {
-  const progress = session.get("progress") || { step: 1 };
-  console.log("Progress is at:", progress.step);
-
-  let threadInstruction = getMarkdownInstruction();
-
-  try {
-    // Step Logic Handler
-    switch (progress.step) {
-      case 2:
-        // CV uploaded, user needs to select a competency
-        console.log("Step 2: Awaiting competency selection. No action taken.");
-        session.set("progress", { step: 3 });
-        break;
-
-      case 3:
-        console.log("Step 3: Checking for selected competency...");
-        threadInstruction += getProjectMatchInstruction();
-        const competencies = await read();
-
-        const found = competencies
-          .flatMap((group) => group.items)
-          .find((item) => item.get("title") === content);
-
-        if (found) {
-          console.log("Competency found:", found.get("title"));
-          session.set("progress", { step: 4 });
-        } else {
-          console.warn("Competency not found.");
-        }
-        break;
-
-      case 4:
-        console.log("Step 4: Injecting gap analysis instruction.");
-        threadInstruction += getGapAnalysisInstruction();
-        session.set("progress", { step: 5 });
-        break;
-
-      case 5:
-        console.log("Step 5: Follow-up response received.");
-        session.set("progress", { step: 6 });
-        break;
-
-      default:
-        console.log("No specific step logic. Continuing.");
-    }
-
-    // Create message
-    const userMessage = await openai.beta.threads.messages.create(
-      thread.threadId,
-      {
-        role: "user",
-        content: threadInstruction + content,
-      }
-    );
-
-    console.log("Assistant ID:", vars.openai.assistantId);
-
-    // Start assistant run
-    const run = await openai.beta.threads.runs.create(thread.threadId, {
-      assistant_id: vars.openai.assistantId,
-      stream: true,
-    });
-
-    const runId = await fetchRunId(thread.threadId);
-
-    // Return streaming generator
-    return {
-      userMessage,
-      stream: streamAssistantResponse(run),
-      runId,
-    };
-  } catch (error) {
-    console.error("chat.send.run", error);
-    return { userMessage: null, stream: null, runId: null };
-  }
-}
-
-function getMarkdownInstruction() {
-  return "Please format your response in Markdown. Use **headers**, **bold**, and **bullet points** as needed.\n";
-}
-
-function getProjectMatchInstruction() {
-  return `
-    You are now in **Step 2 and 3** of the workflow:
-    **Explain the Competency** and **Match Projects from the User's CV**.
-
-    ---
-
-    ## Competency Explanation (Intent + Indicators)
-
-    - Retrieve the selected competency’s **full title**, **intent**, and **explicit indicators** from your knowledge base.
-    - For each **indicator**, explain what it means **in the context of the user's background** (e.g., if they work in transportation infrastructure, reference TAC guidelines, CSA codes, etc.).
-    - Use **industry-relevant examples** that would be familiar to someone with the user’s expertise.
-    - Then, write a short **scenario story** as if you were an engineer in a similar role:
-      - Use **first-person perspective** (“I”)
-      - Describe a real engineering situation that demonstrates this competency
-      - Include:
-        - An **engineering challenge**
-        - The **action(s)** taken
-        - A **quantifiable outcome**
-
-    > This helps the user empathize with how the competency should be demonstrated.
-
-    ---
-
-    ## Match Projects from CV
-
-    - Analyze the user’s uploaded CV using **Named Entity Recognition (NER)**.
-    - Identify **all explicit projects** that match the selected competency.
-    - List them using this format:
-
-    **Project Name**
-    **Position Title**
-    **Relevant activities/duties that demonstrate competency**
-
-
-    - **Do NOT** ask the user to select a project until all matches are listed.
-    - End your message with:
-      _"Please select one of the explicit matches to focus on for this competency before we continue."_
-    - **Do NOT** continue to gap analysis or follow-up questions until the user selects a project.
-    `;
-}
-
-function getGapAnalysisInstruction() {
-  return `
-    Before drafting a STAR-format response, perform a **Gap Analysis**:
-
-    - Compare the user's experience against the competency indicators.
-    - Identify any missing technical details, quantifiable results, or specific codes/standards.
-    - Ask targeted follow-up questions to fill in these gaps.
-
-    **Do not** draft the structured response until these gaps are addressed.
-  `;
-}
-
-async function fetchRunId(threadId) {
-  let latestRun = null;
-  while (!latestRun) {
-    const runsList = await openai.beta.threads.runs.list(threadId, {
-      limit: 1,
-    });
-    if (runsList?.data?.length > 0) {
-      latestRun = runsList.data[0].id;
-      break;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-  return latestRun;
-}
-
-async function* streamAssistantResponse(run) {
-  let responseText = "";
-  for await (const chunk of run) {
-    if (
-      chunk.event === "thread.message.delta" &&
-      chunk.data?.delta?.content?.length > 0
-    ) {
-      for (const contentItem of chunk.data.delta.content) {
-        if (contentItem.type === "text" && contentItem.text?.value) {
-          const token = contentItem.text.value;
-          responseText += token;
-          yield token;
-        }
-      }
-    }
-  }
-  return responseText;
-}
-
-async function getUsage(thread, runId) {
-  const runStatus = await openai.beta.threads.runs.retrieve(
-    thread.threadId,
-    runId
-  );
-  return runStatus.usage;
-}
-
-async function save({
-  user,
-  thread,
-  userMessage,
-  responseText,
-  session,
-}) {
-  if (userMessage?.id) {
-    const fullText = userMessage.content[0].text.value;
-    const content = fullText
-      .replace(getMarkdownInstruction(), "")
-      .replace(getProjectMatchInstruction(), "")
-      .replace(getGapAnalysisInstruction(), "")
-      .trim();
-
-    await create(
-      {
-        user: pointerObject(models.user, user.objectId),
-        thread: pointerObject(models.thread, thread.objectId),
-        message: userMessage,
-        role: roles.user,
-        content: content,
-      },
-      user.sessionToken
-    );
-
-    const messages = await openai.beta.threads.messages.list(thread.threadId, {
-      limit: 1,
-    });
-    const assistantMessage = messages.data.find((m) => m.role === "assistant");
-
-    await create(
-      {
-        user: pointerObject(models.user, user.objectId),
-        thread: pointerObject(models.thread, thread.objectId),
-        message: assistantMessage,
-        role: roles.assistant,
-        content: responseText,
-      },
-      user.sessionToken
-    );
-
-    return responseText;
-  }
-}
-
 async function start(request) {
   const session = await getSession(request.headers.get("cookie"));
   const user = session.get("user");
@@ -9426,7 +11041,17 @@ async function start(request) {
 
   const { profile, setting, license } = await check(user, session);
 
-  if (!license) return redirect$1("/join?type=start");
+  if (!license) {
+    // await Email({
+    //   subject: "CBA Pro - New user ✨",
+    //   text: JSON.stringify({
+    //     email: user?.email,
+    //     ...user?.meta
+    //   })
+    // })
+
+    return redirect$1(`/join?type=create&priceKey=${user?.meta?.priceKey ?? prices.P0.key}`);
+  }
 
   if (!setting?.consent)
     return redirect$1("/auth/consent", {
@@ -9450,7 +11075,7 @@ async function check(user, session) {
     console.log("app.check.profile", profile?.objectId);
 
     if (!profile) {
-      profile = (await create$4(user))?.toJSON();
+      profile = (await create$4(user, user?.meta))?.toJSON();
       console.log("app.check.profile.create", profile?.objectId);
     }
 
@@ -9458,11 +11083,11 @@ async function check(user, session) {
   }
 
   if (!setting) {
-    setting = (await read$3(user))?.toJSON();
+    setting = (await read$1(user))?.toJSON();
     console.log("app.check.setting", setting?.objectId);
 
     if (!setting) {
-      setting = (await create$2(user))?.toJSON();
+      setting = (await create(user))?.toJSON();
       console.log("app.check.setting.create", setting?.objectId);
     }
 
@@ -9470,7 +11095,7 @@ async function check(user, session) {
   }
 
   if (!license) {
-    license = (await read$6(user))?.toJSON();
+    license = (await read$7(user))?.toJSON();
     console.log("app.check.license.read", license?.objectId);
     if (license) session.set("license", license);
   }
@@ -9480,23 +11105,25 @@ async function check(user, session) {
 
 async function init(user, session) {
   const { thread, file } = await init$1(session);
-  console.log("app.init.thread", thread.objectId);
 
-  const messages = await read$1(user, thread);
-  console.log("app.init.messages", messages.length);
-
+  let messages = await read$2(user, { thread });
   const competencies = await read();
-  console.log("app.init.competencies", competencies.length);
-
   const outcomes = await read$4(user, { thread });
-  console.log("app.init.outcomes", outcomes.length);
 
   const license = session.get("license");
   const plan = prices[license.priceKey];
 
+  if (messages?.length > 0)
+    messages = messages.map(m => ({
+      objectId: m.id,
+      role: m.get("role"),
+      content: m.get("content"),
+      createdAt: m.get("createdAt"),
+    })).reverse();
+
   const data = {
     thread,
-    messages: messages.reverse(),
+    messages,
     file,
     competencies,
     outcomes,
@@ -9509,6 +11136,37 @@ async function init(user, session) {
     },
   });
 }
+
+function Banner() {
+  const [user, setUser] = useState(null);
+  const [banner, setBanner] = useState(banners.default);
+  useEffect(() => {
+    if (!user) read();
+  }, [user]);
+  async function read() {
+    const res = await fetch("/user");
+    const user2 = await res.json();
+    setUser(user2);
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "bg-white px-6 py-1 rounded-xl flex gap-4 items-center text-zinc-600", children: [
+    /* @__PURE__ */ jsx(Megaphone, { size: 20 }),
+    /* @__PURE__ */ jsx("div", { className: "flex-auto", children: user ? /* @__PURE__ */ jsxs("div", { className: "grid", children: [
+      /* @__PURE__ */ jsx("span", { className: "text-xs text-primary", children: banner?.title }),
+      /* @__PURE__ */ jsx("span", { className: "text-[0.6rem]", children: banner?.subtitle })
+    ] }) : /* @__PURE__ */ jsx(Skeleton, { className: "h-6 stroke-1" }) })
+  ] });
+}
+const banners = {
+  default: {
+    title: "Welcome to CBA Pro",
+    subtitle: "Upload your CV from left Button and Begin!",
+    description: "",
+    color: "",
+    button: {
+      label: "",
+      action: () => null
+    }
+  }};
 
 const shouldRevalidate = ({
   currentParams,
@@ -9529,11 +11187,25 @@ function App() {
   const [outcome, setOutcome] = useState(null);
   const [outcomes, setOutcomes] = useState(loaderData?.outcomes);
   const [run, setRun] = useState({ status: false, req: null });
+  const [draftRefinement, setDraftRefinement] = useState(false);
+  const [cvFile, setCvFile] = useState(loaderData?.file || null);
+  const [messages, setMessages] = useState(loaderData?.messages || []);
+  const [draftAssessmentMessages, setDraftAssessmentMessages] = useState([]);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [isDraftAssessmentLoading, setIsDraftAssessmentLoading] = useState(false);
   const inputRef = useRef(null);
   const navigate = useNavigate();
+  useEffect(() => {
+    setCvFile(loaderData?.file || null);
+  }, [loaderData?.file]);
+  useEffect(() => {
+    if (loaderData?.messages && loaderData.messages.length > 0) {
+      setMessages(loaderData.messages);
+    }
+  }, [loaderData?.messages]);
   async function getCompetency(...income) {
     const [type, cg, ci] = income;
-    if (type === "run") inputRef.current?.refresh(ci?.title);
+    if (type === "run") inputRef.current?.refresh("Competency name is: " + ci?.title);
     setCompetencyGroup(cg);
     setCompetencyItem(ci);
     let outcome2 = outcomes?.find(
@@ -9563,10 +11235,22 @@ function App() {
     const outcome_ = outcomes2.find(
       (item) => item.objectId === outcome?.objectId
     );
-    setOutcome(outcome_);
+    if (outcome_) {
+      const newOutcome = {
+        ...outcome_,
+        objectId: outcome_.objectId || outcome_.id,
+        _refresh: Date.now()
+      };
+      setOutcome(newOutcome);
+    } else if (outcome) {
+      setOutcome(null);
+    }
   }
   function sendChat(text) {
     inputRef.current?.refresh(text);
+  }
+  function handleFileUpload(file) {
+    setCvFile(file);
   }
   return /* @__PURE__ */ jsx(Layout, { children: /* @__PURE__ */ jsxs("div", { className: "max-h-full flex-grow flex gap-4 p-4", children: [
     /* @__PURE__ */ jsx("div", { className: "w-72 bg-white rounded-xl", children: /* @__PURE__ */ jsxs("div", { className: "h-full flex flex-col", children: [
@@ -9580,60 +11264,81 @@ function App() {
           competencies: loaderData.competencies,
           outcomes,
           getCompetency,
-          plan: loaderData?.plan
+          plan: loaderData?.plan,
+          draftRefinement
         }
       ) })
     ] }) }),
     /* @__PURE__ */ jsxs("div", { className: "flex-grow flex flex-col gap-4", children: [
       /* @__PURE__ */ jsxs("div", { className: "flex gap-4 items-center", children: [
-        /* @__PURE__ */ jsx("div", { "data-guide-step": "1", children: /* @__PURE__ */ jsx(Assessment, { file: loaderData?.file, sendChat }) }),
-        /* @__PURE__ */ jsx(Suggestions, {}),
-        /* @__PURE__ */ jsxs(
-          "a",
-          {
-            href: "https://www.youtube.com/playlist?list=PL6iszEhc4K7Xger5FMuMUrlmbDnzS0NSm",
-            target: "_blank",
-            className: "bg-white hover:bg-white hover:text-primary transition flex items-center text-zinc-600 gap-2 rounded-xl px-6 py-3 text-sm",
-            children: [
-              /* @__PURE__ */ jsx(Youtube, { className: "stroke-1" }),
-              "How it works?",
-              /* @__PURE__ */ jsx(ArrowRight, { size: 16, className: "ml-4" })
-            ]
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center", children: [
-          /* @__PURE__ */ jsx(Button, { variant: "ghost", size: "icon", children: /* @__PURE__ */ jsx(Bell, {}) }),
-          /* @__PURE__ */ jsx(NavUser, {})
+        /* @__PURE__ */ jsxs("div", { className: "flex-auto grid grid-cols-2 gap-4", children: [
+          /* @__PURE__ */ jsx("div", { "data-guide-step": "1", className: "w-full [&>button]:w-full", children: /* @__PURE__ */ jsx(
+            Assessment,
+            {
+              file: cvFile,
+              sendChat,
+              onFileUpload: handleFileUpload
+            }
+          ) }),
+          /* @__PURE__ */ jsx(Banner, {})
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "w-72 flex items-center justify-between", children: [
+          /* @__PURE__ */ jsxs(
+            "a",
+            {
+              href: "https://www.youtube.com/playlist?list=PL6iszEhc4K7Xger5FMuMUrlmbDnzS0NSm",
+              target: "_blank",
+              className: "flex-auto border border-primary border-opacity-50 px-4 py-1 rounded-xl flex gap-4 items-center text-zinc-600",
+              children: [
+                /* @__PURE__ */ jsx(Video, { size: 20 }),
+                /* @__PURE__ */ jsxs("div", { className: "flex-auto grid", children: [
+                  /* @__PURE__ */ jsx("span", { className: "text-xs text-primary", children: "How it workes?" }),
+                  /* @__PURE__ */ jsx("span", { className: "text-[0.6rem]", children: "The tutorial video." })
+                ] })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "flex gap-2 items-center pl-2", children: [
+            /* @__PURE__ */ jsx(Button, { variant: "ghost", size: "icon", children: /* @__PURE__ */ jsx(Bell, { size: 16, className: "text-zinc-400" }) }),
+            /* @__PURE__ */ jsx(NavUser, {})
+          ] })
         ] })
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "flex gap-4 flex-grow", children: [
         /* @__PURE__ */ jsxs("div", { className: "flex-grow w-0 flex flex-col gap-4", children: [
-          /* @__PURE__ */ jsx(
+          /* @__PURE__ */ jsxs(
             "div",
             {
-              className: "flex-grow flex justify-center items-center bg-white p-4 rounded-xl",
+              className: "flex-grow flex justify-center items-center bg-white p-4 rounded-xl relative",
               "data-guide-step": "6",
-              children: /* @__PURE__ */ jsx(
-                ChatOutput,
-                {
-                  messages: loaderData?.messages,
-                  run,
-                  setRun,
-                  competencyGroup,
-                  competencyItem
-                }
-              )
+              children: [
+                /* @__PURE__ */ jsx(
+                  ChatOutput,
+                  {
+                    messages: draftRefinement ? draftAssessmentMessages : messages,
+                    setMessages: draftRefinement ? setDraftAssessmentMessages : setMessages,
+                    run,
+                    setRun,
+                    competencyGroup,
+                    competencyItem,
+                    draftRefinement,
+                    cvFile,
+                    onStreamingChange: setIsStreaming
+                  }
+                ),
+                /* @__PURE__ */ jsx(Guides, { sendChat })
+              ]
             }
           ),
           /* @__PURE__ */ jsx("div", { className: "text-xs text-zinc-400 text-center px-4", children: "Ensure all examples are truthful and based on your own professional experience-submitting false, emblished, or created work experience examples may lead to investigation and disciplinary action." }),
-          /* @__PURE__ */ jsx("div", { className: "bg-white p-4 rounded-xl", "data-guide-step": "5", children: /* @__PURE__ */ jsx(ChatInput, { ref: inputRef, getInput }) })
+          /* @__PURE__ */ jsx("div", { className: "bg-white p-4 rounded-xl", "data-guide-step": "5", children: /* @__PURE__ */ jsx(ChatInput, { ref: inputRef, getInput, plan: loaderData?.plan }) })
         ] }),
         /* @__PURE__ */ jsx(
           "div",
           {
             className: "w-72 bg-white rounded-xl flex flex-col",
             "data-guide-step": "3",
-            children: /* @__PURE__ */ jsx(ScrollArea, { className: "h-0 p-4 flex-grow [&>div>div]:h-full-", children: outcomes && /* @__PURE__ */ jsx(
+            children: /* @__PURE__ */ jsx(ScrollArea, { className: "h-0 p-4 flex-grow [&>div>div]:h-full", children: outcomes && /* @__PURE__ */ jsx(
               Outcome,
               {
                 competencyGroup,
@@ -9641,7 +11346,8 @@ function App() {
                 outcomes,
                 outcome,
                 getOutcomes,
-                sendChat
+                sendChat,
+                setDraftAssessmentMessages
               }
             ) })
           }
@@ -9651,70 +11357,12 @@ function App() {
   ] }) });
 }
 
-const route27 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route36 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: App,
   loader: loader$1,
   shouldRevalidate
 }, Symbol.toStringTag, { value: 'Module' }));
-
-function eventStream(signal, init, options = {}) {
-  let stream = new ReadableStream({
-    start(controller) {
-      let encoder = new TextEncoder();
-      let closed = false;
-
-      function send({ event = "message", data }) {
-        if (closed) return; // If already closed, not enqueue anything
-
-        controller.enqueue(encoder.encode(`event: ${event}\n`));
-
-        if (closed) return; // If already closed, not enqueue anything
-
-        data.split("\n").forEach((line, index, array) => {
-          if (closed) return; // If already closed, not enqueue anything
-          let value = `data: ${line}\n`;
-          if (index === array.length - 1) value += "\n";
-          controller.enqueue(encoder.encode(value));
-        });
-      }
-
-      init(send, close);
-
-      function close() {
-        if (closed) return;
-        // cleanup();
-        closed = true;
-        signal.removeEventListener("abort", close);
-        controller.close();
-      }
-
-      signal.addEventListener("abort", close);
-
-      if (signal.aborted) return close();
-    },
-  });
-
-  let headers = new Headers(options.headers);
-
-  if (headers.has("Content-Type")) {
-    console.warn("Overriding Content-Type header to `text/event-stream`");
-  }
-
-  if (headers.has("Cache-Control")) {
-    console.warn("Overriding Cache-Control header to `no-cache`");
-  }
-
-  if (headers.has("Connection")) {
-    console.warn("Overriding Connection header to `keep-alive`");
-  }
-
-  headers.set("Content-Type", "text/event-stream");
-  headers.set("Cache-Control", "no-cache");
-  headers.set("Connection", "keep-alive");
-
-  return new Response(stream, { headers });
-}
 
 async function loader({ request }) {
   const session = await getSession(request.headers.get("Cookie"));
@@ -9841,12 +11489,12 @@ async function handleStream({
   close();
 }
 
-const route28 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+const route37 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   loader
 }, Symbol.toStringTag, { value: 'Module' }));
 
-const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Cs_krxAm.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-DKFFhUxw.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-Cs_krxAm.js','/assets/use-toast-BCGEGR8f.js','/assets/index-CljonWh_.js','/assets/index-BTGzvWzS.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-C9NZiBh3.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/react-icons.esm-B40aDW1s.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-DFVETxWz.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-JNTMtf-4.js','/assets/alert-4MC7A1MA.js','/assets/card-74d6DukL.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/components-Cs_krxAm.js','/assets/index-B1Bk9G9l.js','/assets/index-tUIF4Hk4.js','/assets/index-CljonWh_.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-zgFgl8hr.js','/assets/index-hpwYxh3J.js','/assets/x-cwrx78xb.js','/assets/card-BLI8GBzK.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-BApN-AzJ.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-BEHD0UYf.js','/assets/label-DolvN-6_.js','/assets/react-icons.esm-B40aDW1s.js','/assets/components-Cs_krxAm.js','/assets/scroll-area-RrBmYreh.js','/assets/index-BTGzvWzS.js','/assets/index-CljonWh_.js','/assets/index-tUIF4Hk4.js','/assets/index-DWIQZo4h.js','/assets/index-DdWlVz4l.js','/assets/index-_i_4rKMj.js','/assets/index-C9NZiBh3.js','/assets/Combination-DvcGEJik.js','/assets/input-7Bv8GH_s.js','/assets/submit-field-BDwn5Tmb.js','/assets/use-toast-BCGEGR8f.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/separator-DWdi9hra.js','/assets/index-hpwYxh3J.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-BW1qo6m9.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-DjfF00yl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BbxcDIWc.js','/assets/checkbox-DVOqueCT.js','/assets/submit-field-BDwn5Tmb.js','/assets/components-Cs_krxAm.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/input-7Bv8GH_s.js','/assets/index-BEHD0UYf.js','/assets/label-DolvN-6_.js','/assets/index-CljonWh_.js','/assets/index-hpwYxh3J.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-_i_4rKMj.js','/assets/index-BW1qo6m9.js','/assets/react-icons.esm-B40aDW1s.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-BTeIF7d1.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/input-7Bv8GH_s.js','/assets/label-DolvN-6_.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Cs_krxAm.js','/assets/loader-circle-gVrWrBVl.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/index-CljonWh_.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-_AnRCIJf.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-BbxcDIWc.js','/assets/alert-zgFgl8hr.js','/assets/index-BEHD0UYf.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/submit-field-BDwn5Tmb.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-Cs_krxAm.js','/assets/input-7Bv8GH_s.js','/assets/label-DolvN-6_.js','/assets/index-CljonWh_.js','/assets/index-hpwYxh3J.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/loader-circle-gVrWrBVl.js'],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-DYCu9Px-.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-BDwn5Tmb.js','/assets/input-7Bv8GH_s.js','/assets/label-DolvN-6_.js','/assets/dialog-neKdJeZ3.js','/assets/index-BEHD0UYf.js','/assets/components-Cs_krxAm.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-CljonWh_.js','/assets/index-DZZdMBkC.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-BP9n-Qme.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-BEHD0UYf.js','/assets/card-BLI8GBzK.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-BzUl0XDW.js','/assets/users-round-CELzP7-z.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-CnLrwV49.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-BDwn5Tmb.js','/assets/card-BLI8GBzK.js','/assets/components-Cs_krxAm.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-C-rMwl77.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-CVfla0pn.js','/assets/button-kfEunpdx.js','/assets/sheet-DX5fYnaZ.js','/assets/scroll-area-RrBmYreh.js','/assets/components-Cs_krxAm.js','/assets/index-D3JQEnQH.js','/assets/index-BEHD0UYf.js','/assets/index-hpwYxh3J.js','/assets/index-B1Bk9G9l.js','/assets/table-BvF-YrHg.js','/assets/progress-JNTMtf-4.js','/assets/index-CX1PImTM.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-BDwn5Tmb.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-CljonWh_.js','/assets/index-DZZdMBkC.js','/assets/react-icons.esm-B40aDW1s.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js','/assets/loader-circle-gVrWrBVl.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-TrvACXZE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-BEHD0UYf.js','/assets/react-icons.esm-B40aDW1s.js','/assets/dialog-neKdJeZ3.js','/assets/sidebar-C1rzg7YP.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js','/assets/components-Cs_krxAm.js','/assets/index-DZZdMBkC.js','/assets/Combination-DvcGEJik.js','/assets/index-hpwYxh3J.js','/assets/button-kfEunpdx.js','/assets/input-7Bv8GH_s.js','/assets/separator-DWdi9hra.js','/assets/sheet-DX5fYnaZ.js','/assets/skeleton-uyA8LfUW.js','/assets/floating-ui.react-dom-jdDz5OSD.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-DYNCEXqx.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-7Bv8GH_s.js','/assets/table-BvF-YrHg.js','/assets/components-Cs_krxAm.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/scroll-area-RrBmYreh.js','/assets/index-CljonWh_.js','/assets/index-DdWlVz4l.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-B617M2Qt.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-neKdJeZ3.js','/assets/input-BbxcDIWc.js','/assets/label-DolvN-6_.js','/assets/textarea-C8iVi7Po.js','/assets/submit-field-BDwn5Tmb.js','/assets/button-kfEunpdx.js','/assets/index-BEHD0UYf.js','/assets/components-Cs_krxAm.js','/assets/index-DZZdMBkC.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/input-7Bv8GH_s.js','/assets/index-CljonWh_.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-BcR1Ah1N.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-4MC7A1MA.js','/assets/components-Cs_krxAm.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/alert-zgFgl8hr.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/x-cwrx78xb.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-BO-_vsWW.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/table-BvF-YrHg.js','/assets/progress-JNTMtf-4.js','/assets/components-Cs_krxAm.js','/assets/plus-D0z1o2bi.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/scroll-area-RrBmYreh.js','/assets/index-CljonWh_.js','/assets/index-DdWlVz4l.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-DPfqaxnT.js'],'css':[]},'routes/nav-user':{'id':'routes/nav-user','parentId':'root','path':'nav-user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/nav-user-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-nmxgsCM7.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-DX5fYnaZ.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/components-Cs_krxAm.js','/assets/arrow-right-DNdxeF8t.js','/assets/index-DZZdMBkC.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/react-icons.esm-B40aDW1s.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-dAOVcqOu.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-Cs_krxAm.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-Bg3SYgi_.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-C1rzg7YP.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-BRDkM5ZC.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/users-round-CELzP7-z.js','/assets/components-Cs_krxAm.js','/assets/button-kfEunpdx.js','/assets/loader-circle-gVrWrBVl.js','/assets/bell-C_47a_f0.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/index-BEHD0UYf.js','/assets/input-7Bv8GH_s.js','/assets/separator-DWdi9hra.js','/assets/sheet-DX5fYnaZ.js','/assets/index-DZZdMBkC.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/skeleton-uyA8LfUW.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-CljonWh_.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-BTGzvWzS.js','/assets/index-DWIQZo4h.js','/assets/index-BW1qo6m9.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-BIrPoY7X.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-kfEunpdx.js','/assets/submit-field-BDwn5Tmb.js','/assets/index-BEHD0UYf.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-74d6DukL.js','/assets/components-Cs_krxAm.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/loader-circle-gVrWrBVl.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/card-BLI8GBzK.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-Cb0XO7aq.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-Cy39rnkt.js','/assets/avatar-CVfla0pn.js','/assets/index-tUIF4Hk4.js','/assets/index-DdWlVz4l.js','/assets/index-CljonWh_.js','/assets/components-Cs_krxAm.js','/assets/index-BEHD0UYf.js','/assets/dropdown-menu-BRDkM5ZC.js','/assets/index-BTGzvWzS.js','/assets/index-DWIQZo4h.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-BW1qo6m9.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/button-kfEunpdx.js','/assets/index-D3JQEnQH.js','/assets/index-hpwYxh3J.js','/assets/skeleton-uyA8LfUW.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/user-D4pQVfP0.js'],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-c6lznVkv.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-JNTMtf-4.js','/assets/index-BEHD0UYf.js','/assets/layout-Cy39rnkt.js','/assets/button-kfEunpdx.js','/assets/createLucideIcon-4kAVNgbW.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/index-hpwYxh3J.js','/assets/checkbox-DVOqueCT.js','/assets/label-DolvN-6_.js','/assets/loader-circle-gVrWrBVl.js','/assets/separator-DWdi9hra.js','/assets/textarea-C8iVi7Po.js','/assets/components-Cs_krxAm.js','/assets/x-cwrx78xb.js','/assets/submit-field-BDwn5Tmb.js','/assets/index-B1Bk9G9l.js','/assets/chevron-right-DPfqaxnT.js','/assets/scroll-area-RrBmYreh.js','/assets/avatar-CVfla0pn.js','/assets/index-CX1PImTM.js','/assets/input-7Bv8GH_s.js','/assets/dialog-neKdJeZ3.js','/assets/plus-D0z1o2bi.js','/assets/arrow-right-DNdxeF8t.js','/assets/bell-C_47a_f0.js','/assets/index-tUIF4Hk4.js','/assets/index-CljonWh_.js','/assets/dropdown-menu-BRDkM5ZC.js','/assets/index-DdWlVz4l.js','/assets/index-BTGzvWzS.js','/assets/index-DWIQZo4h.js','/assets/floating-ui.react-dom-jdDz5OSD.js','/assets/index-BW1qo6m9.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-B40aDW1s.js','/assets/index-_i_4rKMj.js','/assets/skeleton-uyA8LfUW.js','/assets/user-D4pQVfP0.js','/assets/index-D3JQEnQH.js','/assets/index-DZZdMBkC.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-fd3ea657.js','version':'fd3ea657'};
+const serverManifest = {'entry':{'module':'/assets/entry.client-ejrtMcy6.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-BATxfdox.js'],'css':[]},'routes':{'root':{'id':'root','parentId':undefined,'path':'','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/root-C5KStLLL.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/components-BATxfdox.js','/assets/use-toast-BCGEGR8f.js','/assets/index-BvRv39A9.js','/assets/index-eKYCPr__.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-5SzSg1a2.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/use-store-8JoBBrLb.js'],'css':[]},'routes/app.settings.overview':{'id':'routes/app.settings.overview','parentId':'routes/app.settings','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.overview-BVRPgDFT.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/progress-CJl6U-AQ.js','/assets/alert-Dv8VQtr3.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/card-DT7V15za.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/x-BjiBxalF.js','/assets/index-DzK6_lIe.js','/assets/index-tUIF4Hk4.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/index-D3JQEnQH.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/app.settings.pricing':{'id':'routes/app.settings.pricing','parentId':'routes/app.settings','path':'pricing','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.pricing-DaS0TYrT.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/components-BATxfdox.js','/assets/award-C__mY455.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/app.settings.profile':{'id':'routes/app.settings.profile','parentId':'routes/app.settings','path':'profile','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings.profile-KYl8KItn.js','imports':['/assets/app.settings.profile-CW6qoPVL.js','/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/components-BATxfdox.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/scroll-area-BaISA_rz.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/index-_i_4rKMj.js','/assets/index-5SzSg1a2.js','/assets/Combination-DvcGEJik.js','/assets/input-CVFQA-es.js','/assets/submit-field-C9KupRvl.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/use-toast-BCGEGR8f.js','/assets/popover-BtL1-Rhz.js','/assets/separator-CYezskdT.js'],'css':[]},'routes/draft-assessment.sse':{'id':'routes/draft-assessment.sse','parentId':'routes/draft-assessment','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/draft-assessment.sse-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.register':{'id':'routes/_auth.auth.register','parentId':'routes/_auth','path':'auth/register','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.register-9qt3blzY.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-C1CXXFuQ.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/app.settings.profile-CW6qoPVL.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js','/assets/index-BvRv39A9.js','/assets/scroll-area-BaISA_rz.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/index-_i_4rKMj.js','/assets/index-5SzSg1a2.js','/assets/Combination-DvcGEJik.js','/assets/use-toast-BCGEGR8f.js','/assets/popover-BtL1-Rhz.js','/assets/separator-CYezskdT.js'],'css':[]},'routes/_auth.auth.remember':{'id':'routes/_auth.auth.remember','parentId':'routes/_auth','path':'auth/remember','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.remember-B8PbZSFt.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/_auth.auth.consent':{'id':'routes/_auth.auth.consent','parentId':'routes/_auth','path':'auth/consent','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.consent-BzW-kbDh.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/checkbox-D9KXyrQz.js','/assets/submit-field-C9KupRvl.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-_i_4rKMj.js','/assets/index-DGDZ2Sfm.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/_auth.auth.verify':{'id':'routes/_auth.auth.verify','parentId':'routes/_auth','path':'auth/verify','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.verify-DZ6F07Oo.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/_auth.auth.login':{'id':'routes/_auth.auth.login','parentId':'routes/_auth','path':'auth/login','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.login-DPWgq4sr.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/label-zPSMuYgG.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/loader-circle-Dz8ArpyB.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/index-BvRv39A9.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/_auth.auth.reset':{'id':'routes/_auth.auth.reset','parentId':'routes/_auth','path':'auth/reset','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.reset-VBhbiVQl.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CAYGyy10.js','/assets/alert-uEDDxYCi.js','/assets/submit-field-C9KupRvl.js','/assets/turnstile-C1CXXFuQ.js','/assets/components-BATxfdox.js','/assets/input-CVFQA-es.js','/assets/index-z_6t8hgT.js','/assets/label-zPSMuYgG.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/id-Cq0OFV5j.js','/assets/alert-Dv8VQtr3.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/loader-circle-Dz8ArpyB.js'],'css':[]},'routes/audio.transcribe':{'id':'routes/audio.transcribe','parentId':'root','path':'audio/transcribe','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/audio.transcribe-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.user.create':{'id':'routes/dash.user.create','parentId':'routes/dash.user','path':'create','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user.create-D2k5lcs9.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C9KupRvl.js','/assets/input-CVFQA-es.js','/assets/label-zPSMuYgG.js','/assets/dialog-Cf7fxpbM.js','/assets/id-Cq0OFV5j.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-BvRv39A9.js','/assets/dialog-1UrEyvk7.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/draft-assessment':{'id':'routes/draft-assessment','parentId':'root','path':'draft-assessment','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/draft-assessment-l0sNRNKZ.js','imports':[],'css':[]},'routes/outcomes.$action':{'id':'routes/outcomes.$action','parentId':'root','path':'outcomes/:action','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/outcomes._action-l0sNRNKZ.js','imports':[],'css':[]},'routes/_auth.auth.cb':{'id':'routes/_auth.auth.cb','parentId':'routes/_auth','path':'auth/cb','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth.auth.cb-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash.overview':{'id':'routes/dash.overview','parentId':'routes/dash','path':'overview','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.overview-rGSuMsHm.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-BzUl0XDW.js','/assets/users-round-DBeOHLD0.js'],'css':[]},'routes/dash.settings':{'id':'routes/dash.settings','parentId':'routes/dash','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.settings-CZEQdx2S.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/submit-field-C9KupRvl.js','/assets/card-b0vSRkw8.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/dash.user.$id':{'id':'routes/dash.user.$id','parentId':'routes/dash.user','path':':id','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user._id-CXnw2Vwe.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/avatar-_MYapN4y.js','/assets/button-7RhbRVm-.js','/assets/sheet-BC-i8l7E.js','/assets/scroll-area-BaISA_rz.js','/assets/components-BATxfdox.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/index-R_5LapDR.js','/assets/index-DzK6_lIe.js','/assets/table-0NyIWj0N.js','/assets/progress-CJl6U-AQ.js','/assets/index-BLD_4dua.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/Combination-DvcGEJik.js','/assets/index-BzUl0XDW.js','/assets/submit-field-C9KupRvl.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-BvRv39A9.js','/assets/index-YawMpOok.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/chevron-right-pBYPfUOY.js','/assets/loader-circle-Dz8ArpyB.js'],'css':['/assets/dash.user-DoPtB5MO.css']},'routes/app.settings':{'id':'routes/app.settings','parentId':'routes/app','path':'settings','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.settings-CjZtScg6.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/index-D3JQEnQH.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/dialog-1UrEyvk7.js','/assets/sidebar-POP6IXa5.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/user-DuO3WCZ6.js','/assets/award-C__mY455.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/button-7RhbRVm-.js','/assets/input-CVFQA-es.js','/assets/separator-CYezskdT.js','/assets/sheet-BC-i8l7E.js','/assets/tooltip-B3pYNkcN.js','/assets/floating-ui.react-dom-uWlyp39P.js'],'css':[]},'routes/dash.license':{'id':'routes/dash.license','parentId':'routes/dash','path':'license','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.license-D-OevotE.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/input-CVFQA-es.js','/assets/table-0NyIWj0N.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/scroll-area-BaISA_rz.js','/assets/index-BvRv39A9.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/chevron-right-pBYPfUOY.js'],'css':[]},'routes/app.contact':{'id':'routes/app.contact','parentId':'routes/app','path':'contact','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.contact-B_PbJBhB.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/dialog-1UrEyvk7.js','/assets/input-CAYGyy10.js','/assets/label-zPSMuYgG.js','/assets/textarea-_nxwdXwg.js','/assets/submit-field-C9KupRvl.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/input-CVFQA-es.js','/assets/id-Cq0OFV5j.js','/assets/index-BvRv39A9.js','/assets/index-R_5LapDR.js','/assets/loader-circle-Dz8ArpyB.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/app.alert':{'id':'routes/app.alert','parentId':'routes/app','path':'alert','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app.alert-C889WscB.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/alert-Dv8VQtr3.js','/assets/button-7RhbRVm-.js','/assets/index-z_6t8hgT.js','/assets/x-BjiBxalF.js','/assets/components-BATxfdox.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-R_5LapDR.js','/assets/index-D3JQEnQH.js'],'css':[]},'routes/dash.user':{'id':'routes/dash.user','parentId':'routes/dash','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash.user-CcS6nwb_.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/table-0NyIWj0N.js','/assets/progress-CJl6U-AQ.js','/assets/components-BATxfdox.js','/assets/plus-CA7M78hu.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/scroll-area-BaISA_rz.js','/assets/index-BvRv39A9.js','/assets/index-Ckg_eGSq.js','/assets/index-tUIF4Hk4.js','/assets/chevron-right-pBYPfUOY.js'],'css':[]},'routes/messages':{'id':'routes/messages','parentId':'root','path':'messages','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/messages-l0sNRNKZ.js','imports':[],'css':[]},'routes/join.wh':{'id':'routes/join.wh','parentId':'routes/join','path':'wh','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join.wh-l0sNRNKZ.js','imports':[],'css':[]},'routes/_index':{'id':'routes/_index','parentId':'root','path':undefined,'index':true,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_index-Btr-kLyw.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sheet-BC-i8l7E.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/components-BATxfdox.js','/assets/index-YawMpOok.js','/assets/index-D3JQEnQH.js','/assets/Combination-DvcGEJik.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/react-icons.esm-cjvil6ZG.js'],'css':[]},'routes/logout':{'id':'routes/logout','parentId':'root','path':'logout','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/logout-l0sNRNKZ.js','imports':[],'css':[]},'routes/mobile':{'id':'routes/mobile','parentId':'root','path':'mobile','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/mobile-BGYaqtW5.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js'],'css':[]},'routes/_auth':{'id':'routes/_auth','parentId':'root','path':undefined,'index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':false,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/_auth-Bs2ZJ2nI.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/components-BATxfdox.js'],'css':[]},'routes/files':{'id':'routes/files','parentId':'root','path':'files','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/files-l0sNRNKZ.js','imports':[],'css':[]},'routes/score':{'id':'routes/score','parentId':'root','path':'score','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/score-l0sNRNKZ.js','imports':[],'css':[]},'routes/dash':{'id':'routes/dash','parentId':'root','path':'dash','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/dash-j3tx8nET.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/sidebar-POP6IXa5.js','/assets/logo-DtPdte9n.js','/assets/dropdown-menu-D-QVTWP9.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/users-round-DBeOHLD0.js','/assets/components-BATxfdox.js','/assets/button-7RhbRVm-.js','/assets/loader-circle-Dz8ArpyB.js','/assets/bell-DkC4F-l8.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/input-CVFQA-es.js','/assets/separator-CYezskdT.js','/assets/sheet-BC-i8l7E.js','/assets/index-YawMpOok.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/tooltip-B3pYNkcN.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-BvRv39A9.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/index-DGDZ2Sfm.js'],'css':[]},'routes/join':{'id':'routes/join','parentId':'root','path':'join','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/join-Q4nU2O46.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/button-7RhbRVm-.js','/assets/use-toast-BCGEGR8f.js','/assets/logo-DtPdte9n.js','/assets/card-DT7V15za.js','/assets/components-BATxfdox.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-z_6t8hgT.js','/assets/card-b0vSRkw8.js'],'css':[]},'routes/test':{'id':'routes/test','parentId':'root','path':'test','index':undefined,'caseSensitive':undefined,'hasAction':true,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/test-B2DK4qQW.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/layout-xSdBtQuR.js','/assets/avatar-_MYapN4y.js','/assets/index-tUIF4Hk4.js','/assets/index-Ckg_eGSq.js','/assets/index-BvRv39A9.js','/assets/components-BATxfdox.js','/assets/index-z_6t8hgT.js','/assets/dropdown-menu-D-QVTWP9.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/button-7RhbRVm-.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/tooltip-B3pYNkcN.js','/assets/user-DuO3WCZ6.js','/assets/createLucideIcon-BdpXmnmz.js'],'css':[]},'routes/user':{'id':'routes/user','parentId':'root','path':'user','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/user-l0sNRNKZ.js','imports':[],'css':[]},'routes/app':{'id':'routes/app','parentId':'root','path':'app','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/app-B6S04u2O.js','imports':['/assets/jsx-runtime-CNvHvvCs.js','/assets/logo-DtPdte9n.js','/assets/progress-CJl6U-AQ.js','/assets/index-z_6t8hgT.js','/assets/layout-xSdBtQuR.js','/assets/button-7RhbRVm-.js','/assets/createLucideIcon-BdpXmnmz.js','/assets/use-store-8JoBBrLb.js','/assets/use-toast-BCGEGR8f.js','/assets/components-BATxfdox.js','/assets/separator-CYezskdT.js','/assets/textarea-_nxwdXwg.js','/assets/x-BjiBxalF.js','/assets/popover-BtL1-Rhz.js','/assets/checkbox-D9KXyrQz.js','/assets/label-zPSMuYgG.js','/assets/loader-circle-Dz8ArpyB.js','/assets/index-DzK6_lIe.js','/assets/submit-field-C9KupRvl.js','/assets/dialog-Cf7fxpbM.js','/assets/chevron-right-pBYPfUOY.js','/assets/scroll-area-BaISA_rz.js','/assets/avatar-_MYapN4y.js','/assets/index-BLD_4dua.js','/assets/input-CVFQA-es.js','/assets/dialog-1UrEyvk7.js','/assets/plus-CA7M78hu.js','/assets/tooltip-B3pYNkcN.js','/assets/bell-DkC4F-l8.js','/assets/index-tUIF4Hk4.js','/assets/index-BvRv39A9.js','/assets/dropdown-menu-D-QVTWP9.js','/assets/index-Ckg_eGSq.js','/assets/index-eKYCPr__.js','/assets/index-Cue66WQv.js','/assets/floating-ui.react-dom-uWlyp39P.js','/assets/index-DGDZ2Sfm.js','/assets/Combination-DvcGEJik.js','/assets/react-icons.esm-cjvil6ZG.js','/assets/user-DuO3WCZ6.js','/assets/index-D3JQEnQH.js','/assets/index-R_5LapDR.js','/assets/index-_i_4rKMj.js','/assets/index-YawMpOok.js'],'css':[]},'routes/sse':{'id':'routes/sse','parentId':'root','path':'sse','index':undefined,'caseSensitive':undefined,'hasAction':false,'hasLoader':true,'hasClientAction':false,'hasClientLoader':false,'hasErrorBoundary':false,'module':'/assets/sse-l0sNRNKZ.js','imports':[],'css':[]}},'url':'/assets/manifest-d6a9a302.js','version':'d6a9a302'};
 
 /**
        * `mode` is only relevant for the old Remix compiler but
@@ -9876,13 +11524,45 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           caseSensitive: undefined,
           module: route1
         },
+  "routes/app.settings.pricing": {
+          id: "routes/app.settings.pricing",
+          parentId: "routes/app.settings",
+          path: "pricing",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route2
+        },
   "routes/app.settings.profile": {
           id: "routes/app.settings.profile",
           parentId: "routes/app.settings",
           path: "profile",
           index: undefined,
           caseSensitive: undefined,
-          module: route2
+          module: route3
+        },
+  "routes/draft-assessment.sse": {
+          id: "routes/draft-assessment.sse",
+          parentId: "routes/draft-assessment",
+          path: "sse",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route4
+        },
+  "routes/_auth.auth.register": {
+          id: "routes/_auth.auth.register",
+          parentId: "routes/_auth",
+          path: "auth/register",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route5
+        },
+  "routes/_auth.auth.remember": {
+          id: "routes/_auth.auth.remember",
+          parentId: "routes/_auth",
+          path: "auth/remember",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route6
         },
   "routes/_auth.auth.consent": {
           id: "routes/_auth.auth.consent",
@@ -9890,7 +11570,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "auth/consent",
           index: undefined,
           caseSensitive: undefined,
-          module: route3
+          module: route7
+        },
+  "routes/_auth.auth.verify": {
+          id: "routes/_auth.auth.verify",
+          parentId: "routes/_auth",
+          path: "auth/verify",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route8
         },
   "routes/_auth.auth.login": {
           id: "routes/_auth.auth.login",
@@ -9898,7 +11586,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "auth/login",
           index: undefined,
           caseSensitive: undefined,
-          module: route4
+          module: route9
         },
   "routes/_auth.auth.reset": {
           id: "routes/_auth.auth.reset",
@@ -9906,7 +11594,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "auth/reset",
           index: undefined,
           caseSensitive: undefined,
-          module: route5
+          module: route10
+        },
+  "routes/audio.transcribe": {
+          id: "routes/audio.transcribe",
+          parentId: "root",
+          path: "audio/transcribe",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route11
         },
   "routes/dash.user.create": {
           id: "routes/dash.user.create",
@@ -9914,7 +11610,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "create",
           index: undefined,
           caseSensitive: undefined,
-          module: route6
+          module: route12
+        },
+  "routes/draft-assessment": {
+          id: "routes/draft-assessment",
+          parentId: "root",
+          path: "draft-assessment",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route13
         },
   "routes/outcomes.$action": {
           id: "routes/outcomes.$action",
@@ -9922,7 +11626,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "outcomes/:action",
           index: undefined,
           caseSensitive: undefined,
-          module: route7
+          module: route14
+        },
+  "routes/_auth.auth.cb": {
+          id: "routes/_auth.auth.cb",
+          parentId: "routes/_auth",
+          path: "auth/cb",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route15
         },
   "routes/dash.overview": {
           id: "routes/dash.overview",
@@ -9930,7 +11642,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "overview",
           index: undefined,
           caseSensitive: undefined,
-          module: route8
+          module: route16
         },
   "routes/dash.settings": {
           id: "routes/dash.settings",
@@ -9938,7 +11650,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route9
+          module: route17
         },
   "routes/dash.user.$id": {
           id: "routes/dash.user.$id",
@@ -9946,7 +11658,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: ":id",
           index: undefined,
           caseSensitive: undefined,
-          module: route10
+          module: route18
         },
   "routes/app.settings": {
           id: "routes/app.settings",
@@ -9954,7 +11666,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "settings",
           index: undefined,
           caseSensitive: undefined,
-          module: route11
+          module: route19
         },
   "routes/dash.license": {
           id: "routes/dash.license",
@@ -9962,7 +11674,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "license",
           index: undefined,
           caseSensitive: undefined,
-          module: route12
+          module: route20
         },
   "routes/app.contact": {
           id: "routes/app.contact",
@@ -9970,7 +11682,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "contact",
           index: undefined,
           caseSensitive: undefined,
-          module: route13
+          module: route21
         },
   "routes/app.alert": {
           id: "routes/app.alert",
@@ -9978,7 +11690,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "alert",
           index: undefined,
           caseSensitive: undefined,
-          module: route14
+          module: route22
         },
   "routes/dash.user": {
           id: "routes/dash.user",
@@ -9986,15 +11698,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "user",
           index: undefined,
           caseSensitive: undefined,
-          module: route15
+          module: route23
         },
-  "routes/nav-user": {
-          id: "routes/nav-user",
+  "routes/messages": {
+          id: "routes/messages",
           parentId: "root",
-          path: "nav-user",
+          path: "messages",
           index: undefined,
           caseSensitive: undefined,
-          module: route16
+          module: route24
         },
   "routes/join.wh": {
           id: "routes/join.wh",
@@ -10002,7 +11714,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "wh",
           index: undefined,
           caseSensitive: undefined,
-          module: route17
+          module: route25
         },
   "routes/_index": {
           id: "routes/_index",
@@ -10010,7 +11722,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: undefined,
           index: true,
           caseSensitive: undefined,
-          module: route18
+          module: route26
         },
   "routes/logout": {
           id: "routes/logout",
@@ -10018,7 +11730,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "logout",
           index: undefined,
           caseSensitive: undefined,
-          module: route19
+          module: route27
         },
   "routes/mobile": {
           id: "routes/mobile",
@@ -10026,7 +11738,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "mobile",
           index: undefined,
           caseSensitive: undefined,
-          module: route20
+          module: route28
         },
   "routes/_auth": {
           id: "routes/_auth",
@@ -10034,7 +11746,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: undefined,
           index: undefined,
           caseSensitive: undefined,
-          module: route21
+          module: route29
         },
   "routes/files": {
           id: "routes/files",
@@ -10042,7 +11754,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "files",
           index: undefined,
           caseSensitive: undefined,
-          module: route22
+          module: route30
         },
   "routes/score": {
           id: "routes/score",
@@ -10050,7 +11762,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "score",
           index: undefined,
           caseSensitive: undefined,
-          module: route23
+          module: route31
         },
   "routes/dash": {
           id: "routes/dash",
@@ -10058,7 +11770,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "dash",
           index: undefined,
           caseSensitive: undefined,
-          module: route24
+          module: route32
         },
   "routes/join": {
           id: "routes/join",
@@ -10066,7 +11778,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "join",
           index: undefined,
           caseSensitive: undefined,
-          module: route25
+          module: route33
         },
   "routes/test": {
           id: "routes/test",
@@ -10074,7 +11786,15 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "test",
           index: undefined,
           caseSensitive: undefined,
-          module: route26
+          module: route34
+        },
+  "routes/user": {
+          id: "routes/user",
+          parentId: "root",
+          path: "user",
+          index: undefined,
+          caseSensitive: undefined,
+          module: route35
         },
   "routes/app": {
           id: "routes/app",
@@ -10082,7 +11802,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "app",
           index: undefined,
           caseSensitive: undefined,
-          module: route27
+          module: route36
         },
   "routes/sse": {
           id: "routes/sse",
@@ -10090,7 +11810,7 @@ const serverManifest = {'entry':{'module':'/assets/entry.client-Wfb8UV0l.js','im
           path: "sse",
           index: undefined,
           caseSensitive: undefined,
-          module: route28
+          module: route37
         }
       };
 
