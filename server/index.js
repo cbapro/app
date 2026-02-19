@@ -7032,7 +7032,7 @@ function TextareaField({
 
 function module() {
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const from = process.env.EMAIL_FROM;
+  const from = `${process.env.APP_NAME} <${process.env.EMAIL_FROM}>`;
 
   return {
     sendMail: async (mail) => {
@@ -7054,13 +7054,13 @@ function module() {
 }
 
 const options = {
+  name: process.env.APP_NAME,
   from: process.env.EMAIL_FROM,
   to: process.env.EMAIL_RECIPIENT,
 };
 
 const Email = async ({ payload }) =>
   module().sendMail({
-    from: options.from,
     to: payload?.to ?? options.to,
     ...payload,
   });
