@@ -7491,7 +7491,13 @@ async function init$1(session) {
   console.log("chat.init", "all threads", threads.length);
 
   if (threads.length === 0) {
-    const _thread = await openai.beta.threads.create();
+    let _thread;
+    try {
+      _thread = await openai.beta.threads.create();
+    } catch (err) {
+      console.error("chat.init.openai", err.message);
+      return { error: err.message };
+    }
 
     if (_thread.error) {
       console.log("chat.init", _thread.error.error);
@@ -11103,7 +11109,12 @@ async function check(user, session) {
 }
 
 async function init(user, session) {
-  const { thread, file } = await init$1(session);
+  const { thread, file, error: threadError } = await init$1(session);
+
+  if (threadError || !thread) {
+    console.error("chat.init.failed", threadError);
+    throw new Response("Chat initialization failed. Please try again.", { status: 503 });
+  }
 
   let messages = await read$2(user, { thread });
   const competencies = await read();
