@@ -11403,6 +11403,18 @@ async function loader({ request }) {
     session,
   });
 
+  // If OpenAI failed to create a stream, send an error event and close cleanly
+  if (!stream) {
+    return eventStream(
+      request.signal,
+      function setup(send, close) {
+        send({ event: "error", data: JSON.stringify({ message: "Failed to reach AI service. Please try again." }) });
+        close();
+      },
+      { headers: { "Set-Cookie": await commitSession(session) } }
+    );
+  }
+
   return eventStream(
     request.signal,
     function setup(send, close) {
@@ -11455,6 +11467,13 @@ async function handleStream({
 }) {
   console.log("Streaming started...");
   let fullResponse = "";
+
+  if (!stream) {
+    console.error("handleStream: stream is null, closing.");
+    send({ event: "error", data: JSON.stringify({ message: "AI stream unavailable." }) });
+    close();
+    return;
+  }
 
   for await (const token of stream) {
     fullResponse += token;
