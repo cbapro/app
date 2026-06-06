@@ -7579,10 +7579,10 @@ async function send({ user, thread, content, session }) {
 
         const found = competencies
           .flatMap((group) => group.items)
-          .find((item) => item.get("title") === content);
+          .find((item) => item["title"] === content);
 
         if (found) {
-          console.log("Competency found:", found.get("title"));
+          console.log("Competency found:", found["title"]);
           session.set("progress", { step: 4 });
         } else {
           console.warn("Competency not found.");
