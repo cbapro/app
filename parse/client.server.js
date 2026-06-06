@@ -1,1 +1,0 @@
-import r from"parse/node";import{default as d}from"parse/node";import e from"./vars.server.js";import"dotenv/config";const{appId:o,jsKey:s,masterKey:t,serverURL:a}=e.parse;r.initialize(o,s,t),r.serverURL=a;export{d as default};
