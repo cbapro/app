@@ -1290,10 +1290,11 @@ async function createCheckoutSession({ metadata, customerId, recurring }) {
       allow_promotion_codes: true,
       success_url: `${domain}/join?success=true&sessionId={CHECKOUT_SESSION_ID}`,
       cancel_url: `${domain}/join?canceled=true&priceKey=${metadata?.priceKey}`,
-      metadata,
-      [recurring ? "subscription_data" : "payment_intent_data"]: { metadata },
-      // automatic_tax: { enabled: true },
-      // billing_address_collection: "required",
+      // metadata,
+      ...(recurring && { subscription_data: { metadata } }),
+      payment_intent_data: { metadata },
+      automatic_tax: { enabled: true },
+      billing_address_collection: "required",
       customer_update: {
         address: "auto",
       },
@@ -7828,7 +7829,7 @@ async function action$4({ request }) {
 
     case "payment_intent.succeeded": {
       const pi = event.data.object;
-      console.log("join.wh.pi.succeeded", pi);
+      console.log("join.wh.pi.succeeded", pi.id);
 
       if (pi.invoice) return null;
 
