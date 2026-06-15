@@ -1093,7 +1093,7 @@ const flags$2 = {
 // import * as User from "./models/user.server";
 // import * as Auth from "./lib/parse/auth.server";
 
-const SESSION_VERSION = "v002";
+const SESSION_VERSION = "2606152303";
 
 const sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -7580,8 +7580,9 @@ async function send({ user, thread, content, session }) {
 
         const found = competencies
           .flatMap((group) => group.items)
+          //.find((item) => item.get("title") === content);
           .find((item) => {
-            console.log("GA.ISSUE", item["title"], content);
+            console.log("GA.ISSUE --------- ", item["title"], content);
             return item["title"] === content;
           });
 
@@ -8251,7 +8252,6 @@ async function action$3({ request }) {
   );
   session.set("thread", { ...thread, ...{ thread: thread_ } });
   session.set("file", file_);
-  session.set("progress", { step: 2 });
   console.log("Progress advanced to Step 2 (CV uploaded)");
   return Response.json(file_, {
     headers: {
