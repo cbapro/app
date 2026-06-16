@@ -7566,7 +7566,7 @@ async function send({ user, thread, content, session }) {
 
   try {
     // Step Logic Handler
-    switch (progress.step) {
+    /*switch (progress.step) {
       case 2:
         // CV uploaded, user needs to select a competency
         console.log("Step 2: Awaiting competency selection. No action taken.");
@@ -7576,7 +7576,7 @@ async function send({ user, thread, content, session }) {
       case 3:
         console.log("Step 3: Checking for selected competency...");
         threadInstruction += getProjectMatchInstruction();
-        const competencies = await read();
+        const competencies = await Competency.read();
 
         const found = competencies
           .flatMap((group) => group.items)
@@ -7607,7 +7607,7 @@ async function send({ user, thread, content, session }) {
 
       default:
         console.log("No specific step logic. Continuing.");
-    }
+    }*/
 
     // Create message
     const userMessage = await openai.beta.threads.messages.create(
@@ -7642,60 +7642,6 @@ async function send({ user, thread, content, session }) {
 
 function getMarkdownInstruction() {
   return "Please format your response in Markdown. Use **headers**, **bold**, and **bullet points** as needed.\n";
-}
-
-function getProjectMatchInstruction() {
-  return `
-    You are now in **Step 2 and 3** of the workflow:
-    **Explain the Competency** and **Match Projects from the User's CV**.
-
-    ---
-
-    ## Competency Explanation (Intent + Indicators)
-
-    - Retrieve the selected competency’s **full title**, **intent**, and **explicit indicators** from your knowledge base.
-    - For each **indicator**, explain what it means **in the context of the user's background** (e.g., if they work in transportation infrastructure, reference TAC guidelines, CSA codes, etc.).
-    - Use **industry-relevant examples** that would be familiar to someone with the user’s expertise.
-    - Then, write a short **scenario story** as if you were an engineer in a similar role:
-      - Use **first-person perspective** (“I”)
-      - Describe a real engineering situation that demonstrates this competency
-      - Include:
-        - An **engineering challenge**
-        - The **action(s)** taken
-        - A **quantifiable outcome**
-
-    > This helps the user empathize with how the competency should be demonstrated.
-
-    ---
-
-    ## Match Projects from CV
-
-    - Analyze the user’s uploaded CV using **Named Entity Recognition (NER)**.
-    - Identify **all explicit projects** that match the selected competency.
-    - List them using this format:
-
-    **Project Name**
-    **Position Title**
-    **Relevant activities/duties that demonstrate competency**
-
-
-    - **Do NOT** ask the user to select a project until all matches are listed.
-    - End your message with:
-      _"Please select one of the explicit matches to focus on for this competency before we continue."_
-    - **Do NOT** continue to gap analysis or follow-up questions until the user selects a project.
-    `;
-}
-
-function getGapAnalysisInstruction() {
-  return `
-    Before drafting a STAR-format response, perform a **Gap Analysis**:
-
-    - Compare the user's experience against the competency indicators.
-    - Identify any missing technical details, quantifiable results, or specific codes/standards.
-    - Ask targeted follow-up questions to fill in these gaps.
-
-    **Do not** draft the structured response until these gaps are addressed.
-  `;
 }
 
 async function fetchRunId(threadId) {
@@ -7751,8 +7697,8 @@ async function save({
     const fullText = userMessage.content[0].text.value;
     const content = fullText
       .replace(getMarkdownInstruction(), "")
-      .replace(getProjectMatchInstruction(), "")
-      .replace(getGapAnalysisInstruction(), "")
+      //.replace(getProjectMatchInstruction(), "")
+      //.replace(getGapAnalysisInstruction(), "")
       .trim();
 
     await create$1(
